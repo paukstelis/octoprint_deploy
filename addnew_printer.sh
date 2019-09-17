@@ -7,8 +7,6 @@ fi
 
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 
-#clear out journalctl - probably a better way to do this
-sudo journalctl --vacuum-time=1seconds
 
 echo "UNPLUG PRINTER FROM USB"
 echo "Enter the name for new printer/instance:"
@@ -43,7 +41,6 @@ if [ -f /etc/octoprint_ports ]; then
    fi
 fi
 
-#TODO
 #collect user, basedir path, daemon path
 echo "Octoprint Daemon User [$user]:"
 read OCTOUSER
@@ -67,6 +64,9 @@ read -p "Auto-detect printer serial number for udev entry?" -n 1 -r
 echo    #new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
+   #clear out journalctl - probably a better way to do this
+   journalctl --rotate > /dev/null 2>&1
+   journalctl --vacuum-time=1seconds > /dev/null 2>&1
    echo "Plug your printer in via USB now (detection time-out in 2 min)"
    counter=0
    while [[ -z "$UDEV" ]] && [[ $counter -lt 60 ]]; do 
@@ -102,7 +102,10 @@ then
    cat octoprint_init | sed -e "s/NEWINSTANCE/$INSTANCE/" > /etc/init.d/$INSTANCE
    cat octoprint_udev | sed -e "s/NEWINSTANCE/octo_$INSTANCE/" -e "s/UDEV/$UDEV/" >> /etc/udev/rules.d/99-octoprint.rules
    #clear out journalctl - probably a better way to do this
-   sudo journalctl --vacuum-time=1seconds
+   #journalctl --rotate > /dev/null 2>&1
+   #journalctl --vacuum-time=1seconds > /dev/null 2>&1
+   #just to be on the safe side, add user to dialout
+   usermod -a G dialout $OCTOUSER
    #Open port to be on safe side
    ufw allow $PORT/tcp
 
