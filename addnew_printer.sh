@@ -88,7 +88,7 @@ else
 fi
 
 #octoprint_base is the generic .octoprint folder that contains all configuration, upload, etc.
-echo "Octoprint instance base folder [/home/$user/.octoprint]:"
+echo "Octoprint instance template base folder [/home/$user/.octoprint]:"
 read BFOLD
 if [ -z "$BFOLD" ]; then
     BFOLD="/home/$user/.octoprint"
