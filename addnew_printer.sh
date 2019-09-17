@@ -114,8 +114,7 @@ then
    cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
    #Do config.yaml modifications here if needed..
    #sed -i "/s/PORT/$INSTANCE/" .$INSTANCE/config.yaml
-   #TODO - Just add an entry after additionalPorts?
-   #cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > .$INSTANCE/config.yaml
+   cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
    udevadm control --reload-rules
    udevadm trigger
    systemctl daemon-reload
