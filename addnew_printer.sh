@@ -105,7 +105,7 @@ then
    #journalctl --rotate > /dev/null 2>&1
    #journalctl --vacuum-time=1seconds > /dev/null 2>&1
    #just to be on the safe side, add user to dialout
-   usermod -a G dialout $OCTOUSER
+   usermod -a -G dialout $OCTOUSER
    #Open port to be on safe side
    ufw allow $PORT/tcp
 
