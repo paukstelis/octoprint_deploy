@@ -14,7 +14,7 @@ or here: https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-p
 * You can also edit the server name under apperance with: `INSTANCE`
 ![alt text](/deploy_03.png)
 
-* STOP your currently running octoprint server (Ctrl+C in the terminal you started is sufficient)
+* SAVE your changes, then STOP your currently running octoprint server (Ctrl+C in the terminal you started is sufficient)
 * Make sure whichever printer you are installing for is not plugged in via USB
 * Go to wherever you downloaded octoprint_deploy: `$ cd octoprint_deploy`
 * Run the bash script: `$ sudo ./addnew_printer.sh`
