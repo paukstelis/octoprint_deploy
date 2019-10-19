@@ -2,18 +2,18 @@
 These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer (Ubuntu/debian based systems).
 
 # How to use
-Install Ubuntu on computer of interest.
-Install Octoprint. You can follow the directions here: https://octoprint.org/download/
+* Install Ubuntu on computer of interest.
+* Install Octoprint. You can follow the directions here: https://octoprint.org/download/
 or here: https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-pi-running-raspbian/2337
 
-Start up Octoprint for the first time to setup a base instance profile. The base profile will be edited in several places to allow specific modifications during deployment.
+* Start up Octoprint for the first time to setup a base instance profile. The base profile will be edited in several places to allow specific modifications during deployment.
 
 [PLACE HOLDERS FOR EDITING STUFF]
-Make sure whichever printer you are installing for is not plugged in via USB
+* Make sure whichever printer you are installing for is not plugged in via USB
 
-Go to wherever you downloaded octoprint_deploy: cd octoprint_deploy
-Run the bash script: $ sudo ./addnew_printer.sh
-And follow the instructions. Defaults are shown in brackets:
+* Go to wherever you downloaded octoprint_deploy: cd octoprint_deploy
+* Run the bash script: $ sudo ./addnew_printer.sh
+* And follow the instructions. Defaults are shown in brackets:
 
 >UNPLUG PRINTER FROM USB
 >Enter the name for new printer/instance:
