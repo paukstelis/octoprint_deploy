@@ -49,6 +49,8 @@ or here: https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-p
 
 This will do the following:
 
-1. Copy everything in ~/.octoprint to ~/.printer01 with modifications
+1. Copy everything in ~/.octoprint to ~/.printer01 with the modifications
 2. Update udev rules so this printer will always be at port /dev/octo_printer01
 3. Create, start, and enable the service printer01 to control that octoprint instance.
+
+Because each octoprint instance is coming from the same source files, any global modifications you make to octoprint (adding/removing plugins, updating octoprint) are all automatically applied to all of your instances and will take effect when you restart that instance.
