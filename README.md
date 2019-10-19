@@ -7,6 +7,11 @@ These files provide a simple bash script for quickly deploying multiple octoprin
 or here: https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-pi-running-raspbian/2337
 
 * Start up Octoprint for the first time to setup a base instance profile. The base profile will be edited in several places to allow specific modifications during deployment.
+* During setup, edit the restart script: `sudo systemctl restart INSTANCE`
+
+* After the initial setup is done, reload the server and edit the Additional Serial Port field: `/dev/octo_INSTANCE`
+
+* You can also edit the server name under apperance with: `INSTANCE`
 
 [PLACE HOLDERS FOR EDITING STUFF]
 * Make sure whichever printer you are installing for is not plugged in via USB
@@ -16,7 +21,9 @@ or here: https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-p
 * And follow the instructions. Defaults are shown in brackets:
 
 >UNPLUG PRINTER FROM USB
+
 >Enter the name for new printer/instance:
+
 >*printer01*
 
 >Port on which this instance will run (ENTER will increment last value in /etc/octoprint_ports):
