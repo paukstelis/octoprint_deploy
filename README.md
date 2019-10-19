@@ -17,19 +17,32 @@ And follow the instructions:
 
 >UNPLUG PRINTER FROM USB
 >Enter the name for new printer/instance:
->printer01
+>*printer01*
+
 >Port on which this instance will run (ENTER will increment last value in /etc/octoprint_ports):
 
 >Selected port is: 5000
+
 >Octoprint Daemon User [paul]:
+
 
 >Octoprint Daemon Path [/home/paul/OctoPrint/venv/bin/octoprint]:
 
+
 >Octoprint Config Path [/home/paul/]:
 
->Auto-detect printer serial number for udev entry?y
+>Auto-detect printer serial number for udev entry?*y*
+
 >Plug your printer in via USB now (detection time-out in 2 min)
+
 >Serial number detected as: AL03M8MG
+
 >Octoprint instance template base folder [/home/paul/.octoprint]:
 
->Do you want to proceed? y
+>Do you want to proceed? *y*
+
+This will do the following:
+
+1. Copy everything in ~/.octoprint to ~/.printer01 with modifications
+2. Update udev rules so this printer will always be at port /dev/octo_printer01
+3. Create, start, and enable the service printer01 to control that octoprint instance.
