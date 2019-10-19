@@ -18,7 +18,7 @@ or here: https://community.octoprint.org/t/setting-up-octoprint-on-a-raspberry-p
 * Make sure whichever printer you are installing for is not plugged in via USB
 * Go to wherever you downloaded octoprint_deploy: `$ cd octoprint_deploy`
 * Run the bash script: `$ sudo ./addnew_printer.sh`
-* And follow the instructions. Defaults are shown in brackets:
+* And follow the instructions. Defaults are shown in brackets. ENTER accepts defaults:
 
 >UNPLUG PRINTER FROM USB
 
