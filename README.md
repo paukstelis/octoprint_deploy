@@ -54,4 +54,6 @@ This will do the following:
 2. Update udev rules so this printer will always be at port /dev/octo_printer01
 3. Create, start, and enable the service printer01 to control that octoprint instance.
 
+You can now go through and run the script for each printer you want connected to the computer. The limit of instances you can run will likely be dependent on your computer hardware, but I have run 11 printers on an old Core 2 Duo with 4Gb of RAM without issue.
+
 Because each octoprint instance is coming from the same source files, any global modifications you make to octoprint (adding/removing plugins, updating octoprint) are all automatically applied to all of your instances and will take effect when you restart that instance.
