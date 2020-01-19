@@ -1,1 +1,1 @@
-SUBSYSTEM=="tty", ATTRS{serial}=="UDEV", SYMLINK+="NEWINSTANCE"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="", ATTRS{idProduct}=="", ATTRS{devpath}=="", ATTRS{serial}=="UDEV", SYMLINK+="NEWINSTANCE"
