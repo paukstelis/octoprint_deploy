@@ -1,1 +1,0 @@
-SUBSYSTEM=="tty", ATTRS{serial}=="UDEV", SYMLINK+="NEWINSTANCE"
