@@ -1,17 +1,39 @@
 #!/bin/bash
 
 if (( $EUID != 0 )); then
-    echo "Please run as root"
+    echo "Please run as root (sudo)"
     exit
 fi
 
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 
-echo "Please select the type of installation:"
-echo "1 - OctoPi"
-echo "2 - Octobuntu"
-echo "3 - Other (few defaults)"
-read INSTALL
+PIDEFAULT="/home/$user/oprint/bin/octoprint"
+BUDEFAULT="/home/$user/OctoPrint/bin/octoprint"
+OTHERDEFAULT=""
+PS3='Installation type: '
+options=("OctoPi" "OctoBuntu" "Other" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "OctoPi")
+            DAEMONPATH=$PIDEFAULT
+            break
+            ;;
+        "OctoBuntu")
+            DAEMONPATH=$BUDEFAULT
+            INSTALL=2
+            break
+            ;;
+        "Other")
+            DAEMONPATH=$OTHERDEFAULT
+            break
+            ;;
+        "Quit")
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
 
 echo "UNPLUG PRINTER FROM USB"
 echo "Enter the name for new printer/instance:"
@@ -53,21 +75,6 @@ if [ -z "$OCTOUSER" ]; then
     OCTOUSER=$user
 fi
 
-PIDEFAULT="/home/$user/oprint/bin/octoprint"
-BUDEFAULT="/home/$user/octoprint/bin/octoprint"
-OTHERDEFAULT=""
-if [ $INSTALL=1 ]; then
-   DAEMONPATH=$PIDEFAULT
-fi
-
-if [ $INSTALL=2 ]; then
-   DAEMONPATH=$BUDEFAULT
-fi
-
-if [ $INSTALL=3 ]; then
-   DAEMONPATH=""
-fi
-
 echo "Octoprint Executable Daemon Path [$DAEMONPATH]:"
 read OCTOPATH
 if [ -z "$OCTOPATH" ]; then
@@ -101,10 +108,17 @@ else
    exit 1
 fi
 
+#check to make sure first run is complete
+if grep -q 'firstRun: true' $BFOLD/config.yaml; then
+    echo "WARNING!! You should run $OCTOPATH serve and setup the base profile and admin user before continuing"
+    exit 1
+fi
+
 read -p "Auto-detect printer serial number for udev entry?" -n 1 -r
 echo    #new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
+   echo
    #clear out journalctl - probably a better way to do this
    journalctl --rotate > /dev/null 2>&1
    journalctl --vacuum-time=1seconds > /dev/null 2>&1
@@ -123,8 +137,11 @@ then
           USB=$TEMPUSB
           echo "Your printer will be setup at the following usb address:"
           echo $USB
-          echo           
+          echo
+       else
+          exit 1           
        fi
+       
        
    else
       echo "Serial number detected as: $UDEV"
@@ -132,10 +149,11 @@ then
 fi
 
 #Octobuntu cameras
-if [ $INSTALL=2 ]; then
-   read -p "Would you like to auto detect an associated USB camera?" -n 1 -r
+if [[ $INSTALL = 2 ]]; then
+   read -p "Would you like to auto detect an associated USB camera (experimental)?" -n 1 -r
    if [[ $REPLY =~ ^[Yy]$ ]]
    then
+      echo
       #clear out journalctl - probably a better way to do this
       journalctl --rotate > /dev/null 2>&1
       journalctl --vacuum-time=1seconds > /dev/null 2>&1
@@ -143,13 +161,15 @@ if [ $INSTALL=2 ]; then
       counter=0
       while [[ -z "$CAM" ]] && [[ $counter -lt 30 ]]; do 
          CAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-         TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*cdc_acm \(.*\): tty.*/\1/p')
+         TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*uvcvideo \(.*\): tty.*/\1/p')
          counter=$(( $counter + 1 ))
       done
       if [ -z "$CAM" ]; then
-       echo "Camera Serial Number not detected"
-       echo "Your camera should remain at the same USB position and hub. Its position in in udev is $TEMPUSBCAM"
-       USBCAM=$TEMPUSBCAM
+         echo "Camera Serial Number not detected"
+         echo "Your camera should remain at the same USB position and hub. Its position in in udev is $TEMPUSBCAM"
+         USBCAM=$TEMPUSBCAM
+      else
+         echo "Camera detected with serial number: $CAM" 
       fi
    fi
 fi
@@ -179,12 +199,12 @@ then
    #Octobuntu Cameras udev identifier - either Serial number or USB port
    #Serial Number
    if [ -n "$CAM" ]; then
-      echo SUBSYSTEM==\"v4l\", ATTRS{serial}==\"$CAM\", SYMLINK+=\"$INSTANCE_cam\" >> /etc/udev/rules.d/99-octoprint.rules
+      echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
    fi
    
    #USB port
    if [ -n "$USBCAM" ]; then
-      echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"v4l\",SYMLINK+=\"$INSTANCE_cam\" >> /etc/udev/rules.d/99-octoprint.rules
+      echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
    fi
 
    #just to be on the safe side, add user to dialout

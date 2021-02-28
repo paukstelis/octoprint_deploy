@@ -8,10 +8,8 @@ Environment="HOST=127.0.0.1"
 Environment="PORT=NEWPORT"
 Environment="BASEDIR=OCTOCONFIG/.NEWINSTANCE"
 Environment="CONFIGFILE=OCTOCONFIG/.NEWINSTANCE/config.yaml"
-Environment="EXEC=OCTOPATH"
-Type=simple
 User=OCTOUSER
-ExecStart=${EXEC} serve --config=${CONFIGFILE} --basedir=${BASEDIR} --host=${HOST} --port=${PORT}
+ExecStart=OCTOPATH serve --config=${CONFIGFILE} --basedir=${BASEDIR} --host=${HOST} --port=${PORT}
 
 [Install]
 WantedBy=multi-user.target
