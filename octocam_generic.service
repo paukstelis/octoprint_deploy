@@ -1,0 +1,9 @@
+[Unit]
+Description=the OctoPi/buntu webcam daemon with the user specified config
+
+[Service]
+User=OCTOUSER
+ExecStart=mjpg_streamer -i "input_uvc.so -d /dev/OCTOCAM -y -f 5" -o "output_http.so -p CAMPORT"
+
+[Install]
+WantedBy=multi-user.target

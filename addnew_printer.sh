@@ -6,7 +6,7 @@ if (( $EUID != 0 )); then
 fi
 
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
-
+SCRIPTDIR=$(dirname $(readlink -f $0))
 PIDEFAULT="/home/$user/oprint/bin/octoprint"
 BUDEFAULT="/home/$user/OctoPrint/bin/octoprint"
 OTHERDEFAULT=""
@@ -17,6 +17,7 @@ do
     case $opt in
         "OctoPi")
             DAEMONPATH=$PIDEFAULT
+            INSTALL=1
             break
             ;;
         "OctoBuntu")
@@ -36,7 +37,7 @@ do
 done
 
 echo "UNPLUG PRINTER FROM USB"
-echo "Enter the name for new printer/instance:"
+echo "Enter the name for new printer/instance (no spaces):"
 read INSTANCE
 if [ -z "$INSTANCE" ]; then
     echo "No instance given. Exiting"
@@ -48,22 +49,22 @@ if test -f "/etc/systemd/system/$INSTANCE.service"; then
     exit 1
 fi
 
-echo "Port on which this instance will run (ENTER will increment last value in /etc/octoprint_ports):"
+echo "Port on which this instance will run (ENTER will increment last value in /etc/octoprint_instances):"
 read PORT
 if [ -z "$PORT" ]; then
-    PORT=$(tail -1 /etc/octoprint_ports)
+    PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
 
     if [ -z "$PORT" ]; then
-       PORT=4999
+       PORT=5000
     fi
 
     PORT=$((PORT+1))
     echo Selected port is: $PORT
 fi
 
-if [ -f /etc/octoprint_ports ]; then
-   if grep -q $PORT /etc/octoprint_ports; then
-       echo "Port in use! Check /etc/octoprint_ports. Exiting."
+if [ -f /etc/octoprint_instances ]; then
+   if grep -q $PORT /etc/octoprint_instances; then
+       echo "Port in use! Check /etc/octoprint_instances. Exiting."
        exit 1
    fi
 fi
@@ -81,7 +82,7 @@ if [ -z "$OCTOPATH" ]; then
     OCTOPATH=$DAEMONPATH
 fi
 
-if [[ -f $OCTOPATH ]]; then
+if [ -f "$OCTOPATH" ]; then
    echo "Path is valid"
 else
    echo "Path is not valid! Aborting"
@@ -95,13 +96,13 @@ if [ -z "$OCTOCONFIG" ]; then
 fi
 
 #octoprint_base is the generic .octoprint folder that contains all configuration, upload, etc.
-echo "Octoprint instance template base folder [/home/$user/.octoprint]:"
+echo "Octoprint instance template path [/home/$user/.octoprint]:"
 read BFOLD
 if [ -z "$BFOLD" ]; then
     BFOLD="/home/$user/.octoprint"
 fi
 
-if [[ -d $BFOLD ]]; then
+if [ -d "$BFOLD" ]; then
    echo "Path is valid"
 else
    echo "Path is not valid! Aborting"
@@ -142,14 +143,13 @@ then
           exit 1           
        fi
        
-       
    else
       echo "Serial number detected as: $UDEV"
    fi
 fi
 
 #Octobuntu cameras
-if [[ $INSTALL = 2 ]]; then
+if [[ $INSTALL = "2" ]]; then
    read -p "Would you like to auto detect an associated USB camera (experimental)?" -n 1 -r
    if [[ $REPLY =~ ^[Yy]$ ]]
    then
@@ -171,6 +171,18 @@ if [[ $INSTALL = 2 ]]; then
       else
          echo "Camera detected with serial number: $CAM" 
       fi
+      echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
+      read CAMPORT
+      if [ -z "$CAMPORT" ]; then
+         CAMPORT=$(tail -1 /etc/camera_ports)
+
+         if [ -z "$CAMPORT" ]; then
+           CAMPORT=8000
+         fi
+
+      CAMPORT=$((CAMPORT+1))
+      echo Selected port is: $PORT
+      fi
    fi
 fi
 
@@ -178,7 +190,7 @@ read -p "Ready to write all changes. Do you want to proceed? " -n 1 -r
 echo    
 if [[ $REPLY =~ ^[Yy]$ ]];
 then
-   cat octoprint_generic.service | \
+   cat $SCRIPTDIR/octoprint_generic.service | \
    sed -e "s/OCTOUSER/$OCTOUSER/" \
        -e "s#OCTOPATH#$OCTOPATH#" \
        -e "s#OCTOCONFIG#$OCTOCONFIG#" \
@@ -198,6 +210,15 @@ then
    
    #Octobuntu Cameras udev identifier - either Serial number or USB port
    #Serial Number
+   if [[ -n $CAM || -n $USBCAM ]]; then
+      cat $SCRIPTDIR/octocam_generic.service | \
+      sed -e "s/OCTOUSER/$OCTOUSER/" \
+          -e "s/OCTOCAM/cam_$INSTANCE/" \
+          -e "s/CAMPORT/$CAMPORT/"
+          
+      echo $CAMPORT >> /etc/camera_ports
+   fi
+          
    if [ -n "$CAM" ]; then
       echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
    fi
@@ -207,14 +228,17 @@ then
       echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
    fi
 
-   #just to be on the safe side, add user to dialout
-   usermod -a -G dialout $OCTOUSER
+   #just to be on the safe side, add user to dialout and video
+   usermod -a -G dialout,video $OCTOUSER
    
    #Open port to be on safe side
-   ufw allow $PORT/tcp
+   #ufw allow $PORT/tcp
    
    #Append port in the port list
    echo $PORT >> /etc/octoprint_ports
+   
+   #Append instance name to list for removal tool
+   echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
    
    #copy all files to our new directory
    cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE

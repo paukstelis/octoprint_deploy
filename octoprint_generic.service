@@ -4,12 +4,11 @@ After=network.online.target
 Wants=network.online.target
 
 [Service]
-Environment="HOST=127.0.0.1"
 Environment="PORT=NEWPORT"
 Environment="BASEDIR=OCTOCONFIG/.NEWINSTANCE"
 Environment="CONFIGFILE=OCTOCONFIG/.NEWINSTANCE/config.yaml"
 User=OCTOUSER
-ExecStart=OCTOPATH serve --config=${CONFIGFILE} --basedir=${BASEDIR} --host=${HOST} --port=${PORT}
+ExecStart=OCTOPATH serve --config=${CONFIGFILE} --basedir=${BASEDIR} --port=${PORT}
 
 [Install]
 WantedBy=multi-user.target
