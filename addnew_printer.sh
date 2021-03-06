@@ -149,7 +149,7 @@ if [ -z "$UDEV" ]; then
 else
    echo "Serial number detected as: $UDEV"
 fi
-
+echo
 #Octobuntu cameras
 if [[ -n $INSTALL ]]; then
    read -p "Would you like to auto detect an associated USB camera (experimental)?" -n 1 -r
