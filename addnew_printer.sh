@@ -138,6 +138,7 @@ if [ -z "$UDEV" ]; then
    echo "Printer Serial Number not detected"    
    read -p "Do you want to use the physical USB port to assign the udev entry? If you use this all USB hubs and printers must stay plugged into the same USB positions on your machine as they are right now (y/n)." -n 1 -r
    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo
       USB=$TEMPUSB
       echo "Your printer will be setup at the following usb address:"
       echo $USB
@@ -207,29 +208,9 @@ then
    
    #USB port
    if [ -n "$USB" ]; then
-      echo KERNELS==\"$USB\",SUBSYSTEMS==\"usb\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+      echo KERNELS==\"$USB\",SUBSYSTEM==\"tty\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
    fi
    
-   #Octobuntu Cameras udev identifier - either Serial number or USB port
-   #Serial Number
-   if [[ -n $CAM || -n $USBCAM ]]; then
-      cat $SCRIPTDIR/octocam_generic.service | \
-      sed -e "s/OCTOUSER/$OCTOUSER/" \
-          -e "s/OCTOCAM/cam_$INSTANCE/" \
-          -e "s/CAMPORT/$CAMPORT/" > /etc/systemd/system/$INSTANCE_cam.service
-          
-      echo $CAMPORT >> /etc/camera_ports
-   fi
-          
-   if [ -n "$CAM" ]; then
-      echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-   fi
-   
-   #USB port
-   if [ -n "$USBCAM" ]; then
-      echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-   fi
-
    #just to be on the safe side, add user to dialout and video
    usermod -a -G dialout,video $OCTOUSER
    
@@ -237,7 +218,7 @@ then
    #ufw allow $PORT/tcp
    
    #Append port in the port list
-   echo $PORT >> /etc/octoprint_ports
+   #echo $PORT >> /etc/octoprint_ports
    
    #Append instance name to list for removal tool
    echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
@@ -248,14 +229,38 @@ then
    #Do config.yaml modifications here if needed..
    cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
    
+   #MAJOR WORKAROUND - for some reason this will not cat and sed directly into systemd/system. no idea why. create and mv for now
+   if [[ -n $CAM || -n $USBCAM ]]; then
+      cat $SCRIPTDIR/octocam_generic.service | \
+      sed -e "s/OCTOUSER/$OCTOUSER/" \
+          -e "s/OCTOCAM/cam_$INSTANCE/" \
+          -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+      mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
+      echo $CAMPORT >> /etc/camera_ports
+   fi
+   #Octobuntu Cameras udev identifier - either Serial number or USB port
+   #Serial Number        
+   if [ -n "$CAM" ]; then
+      echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
+   
+   #USB port
+   if [ -n "$USBCAM" ]; then
+      echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
+   
    #Reset udev
    udevadm control --reload-rules
    udevadm trigger
    systemctl daemon-reload
    sleep 5
    
-   #Start and enable system process
+   #Start and enable system processes
    systemctl start $INSTANCE
    systemctl enable $INSTANCE
+   if [[ -n $CAM || -n $USBCAM ]]; then
+      systemctl start cam_$INSTANCE.service
+      systemctl enable cam_$INSTANCE.service
+   fi
 fi
 
