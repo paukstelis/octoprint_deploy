@@ -115,7 +115,7 @@ if grep -q 'firstRun: true' $BFOLD/config.yaml; then
     exit 1
 fi
 
-read -p "Auto-detect printer serial number for udev entry?" -n 1 -r
+read -p "Begin auto-detect printer serial number for udev entry?" -n 1 -r
 echo    #new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -127,29 +127,31 @@ then
    counter=0
    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do 
       UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-      TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*cdc_acm \(.*\): tty.*/\1/p')
+      TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\).*/\2/p')
+      
       counter=$(( $counter + 1 ))
    done
    
-   if [ -z "$UDEV" ]; then
-       echo "Printer Serial Number not detected"
-       read -p "Do you want to use the physical USB port to assign the udev entry? If you use this all USB hubs and printers must stay plugged into the same USB positions on your machine as they are right now (y/n)." -n 1 -r
-       if [[ $REPLY =~ ^[Yy]$ ]]; then
-          USB=$TEMPUSB
-          echo "Your printer will be setup at the following usb address:"
-          echo $USB
-          echo
-       else
-          exit 1           
-       fi
-       
+fi
+
+if [ -z "$UDEV" ]; then
+   echo "Printer Serial Number not detected"    
+   read -p "Do you want to use the physical USB port to assign the udev entry? If you use this all USB hubs and printers must stay plugged into the same USB positions on your machine as they are right now (y/n)." -n 1 -r
+   if [[ $REPLY =~ ^[Yy]$ ]]; then
+      USB=$TEMPUSB
+      echo "Your printer will be setup at the following usb address:"
+      echo $USB
+      echo
    else
-      echo "Serial number detected as: $UDEV"
+      exit 1           
    fi
+       
+else
+   echo "Serial number detected as: $UDEV"
 fi
 
 #Octobuntu cameras
-if [[ $INSTALL = "2" ]]; then
+if [[ -n $INSTALL ]]; then
    read -p "Would you like to auto detect an associated USB camera (experimental)?" -n 1 -r
    if [[ $REPLY =~ ^[Yy]$ ]]
    then
@@ -166,7 +168,7 @@ if [[ $INSTALL = "2" ]]; then
       done
       if [ -z "$CAM" ]; then
          echo "Camera Serial Number not detected"
-         echo "Your camera should remain at the same USB position and hub. Its position in in udev is $TEMPUSBCAM"
+         echo "Your camera should remain at the same USB position and hub. Its position in udev is $TEMPUSBCAM"
          USBCAM=$TEMPUSBCAM
       else
          echo "Camera detected with serial number: $CAM" 
@@ -181,11 +183,11 @@ if [[ $INSTALL = "2" ]]; then
          fi
 
       CAMPORT=$((CAMPORT+1))
-      echo Selected port is: $PORT
+      echo Selected port is: $CAMPORT
       fi
    fi
 fi
-
+echo
 read -p "Ready to write all changes. Do you want to proceed? " -n 1 -r
 echo    
 if [[ $REPLY =~ ^[Yy]$ ]];
@@ -214,7 +216,7 @@ then
       cat $SCRIPTDIR/octocam_generic.service | \
       sed -e "s/OCTOUSER/$OCTOUSER/" \
           -e "s/OCTOCAM/cam_$INSTANCE/" \
-          -e "s/CAMPORT/$CAMPORT/"
+          -e "s/CAMPORT/$CAMPORT/" > /etc/systemd/system/$INSTANCE_cam.service
           
       echo $CAMPORT >> /etc/camera_ports
    fi
