@@ -36,7 +36,7 @@ do
     esac
 done
 
-echo "UNPLUG PRINTER FROM USB"
+echo "UNPLUG PRINTER YOU ARE INSTALLING NOW (other printers can remain)"
 echo "Enter the name for new printer/instance (no spaces):"
 read INSTANCE
 if [ -z "$INSTANCE" ]; then
@@ -49,7 +49,7 @@ if test -f "/etc/systemd/system/$INSTANCE.service"; then
     exit 1
 fi
 
-echo "Port on which this instance will run (ENTER will increment last value in /etc/octoprint_instances):"
+echo "Port on which this instance will run (ENTER will increment from last value in /etc/octoprint_instances):"
 read PORT
 if [ -z "$PORT" ]; then
     PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
@@ -64,7 +64,7 @@ fi
 
 if [ -f /etc/octoprint_instances ]; then
    if grep -q $PORT /etc/octoprint_instances; then
-       echo "Port in use! Check /etc/octoprint_instances. Exiting."
+       echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting."
        exit 1
    fi
 fi
@@ -115,7 +115,7 @@ if grep -q 'firstRun: true' $BFOLD/config.yaml; then
     exit 1
 fi
 
-read -p "Begin auto-detect printer serial number for udev entry?" -n 1 -r
+read -p "Begin auto-detect printer serial number for udev entry? (y/n)" -n 1 -r
 echo    #new line
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -127,16 +127,14 @@ then
    counter=0
    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do 
       UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-      TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\).*/\2/p')
-      
+      TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\).*/\2/p')   
       counter=$(( $counter + 1 ))
    done
-   
 fi
 
 if [ -z "$UDEV" ]; then
    echo "Printer Serial Number not detected"    
-   read -p "Do you want to use the physical USB port to assign the udev entry? If you use this all USB hubs and printers must stay plugged into the same USB positions on your machine as they are right now (y/n)." -n 1 -r
+   read -p "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now (y/n)." -n 1 -r
    if [[ $REPLY =~ ^[Yy]$ ]]; then
       echo
       USB=$TEMPUSB
@@ -144,16 +142,16 @@ if [ -z "$UDEV" ]; then
       echo $USB
       echo
    else
+      echo "You are welcome to try again"
       exit 1           
-   fi
-       
+   fi    
 else
    echo "Serial number detected as: $UDEV"
 fi
 echo
 #Octobuntu cameras
 if [[ -n $INSTALL ]]; then
-   read -p "Would you like to auto detect an associated USB camera (experimental)?" -n 1 -r
+   read -p "Would you like to auto detect an associated USB camera (experimental; y/n)?" -n 1 -r
    if [[ $REPLY =~ ^[Yy]$ ]]
    then
       echo
