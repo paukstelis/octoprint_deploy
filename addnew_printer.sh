@@ -5,6 +5,18 @@ if (( $EUID != 0 )); then
     exit
 fi
 
+# from stackoverflow.com/questions/3231804
+prompt_confirm() { 
+  while true; do
+    read -r -n 1 -p "${1:-Continue?} [y/n]: " REPLY
+    case $REPLY in
+      [yY]) echo ; return 0 ;;
+      [nN]) echo ; return 1 ;;
+      *) printf " \033[31m %s \n\033[0m" "invalid input"
+    esac 
+  done  
+}
+
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 SCRIPTDIR=$(dirname $(readlink -f $0))
 PIDEFAULT="/home/$user/oprint/bin/octoprint"
@@ -115,10 +127,7 @@ if grep -q 'firstRun: true' $BFOLD/config.yaml; then
     exit 1
 fi
 
-read -p "Begin auto-detect printer serial number for udev entry? (y/n)" -n 1 -r
-echo    #new line
-if [[ $REPLY =~ ^[Yy]$ ]]
-then
+prompt_confirm "Begin auto-detect printer serial number for udev entry?" || echo "OK. Restart when you are ready"; exit 0
    echo
    #clear out journalctl - probably a better way to do this
    journalctl --rotate > /dev/null 2>&1
@@ -130,29 +139,26 @@ then
       TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')   
       counter=$(( $counter + 1 ))
    done
-fi
+#fi
 
 if [ -z "$UDEV" ]; then
-   echo "Printer Serial Number not detected"    
-   read -p "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now (y/n)." -n 1 -r
-   if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo
-      USB=$TEMPUSB
-      echo "Your printer will be setup at the following usb address:"
-      echo $USB
-      echo
-   else
-      echo "You are welcome to try again"
-      exit 1           
-   fi    
+   echo "Printer Serial Number not detected"
+   prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || echo "OK. Please try again."; exit 0
+   #if [[ $REPLY =~ ^[Yy]$ ]]; then
+   echo
+   USB=$TEMPUSB
+   echo "Your printer will be setup at the following usb address:"
+   echo $USB
+   echo    
 else
    echo "Serial number detected as: $UDEV"
 fi
+
 echo
-#Octobuntu cameras
+
+#USB cameras
 if [[ -n $INSTALL ]]; then
-   read -p "Would you like to auto detect an associated USB camera (experimental; y/n)?" -n 1 -r
-   if [[ $REPLY =~ ^[Yy]$ ]]
+   if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"
    then
       echo
       #clear out journalctl - probably a better way to do this
@@ -186,9 +192,8 @@ if [[ -n $INSTALL ]]; then
    fi
 fi
 echo
-read -p "Ready to write all changes. Do you want to proceed? " -n 1 -r
-echo    
-if [[ $REPLY =~ ^[Yy]$ ]];
+
+if prompt_confirm "Ready to write all changes. Do you want to proceed?" 
 then
    cat $SCRIPTDIR/octoprint_generic.service | \
    sed -e "s/OCTOUSER/$OCTOUSER/" \
