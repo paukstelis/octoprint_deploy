@@ -127,7 +127,7 @@ if grep -q 'firstRun: true' $BFOLD/config.yaml; then
     exit 1
 fi
 
-prompt_confirm "Begin auto-detect printer serial number for udev entry?" || echo "OK. Restart when you are ready"; exit 0
+if prompt_confirm "Begin auto-detect printer serial number for udev entry?" 
    echo
    #clear out journalctl - probably a better way to do this
    journalctl --rotate > /dev/null 2>&1
@@ -139,7 +139,10 @@ prompt_confirm "Begin auto-detect printer serial number for udev entry?" || echo
       TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')   
       counter=$(( $counter + 1 ))
    done
-#fi
+else
+   echo "OK. Restart when you are ready"; exit 0
+fi
+
 
 if [ -z "$UDEV" ]; then
    echo "Printer Serial Number not detected"
