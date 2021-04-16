@@ -167,8 +167,7 @@ if [[ -n $INSTALL ]]; then
       done
       if [ -z "$CAM" ]; then
          echo "Camera Serial Number not detected"
-         echo "Your camera should remain at the same USB position and hub. Its position in udev is $TEMPUSBCAM"
-         USBCAM=$TEMPUSBCAM
+         echo "You will have to use another tool for setting up camera services"
       else
          echo "Camera detected with serial number: $CAM" 
       fi
@@ -198,6 +197,12 @@ then
        -e "s/NEWINSTANCE/$INSTANCE/" \
        -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
       
+   #If a default octoprint service exists, stop and disable it
+   if [ -d "/etc/systemd/system/octoprint_default.service" ]; then 
+      systemctl stop octoprint_default.service
+      systemctl disable octoprint_default.service
+   fi   
+
    #Printer udev identifier technique - either Serial number or USB port
    #Serial Number
    if [ -n "$UDEV" ]; then
@@ -243,15 +248,15 @@ then
    fi
    
    #USB port
-   if [ -n "$USBCAM" ]; then
-      echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-   fi
+   #if [ -n "$USBCAM" ]; then
+   #   echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   #fi
    
    #Reset udev
    udevadm control --reload-rules
    udevadm trigger
    systemctl daemon-reload
-   sleep 5
+   sleep 1
    
    #Start and enable system processes
    systemctl start $INSTANCE
