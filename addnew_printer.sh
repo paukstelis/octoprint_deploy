@@ -127,7 +127,8 @@ if grep -q 'firstRun: true' $BFOLD/config.yaml; then
     exit 1
 fi
 
-if prompt_confirm "Begin auto-detect printer serial number for udev entry?" 
+if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
+   then
    echo
    #clear out journalctl - probably a better way to do this
    journalctl --rotate > /dev/null 2>&1
