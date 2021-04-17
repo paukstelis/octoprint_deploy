@@ -207,7 +207,7 @@ then
        -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
       
    #If a default octoprint service exists, stop and disable it
-   if [ -d "/etc/systemd/system/octoprint_default.service" ]; then 
+   if [ -f "/etc/systemd/system/octoprint_default.service" ]; then 
       systemctl stop octoprint_default.service
       systemctl disable octoprint_default.service
    fi   
