@@ -253,7 +253,7 @@ then
       mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
       echo $CAMPORT >> /etc/camera_ports
       #config.yaml modifications
-      echo "webcam: >> $OCTOCONFIG/.$INSTANCE/config.yaml"
+      echo "webcam: >> $OCTOCONFIG/.$INSTANCE/config.yaml" >> $OCTOCONFIG/.$INSTANCE/config.yaml
       echo "    snapshot: http://localhost:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
       echo "    stream: http://localhost:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
    echo
