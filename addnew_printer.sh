@@ -241,6 +241,9 @@ then
    #Do config.yaml modifications here if needed..
    cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
    
+   #If cameras were setup add stream and snapshot
+
+   
    #MAJOR WORKAROUND - for some reason this will not cat and sed directly into systemd/system. no idea why. create and mv for now
    if [[ -n $CAM || -n $USBCAM ]]; then
       cat $SCRIPTDIR/octocam_generic.service | \
@@ -249,6 +252,11 @@ then
           -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
       mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
       echo $CAMPORT >> /etc/camera_ports
+      #config.yaml modifications
+      echo "webcam: >> $OCTOCONFIG/.$INSTANCE/config.yaml"
+      echo "    snapshot: http://localhost:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      echo "    stream: http://localhost:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+   echo
    fi
    #Octobuntu Cameras udev identifier - either Serial number or USB port
    #Serial Number        
