@@ -147,7 +147,7 @@ fi
 
 if [ -z "$UDEV" ]; then
    echo "Printer Serial Number not detected"
-   prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || echo "OK. Please try again."; exit 0
+   prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || exit 0
    #if [[ $REPLY =~ ^[Yy]$ ]]; then
    echo
    USB=$TEMPUSB
