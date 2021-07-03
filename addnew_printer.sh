@@ -5,6 +5,7 @@ if (( $EUID != 0 )); then
     exit
 fi
 
+
 # from stackoverflow.com/questions/3231804
 prompt_confirm() { 
   while true; do
@@ -16,6 +17,18 @@ prompt_confirm() {
     esac 
   done  
 }
+# from unix.stackexchange.com/questions/391293
+log () {
+    if [ -z "$1" ]; then
+        cat
+    else
+        printf '%s\n' "$@" 
+    fi | tee -a "$logfile"
+}
+
+# initiate logging
+logfile='octoprint_deploy.log'  
+echo "$(date) starting instance installation" >> $logfile
 
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 SCRIPTDIR=$(dirname $(readlink -f $0))
@@ -52,12 +65,12 @@ echo "UNPLUG PRINTER YOU ARE INSTALLING NOW (other printers can remain)"
 echo "Enter the name for new printer/instance (no spaces):"
 read INSTANCE
 if [ -z "$INSTANCE" ]; then
-    echo "No instance given. Exiting"
+    echo "No instance given. Exiting" | log
     exit 1
 fi
 
 if test -f "/etc/systemd/system/$INSTANCE.service"; then
-    echo "Already have an entry for $INSTANCE. Exiting."
+    echo "Already have an entry for $INSTANCE. Exiting." | log
     exit 1
 fi
 
@@ -71,12 +84,13 @@ if [ -z "$PORT" ]; then
     fi
 
     PORT=$((PORT+1))
-    echo Selected port is: $PORT
+    echo Selected port is: $PORT | log
+
 fi
 
 if [ -f /etc/octoprint_instances ]; then
    if grep -q $PORT /etc/octoprint_instances; then
-       echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting."
+       echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting." | log
        exit 1
    fi
 fi
@@ -95,9 +109,9 @@ if [ -z "$OCTOPATH" ]; then
 fi
 
 if [ -f "$OCTOPATH" ]; then
-   echo "Path is valid"
+   echo "Executable path is valid" | log
 else
-   echo "Path is not valid! Aborting"
+   echo "Exectuable path is not valid! Aborting" | log
    exit 1
 fi
 
@@ -115,15 +129,15 @@ if [ -z "$BFOLD" ]; then
 fi
 
 if [ -d "$BFOLD" ]; then
-   echo "Path is valid"
+   echo "Template path is valid" | log
 else
-   echo "Path is not valid! Aborting"
+   echo "Template path is not valid! Aborting" | log
    exit 1
 fi
 
 #check to make sure first run is complete
 if grep -q 'firstRun: true' $BFOLD/config.yaml; then
-    echo "WARNING!! You should run $OCTOPATH serve and setup the base profile and admin user before continuing"
+    echo "WARNING!! You must setup the base profile and admin user before continuing" | log
     exit 1
 fi
 
@@ -141,7 +155,7 @@ if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
       counter=$(( $counter + 1 ))
    done
 else
-   echo "OK. Restart when you are ready"; exit 0
+   echo "OK. Restart when you are ready" | log; exit 0
 fi
 
 
@@ -152,10 +166,10 @@ if [ -z "$UDEV" ]; then
    echo
    USB=$TEMPUSB
    echo "Your printer will be setup at the following usb address:"
-   echo $USB
+   echo $USB | log
    echo    
 else
-   echo "Serial number detected as: $UDEV"
+   echo "Serial number detected as: $UDEV" | log
 fi
 
 echo
@@ -176,10 +190,10 @@ if [[ -n $INSTALL ]]; then
          counter=$(( $counter + 1 ))
       done
       if [ -z "$CAM" ]; then
-         echo "Camera Serial Number not detected"
-         echo "You will have to use another tool for setting up camera services"
+         echo "Camera Serial Number not detected" | log
+         echo "You will have to use another tool for setting up camera services" | log
       else
-         echo "Camera detected with serial number: $CAM" 
+         echo "Camera detected with serial number: $CAM" | log
       fi
       echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
       read CAMPORT
@@ -191,7 +205,7 @@ if [[ -n $INSTALL ]]; then
          fi
 
       CAMPORT=$((CAMPORT+1))
-      echo Selected port is: $CAMPORT
+      echo Selected port is: $CAMPORT | log
       fi
    fi
 fi

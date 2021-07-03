@@ -10,5 +10,8 @@ while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
    if [ -n "$TEMPUSB" ]; then
       echo $TEMPUSB
    fi
+   if [ -n "$UDEV" ]; then
+      echo "Serial Number detected: $UDEV"
+   fi
 done
 
