@@ -6,8 +6,14 @@ These files provide a simple bash script for quickly deploying multiple octoprin
 * Ready to go images:
   * For OctoPi and OctoBuntu installations, you can download an image that contains this repo and all necessary things here: https://bit.ly/3qPfmti
   * OctoPi setup is just like for a normal OctoPi installation. OctoBuntu setup uses standard Ubuntu installation.
-  * Follow instructions in README.txt file (either /home/pi/README.txt or /home/octouser/README.txt)
+  * Instructions can be found in the README.txt file (either /home/pi/README.txt or /home/octouser/README.txt), but the basics:
+  	* ssh into or open a terminal on your machine
+  	* Update this repository: `cd octoprint_deploy; git pull; cd`
+  	* Connect to your base instance and run through the setup to establish admin user. This will be at octopi.local:5000 or whatever server name you gave your OctoBuntu installation. 
+  	* Run the add printer script: `sudo octoprint_deploy/addnew_printer.sh`
+  	* Follow instructions from the scripts. Defaults can be used in almost all cases.
   * Default user for Octobuntu images is `octouser` with password `fooselrulz`; please change this password immediately. No root password is set, but this can be done with `sudo passwd`.
+  * 
 * Stand-alone usage:
   * This is for more advanced users that have realtively high command line/Linux familiarity.
   * Start up Octoprint for the first time to setup a base instance profile (running on localhost:5000). The base profile will be edited in several places with `INSTANCE` to allow modifications during deployment. You can make this as extensive as you like as far as adding different printers, plugins, etc. They can be added for each instance later. This only needs to be done once.
