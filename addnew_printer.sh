@@ -186,12 +186,14 @@ if [[ -n $INSTALL ]]; then
       counter=0
       while [[ -z "$CAM" ]] && [[ $counter -lt 30 ]]; do 
          CAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-         TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*uvcvideo \(.*\): tty.*/\1/p')
+         TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
          counter=$(( $counter + 1 ))
       done
       if [ -z "$CAM" ]; then
          echo "Camera Serial Number not detected" | log
-         echo "You will have to use another tool for setting up camera services" | log
+         echo "Camera will be setup with physical USB address of $TEMPUSBCAM." | log
+         echo "The camera will have to stay plugged into this location." | log
+         USBCAM=$TEMPUSBCAM
       else
          echo "Camera detected with serial number: $CAM" | log
       fi
@@ -267,9 +269,9 @@ then
       mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
       echo $CAMPORT >> /etc/camera_ports
       #config.yaml modifications
-      echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-      echo "    snapshot: http://localhost:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-      echo "    stream: http://localhost:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      #echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      #echo "    snapshot: http://localhost:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      #echo "    stream: http://localhost:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
    echo
    fi
    #Octobuntu Cameras udev identifier - either Serial number or USB port
@@ -278,10 +280,11 @@ then
       echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
    fi
    
-   #USB port
-   #if [ -n "$USBCAM" ]; then
-   #   echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-   #fi
+   #USB port camera
+   if [ -n "$USBCAM" ]; then
+      #echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+      echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\",SUBSYSTEMS==\"usb\",DRIVERS==\"uvcvideo\",SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
    
    #Reset udev
    udevadm control --reload-rules
