@@ -269,9 +269,9 @@ then
       mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
       echo $CAMPORT >> /etc/camera_ports
       #config.yaml modifications
-      #echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-      #echo "    snapshot: http://localhost:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-      #echo "    stream: http://localhost:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
    echo
    fi
    #Octobuntu Cameras udev identifier - either Serial number or USB port
