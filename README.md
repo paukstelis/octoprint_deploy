@@ -13,7 +13,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   	* Run the add printer script: `sudo octoprint_deploy/addnew_printer.sh`
   	* Follow instructions from the scripts. Defaults can be used in almost all cases.
   * Default user for Octobuntu images is `octouser` with password `fooselrulz`; please change this password immediately. No root password is set, but this can be done with `sudo passwd`.
-  * 
+  * Somewhat outdated videos for both setups are available on YouTube, but will give some additional info. Follow the instructions here or the README.txt files: https://www.youtube.com/watch?v=DQn7-64aMAk and https://www.youtube.com/watch?v=YoUg0u62tc0
 * Stand-alone usage:
   * This is for more advanced users that have realtively high command line/Linux familiarity.
   * Start up Octoprint for the first time to setup a base instance profile (running on localhost:5000). The base profile will be edited in several places with `INSTANCE` to allow modifications during deployment. You can make this as extensive as you like as far as adding different printers, plugins, etc. They can be added for each instance later. This only needs to be done once.
