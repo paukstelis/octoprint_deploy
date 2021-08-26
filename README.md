@@ -1,4 +1,5 @@
-Updated July, 2021
+Updated July, 2021.  
+Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis
 # octoprint_deploy
 These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer.
 
