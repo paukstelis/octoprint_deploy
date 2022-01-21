@@ -209,6 +209,21 @@ if [[ -n $INSTALL ]]; then
       CAMPORT=$((CAMPORT+1))
       echo Selected port is: $CAMPORT | log
       fi
+      echo "Settings can be modified after initial setup in /etc/systemd/system/octocam_$INSTANCE"
+      echo
+      echo "Camera Resolution (no sanity check, so get it right) [640x480]:"
+      read RESOLUTION
+      if [ -z "$RESOLUTION" ]; then
+         RESOLUTION="640x480"
+      fi
+      echo "Selected camera resolution: $RESOLUTION" | log
+      #TODO check formating
+      echo "Camera Framerate (no sanity check, so get it right) [5]:"
+      read FRAMERATE
+      if [ -z "$FRAMERATE" ]; then
+         FRAMERATE=5
+      fi
+      echo "Selected camera framerate: $FRAMERATE" | log     
    fi
 fi
 echo
@@ -265,6 +280,8 @@ then
       cat $SCRIPTDIR/octocam_generic.service | \
       sed -e "s/OCTOUSER/$OCTOUSER/" \
           -e "s/OCTOCAM/cam_$INSTANCE/" \
+          -e "s/RESOLUTION/$RESOLUTION/" \
+          -e "s/FRAMERATE/$FRAMERATE/" \
           -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
       mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
       echo $CAMPORT >> /etc/camera_ports
