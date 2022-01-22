@@ -247,10 +247,10 @@ new_instance () {
         #if we are on octopi, add in haproxy entry
         if [ $INSTALL -eq 1 ]; then
             #find frontend line, do insert
-            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.conf
+            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
             #add backend info, bracket with comments so we can remove later if needed
-            echo '#octoprint_deploy for port $PORT' >> /etc/haproxy/haproxy.conf
-            echo 'backend $INSTANCE' >> /etc/haproxy/haproxy.conf
+            echo "#octoprint_deploy for port $PORT" >> /etc/haproxy/haproxy.cfg
+            echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             
             echo
             #restart haproxy
@@ -458,7 +458,7 @@ do
             remove_instance
             break
         ;;
-        "Add camera")
+        "Add Camera")
             add_camera
             break
         ;;
