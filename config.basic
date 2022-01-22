@@ -1,0 +1,12 @@
+appearance:
+    name: INSTANCE
+feature:
+    modelSizeDetection: false
+serial:
+    additionalPorts:
+    - /dev/octo_INSTANCE
+server:
+    commands:
+        serverRestartCommand: sudo systemctl restart INSTANCE
+        systemRestartCommand: sudo reboot
+    firstRun: true

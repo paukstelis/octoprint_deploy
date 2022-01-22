@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#all operations must be with root/sudo
 if (( $EUID != 0 )); then
     echo "Please run as root (sudo)"
     exit
@@ -26,8 +27,8 @@ log () {
     fi | tee -a "$logfile"
 }
 
-# initiate logging
-logfile='octoprint_deploy.log'  
+new_instance () {
+ 
 echo "$(date) starting instance installation" >> $logfile
 
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
@@ -178,7 +179,128 @@ echo
 if [[ -n $INSTALL ]]; then
    if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"
    then
+     add_camera
+   fi
+fi
+echo
+
+if prompt_confirm "Ready to write all changes. Do you want to proceed?" 
+then
+   cat $SCRIPTDIR/octoprint_generic.service | \
+   sed -e "s/OCTOUSER/$OCTOUSER/" \
+       -e "s#OCTOPATH#$OCTOPATH#" \
+       -e "s#OCTOCONFIG#$OCTOCONFIG#" \
+       -e "s/NEWINSTANCE/$INSTANCE/" \
+       -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
+      
+   #If a default octoprint service exists, stop and disable it
+   if [ -f "/etc/systemd/system/octoprint_default.service" ]; then 
+      systemctl stop octoprint_default.service
+      systemctl disable octoprint_default.service
+   fi
+   
+   #stop and disable default octoprint service (octopi)
+   if [ -f "/etc/systemd/system/octoprint.service" ]; then 
+      systemctl stop octoprint.service
+      systemctl disable octoprint.service
+   fi   
+
+   #Printer udev identifier technique - either Serial number or USB port
+   #Serial Number
+   if [ -n "$UDEV" ]; then
+      echo SUBSYSTEM==\"tty\", ATTRS{serial}==\"$UDEV\", SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
+   
+   #USB port
+   if [ -n "$USB" ]; then
+      echo KERNELS==\"$USB\",SUBSYSTEM==\"tty\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
+   
+   #just to be on the safe side, add user to dialout and video
+   usermod -a -G dialout,video $OCTOUSER
+
+   #Append instance name to list for removal tool
+   echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
+   
+   #copy all files to our new directory
+   cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
+   
+   #Do config.yaml modifications here if needed..
+   cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
+     
+   #MAJOR WORKAROUND - for some reason this will not cat and sed directly into systemd/system. no idea why. create and mv for now
+   if [[ -n $CAM || -n $USBCAM ]]; then
+      cat $SCRIPTDIR/octocam_generic.service | \
+      sed -e "s/OCTOUSER/$OCTOUSER/" \
+          -e "s/OCTOCAM/cam_$INSTANCE/" \
+          -e "s/RESOLUTION/$RESOLUTION/" \
+          -e "s/FRAMERATE/$FRAMERATE/" \
+          -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+      mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
+      echo $CAMPORT >> /etc/camera_ports
+      #config.yaml modifications
+      echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+      echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+   echo
+   fi
+   #Octobuntu Cameras udev identifier - either Serial number or USB port
+   #Serial Number        
+   if [ -n "$CAM" ]; then
+      echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
+   
+   #USB port camera
+   if [ -n "$USBCAM" ]; then
+      #echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+      echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\",SUBSYSTEMS==\"usb\",DRIVERS==\"uvcvideo\",SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   fi
+   
+   #Reset udev
+   udevadm control --reload-rules
+   udevadm trigger
+   systemctl daemon-reload
+   sleep 1
+   
+   #Start and enable system processes
+   systemctl start $INSTANCE
+   systemctl enable $INSTANCE
+   if [[ -n $CAM || -n $USBCAM ]]; then
+      systemctl start cam_$INSTANCE.service
+      systemctl enable cam_$INSTANCE.service
+   fi
+   
+   #if we are on octopi, add in haproxy entry
+   if [ $INSTALL = 1 ]; then
+      #find frontend line, do insert
+      sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haprox.conf
+      #add backend info, bracket with comments so we can remove later if needed
+      echo '#octoprint_deploy for port $PORT' >> /etc/haproxy/haprox.conf
+      echo 'backend $INSTANCE' >> /etc/haproxy/haprox.conf
+      
       echo
+      #restart haproxy
+      sudo systemctl restart haproxy.service  
+   fi
+fi
+
+}
+
+add_camera() {
+#INSTANCE must be set for this to work
+      echo 'Adding camera' | log
+      if [ -z "$INSTANCE" ]; then
+         PS3='Select instance to add camera to: '
+         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+                                
+         select opt in "${options[@]}"
+         do
+            echo "Selected instance for camera: $opt" | log
+            INSTANCE = $opt
+            break
+         done
+      fi
+      
       #clear out journalctl - probably a better way to do this
       journalctl --rotate > /dev/null 2>&1
       journalctl --vacuum-time=1seconds > /dev/null 2>&1
@@ -223,98 +345,123 @@ if [[ -n $INSTALL ]]; then
       if [ -z "$FRAMERATE" ]; then
          FRAMERATE=5
       fi
-      echo "Selected camera framerate: $FRAMERATE" | log     
-   fi
-fi
-echo
-
-if prompt_confirm "Ready to write all changes. Do you want to proceed?" 
-then
-   cat $SCRIPTDIR/octoprint_generic.service | \
-   sed -e "s/OCTOUSER/$OCTOUSER/" \
-       -e "s#OCTOPATH#$OCTOPATH#" \
-       -e "s#OCTOCONFIG#$OCTOCONFIG#" \
-       -e "s/NEWINSTANCE/$INSTANCE/" \
-       -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
+      echo "Selected camera framerate: $FRAMERATE" | log
       
-   #If a default octoprint service exists, stop and disable it
-   if [ -f "/etc/systemd/system/octoprint_default.service" ]; then 
-      systemctl stop octoprint_default.service
-      systemctl disable octoprint_default.service
-   fi   
+      #Need to check if this is a one-off install
+        
+}
 
-   #Printer udev identifier technique - either Serial number or USB port
-   #Serial Number
-   if [ -n "$UDEV" ]; then
-      echo SUBSYSTEM==\"tty\", ATTRS{serial}==\"$UDEV\", SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-   fi
-   
-   #USB port
-   if [ -n "$USB" ]; then
-      echo KERNELS==\"$USB\",SUBSYSTEM==\"tty\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-   fi
-   
-   #just to be on the safe side, add user to dialout and video
-   usermod -a -G dialout,video $OCTOUSER
-   
-   #Open port to be on safe side
-   #ufw allow $PORT/tcp
-   
-   #Append port in the port list
-   #echo $PORT >> /etc/octoprint_ports
-   
-   #Append instance name to list for removal tool
-   echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
-   
-   #copy all files to our new directory
-   cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
-   
-   #Do config.yaml modifications here if needed..
-   cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
-   
-   #If cameras were setup add stream and snapshot
+remove_instance() {
+if [ $SUDO_USER ]; then user=$SUDO_USER; fi
+echo 'Do not remove the generic instance!' | log
+PS3='Select instance to remove: '
+readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+select opt in "${options[@]}"
+do
+    echo "Selected instance to remove: $opt" | log
+    break
+done
 
-   
-   #MAJOR WORKAROUND - for some reason this will not cat and sed directly into systemd/system. no idea why. create and mv for now
-   if [[ -n $CAM || -n $USBCAM ]]; then
-      cat $SCRIPTDIR/octocam_generic.service | \
-      sed -e "s/OCTOUSER/$OCTOUSER/" \
-          -e "s/OCTOCAM/cam_$INSTANCE/" \
-          -e "s/RESOLUTION/$RESOLUTION/" \
-          -e "s/FRAMERATE/$FRAMERATE/" \
-          -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
-      mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
-      echo $CAMPORT >> /etc/camera_ports
-      #config.yaml modifications
-      echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-      echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-      echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-   echo
-   fi
-   #Octobuntu Cameras udev identifier - either Serial number or USB port
-   #Serial Number        
-   if [ -n "$CAM" ]; then
-      echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+read -p "Do you want to remove everything associated with this instance?" -n 1 -r
+echo    #new line
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+   #disable and remove service file
+   if [ -f /etc/systemd/system/$opt.service ]; then
+      systemctl stop $opt.service
+      systemctl disable $opt.service
+      rm /etc/systemd/system/$opt.service
    fi
    
-   #USB port camera
-   if [ -n "$USBCAM" ]; then
-      #echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-      echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\",SUBSYSTEMS==\"usb\",DRIVERS==\"uvcvideo\",SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+   if [ -f /etc/systemd/system/cam_$opt.service ]; then
+      systemctl stop cam_$opt.service
+      systemctl disable cam_$opt.service
+      rm /etc/systemd/system/cam_$opt.service
+      sed -i "/cam_$opt/d" /etc/udev/rules.d/99-octoprint.rules
    fi
-   
-   #Reset udev
-   udevadm control --reload-rules
-   udevadm trigger
-   systemctl daemon-reload
-   sleep 1
-   
-   #Start and enable system processes
-   systemctl start $INSTANCE
-   systemctl enable $INSTANCE
-   if [[ -n $CAM || -n $USBCAM ]]; then
-      systemctl start cam_$INSTANCE.service
-      systemctl enable cam_$INSTANCE.service
-   fi
+   #remove udev entry
+   sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
+   #remove files
+   rm -rf /home/$user/.$opt
+   #remove from octoprint_instances
+   sed -i "/$opt/d" /etc/octoprint_instances
 fi
+}
 
+usb_testing() {
+echo 'USB testing' | log
+journalctl --rotate > /dev/null 2>&1
+journalctl --vacuum-time=1seconds > /dev/null 2>&1
+echo "Plug your printer in via USB now (detection time-out in 1 min)"
+counter=0
+while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
+   UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
+   TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')
+   counter=$(( $counter + 1 ))
+   if [ -n "$TEMPUSB" ]; then
+      echo 'Detected devince at $TEMPUSB' | log
+   fi
+   if [ -n "$UDEV" ]; then
+      echo "Serial Number detected: $UDEV" | log
+   fi
+done
+}
+
+prepare () {
+   echo 'Beginning system preparation' | log
+   echo 'This only needs to be run once to prepare your system to use octoprint_deploy and it is only relevant for OctoPi images.'
+   echo 'Run this setup and then connect to octopi.local through your browser to setup your admin user.'
+   if prompt_confirm "Ready to begin?"
+   then
+     echo    #new line
+     if [[ $REPLY =~ ^[Yy]$ ]]; then
+      echo 'Adding instance records'
+      if [ -f "/etc/octoprint_instances" ]; then
+         echo "octoprint_instances already exists. Trying to run prepare a second time? Exiting" | log
+         exit 1
+      else
+         echo 'instance:generic port:5000' > /etc/octoprint_instances
+      fi
+      echo 'Disabling unneeded services....'
+      systemctl disable octoprint.service
+      systemctl disable webcamd.service
+      systemctl disable streamer_select.service
+      echo 'Adding camera port records'
+      touch /etc/camera_ports
+      echo 'Modifying config.yaml'
+      cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
+    fi
+  fi
+}
+
+# initiate logging
+logfile='octoprint_deploy.log' 
+SCRIPTDIR=$(dirname $(readlink -f $0))
+PS3='Select operation: '
+options=("Prepare system (OctoPi)" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Prepare system (OctoPi)")
+            break
+            ;;
+        "New instance") 
+            new_instance
+            break ;;
+        "Delete instance")
+            remove_instance
+            break
+            ;;
+        "Add camera")
+            add_camera
+            break
+            ;;
+        "USB port testing")
+            usb_testing
+            break
+            ;;
+        "Quit")
+            exit 1
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
