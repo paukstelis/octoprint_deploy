@@ -226,32 +226,8 @@ new_instance () {
         #Do config.yaml modifications here if needed..
         cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
         
-        #MAJOR WORKAROUND - for some reason this will not cat and sed directly into systemd/system. no idea why. create and mv for now
         if [[ -n $CAM || -n $USBCAM ]]; then
-            cat $SCRIPTDIR/octocam_generic.service | \
-            sed -e "s/OCTOUSER/$OCTOUSER/" \
-            -e "s/OCTOCAM/cam_$INSTANCE/" \
-            -e "s/RESOLUTION/$RESOLUTION/" \
-            -e "s/FRAMERATE/$FRAMERATE/" \
-            -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
-            mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
-            echo $CAMPORT >> /etc/camera_ports
-            #config.yaml modifications
-            echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-            echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-            echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-            echo
-        fi
-        #Octobuntu Cameras udev identifier - either Serial number or USB port
-        #Serial Number
-        if [ -n "$CAM" ]; then
-            echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-        fi
-        
-        #USB port camera
-        if [ -n "$USBCAM" ]; then
-            #echo KERNELS==\"$USBCAM\",SUBSYSTEMS==\"video4linux\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-            echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\",SUBSYSTEMS==\"usb\",DRIVERS==\"uvcvideo\",SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+            write_camera
         fi
         
         #Reset udev
@@ -269,12 +245,12 @@ new_instance () {
         fi
         
         #if we are on octopi, add in haproxy entry
-        if [ $INSTALL = 1 ]; then
+        if [ $INSTALL -eq 1 ]; then
             #find frontend line, do insert
-            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haprox.conf
+            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.conf
             #add backend info, bracket with comments so we can remove later if needed
-            echo '#octoprint_deploy for port $PORT' >> /etc/haproxy/haprox.conf
-            echo 'backend $INSTANCE' >> /etc/haproxy/haprox.conf
+            echo '#octoprint_deploy for port $PORT' >> /etc/haproxy/haproxy.conf
+            echo 'backend $INSTANCE' >> /etc/haproxy/haproxy.conf
             
             echo
             #restart haproxy
@@ -284,8 +260,37 @@ new_instance () {
     
 }
 
+write_camera() {
+    cat $SCRIPTDIR/octocam_generic.service | \
+    sed -e "s/OCTOUSER/$OCTOUSER/" \
+    -e "s/OCTOCAM/cam_$INSTANCE/" \
+    -e "s/RESOLUTION/$RESOLUTION/" \
+    -e "s/FRAMERATE/$FRAMERATE/" \
+    -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+    mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
+    echo $CAMPORT >> /etc/camera_ports
+    #config.yaml modifications
+    echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    echo
+    
+    #Octobuntu Cameras udev identifier - either Serial number or USB port
+    #Serial Number
+    if [ -n "$CAM" ]; then
+        echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+    fi
+    
+    #USB port camera
+    if [ -n "$USBCAM" ]; then
+        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\",SUBSYSTEMS==\"usb\",ATTR{index}==\"0\",DRIVERS==\"uvcvideo\",SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+    fi
+    
+}
+
 add_camera() {
     #INSTANCE must be set for this to work
+    if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
         PS3='Select instance to add camera to: '
@@ -295,6 +300,7 @@ add_camera() {
         do
             echo "Selected instance for camera: $opt" | log
             INSTANCE = $opt
+            OCTOCONFIG = "/home/$user/.$INSTANCE/"
             break
         done
     fi
@@ -331,22 +337,27 @@ add_camera() {
     fi
     echo "Settings can be modified after initial setup in /etc/systemd/system/octocam_$INSTANCE"
     echo
-    echo "Camera Resolution (no sanity check, so get it right) [640x480]:"
+    echo "Camera Resolution (no sanity check, so get it right) [default: 640x480]:"
     read RESOLUTION
     if [ -z "$RESOLUTION" ]; then
         RESOLUTION="640x480"
     fi
     echo "Selected camera resolution: $RESOLUTION" | log
     #TODO check formating
-    echo "Camera Framerate (no sanity check, so get it right) [5]:"
+    echo "Camera Framerate (no sanity check, so get it right) [default: 5]:"
     read FRAMERATE
     if [ -z "$FRAMERATE" ]; then
         FRAMERATE=5
     fi
     echo "Selected camera framerate: $FRAMERATE" | log
     
+   
     #Need to check if this is a one-off install
-    
+    if [ -n "$opt" ]; then
+        write_camera
+        systemctl start cam_$INSTANCE.service
+        systemctl enable cam_$INSTANCE.service
+    fi
 }
 
 remove_instance() {
