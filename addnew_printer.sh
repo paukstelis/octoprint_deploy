@@ -299,8 +299,9 @@ add_camera() {
         select opt in "${options[@]}"
         do
             echo "Selected instance for camera: $opt" | log
-            INSTANCE = $opt
-            OCTOCONFIG = "/home/$user/.$INSTANCE/"
+            INSTANCE=$opt
+            OCTOCONFIG="/home/$user/"
+            OCTOUSER=$user
             break
         done
     fi
