@@ -248,11 +248,13 @@ new_instance () {
         if [ $INSTALL -eq 1 ]; then
             #find frontend line, do insert
             sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
-            #add backend info, bracket with comments so we can remove later if needed
-            echo "#octoprint_deploy for port $PORT" >> /etc/haproxy/haproxy.cfg
+            #add backend info, bracket with comments so we can remove later if needed. This all needs work, just slapping stuff in for now
+            echo "#$INSTANCE on port $PORT" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
-            
-            echo
+            echo "       reqrep ^([^\ :]*)\ /(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
+            echo "       server 1$INSTANCE 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+            echo "#end $INSTANCE" >> /etc/haproxy/haproxy.cfg
             #restart haproxy
             sudo systemctl restart haproxy.service
         fi
@@ -289,7 +291,6 @@ write_camera() {
 }
 
 add_camera() {
-    #INSTANCE must be set for this to work
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
@@ -352,7 +353,7 @@ add_camera() {
     fi
     echo "Selected camera framerate: $FRAMERATE" | log
     
-   
+    
     #Need to check if this is a one-off install
     if [ -n "$opt" ]; then
         write_camera
@@ -417,38 +418,84 @@ usb_testing() {
 }
 
 prepare () {
+    
     echo 'Beginning system preparation' | log
-    echo 'This only needs to be run once to prepare your system to use octoprint_deploy and it is only relevant for OctoPi images.'
-    echo 'Run this setup and then connect to octopi.local through your browser to setup your admin user.'
+    echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
+    echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
+    echo 'System type:'
+    PS3='Installation type: '
+    options=("OctoPi" "Ubuntu" "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "OctoPi")
+                INSTALL=1
+                break
+            ;;
+            "Ubuntu")
+                INSTALL=2
+                break
+            ;;
+            "Quit")
+                exit 1
+            ;;
+            *) echo "invalid option $REPLY";;
+        esac
+    done
     if prompt_confirm "Ready to begin?"
     then
-        echo 'Adding instance records'
-        if [ -f "/etc/octoprint_instances" ]; then
-            echo "octoprint_instances already exists. Trying to run prepare a second time? Exiting" | log
-            exit 1
-        else
-            echo 'instance:generic port:5000' > /etc/octoprint_instances
-        fi
-        echo 'Disabling unneeded services....'
-        systemctl disable octoprint.service
-        systemctl disable webcamd.service
-        systemctl disable streamer_select.service
+        echo 'instance:generic port:5000' > /etc/octoprint_instances
         echo 'Adding camera port records'
         touch /etc/camera_ports
-        echo 'Modifying config.yaml'
-        cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
+        if [ $INSTALL -eq 1 ]; then
+            echo 'Disabling unneeded services....'
+            systemctl disable octoprint.service
+            systemctl disable webcamd.service
+            systemctl disable streamer_select.service
+            echo 'Modifying config.yaml'
+            cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
+            echo 'Connect to your octoprint instance and setup admin user'
+        fi
+        if [ $INSTALL -eq 2 ]; then
+            #install packages
+            apt update
+            apt -y install python3-pip python3-venv virtualenv
+            echo "Installing OctoPrint in /home/$user/OctoPrint"
+            #make venv
+            sudo -u $user python -m venv /home/$user/OctoPrint
+            #install oprint
+            sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
+            #start server and run in background
+            echo 'Creating generic service...'
+            cat $SCRIPTDIR/octoprint_generic.service | \
+            sed -e "s/OCTOUSER/$user/" \
+            -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
+            -e "s#OCTOCONFIG#/home/$user/#" \
+            -e "s/NEWINSTANCE/.octoprint/" \
+            -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint_default.service
+            echo 'Starting generic service on port 5000'
+            systemctl start octoprint_default.service
+            echo 'Updating config.yaml'
+            sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+        fi
     fi
 }
 
 # initiate logging
+if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
 PS3='Select operation: '
-options=("Prepare system (OctoPi)" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+if [ -f "/etc/octoprint_instances" ]; then
+    options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+else
+    options=("Prepare system" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+fi
+#options=("Prepare system (OctoPi)" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
-        "Prepare system (OctoPi)")
+        "Prepare system")
             prepare
             break
         ;;
