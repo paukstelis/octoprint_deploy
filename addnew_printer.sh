@@ -159,7 +159,13 @@ new_instance () {
         echo "OK. Restart when you are ready" | log; exit 0
     fi
     
+    #Failed state. Nothing detected
+    if [ -z "$UDEV" && -z "$TEMPUSB"]; then
+       echo "Not printer was detected during the detection period. Check your USB cable and try again."
+       main_menu
+    fi
     
+    #No serial number
     if [ -z "$UDEV" ]; then
         echo "Printer Serial Number not detected"
         prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || exit 0
