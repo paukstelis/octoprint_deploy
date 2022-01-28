@@ -259,6 +259,7 @@ new_instance () {
             sudo systemctl restart haproxy.service
         fi
     fi
+    main_menu
     
 }
 
@@ -277,7 +278,7 @@ write_camera() {
     echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo
     
-    #Octobuntu Cameras udev identifier - either Serial number or USB port
+    #Either Serial number or USB port
     #Serial Number
     if [ -n "$CAM" ]; then
         echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
@@ -297,10 +298,10 @@ add_camera() {
         PS3='Select instance to add camera to: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
         #Not yet check to see if instance already has a camera
-        select opt in "${options[@]}"
+        select camopt in "${options[@]}"
         do
-            echo "Selected instance for camera: $opt" | log
-            INSTANCE=$opt
+            echo "Selected instance for camera: $camopt" | log
+            INSTANCE=$camopt
             OCTOCONFIG="/home/$user/"
             OCTOUSER=$user
             break
@@ -355,16 +356,17 @@ add_camera() {
     
     
     #Need to check if this is a one-off install
-    if [ -n "$opt" ]; then
+    if [ -n "$camopt" ]; then
         write_camera
         systemctl start cam_$INSTANCE.service
         systemctl enable cam_$INSTANCE.service
+        main_menu
     fi
 }
 
 remove_instance() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
-    #Check to see that octoprint_instances exists before continuing
+    #TODO Check to see that octoprint_instances exists before continuing
     echo 'Do not remove the generic instance!' | log
     PS3='Select instance to remove: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
@@ -396,6 +398,7 @@ remove_instance() {
         #remove from octoprint_instances
         sed -i "/$opt/d" /etc/octoprint_instances
     fi
+    main_menu
 }
 
 usb_testing() {
@@ -415,6 +418,7 @@ usb_testing() {
             echo "Serial Number detected: $UDEV" | log
         fi
     done
+    main_menu
 }
 
 prepare () {
@@ -422,7 +426,6 @@ prepare () {
     echo 'Beginning system preparation' | log
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
-    echo 'System type:'
     PS3='Installation type: '
     options=("OctoPi" "Ubuntu" "Quit")
     select opt in "${options[@]}"
@@ -457,12 +460,14 @@ prepare () {
             echo 'Connect to your octoprint instance and setup admin user'
         fi
         if [ $INSTALL -eq 2 ]; then
+            echo "Creating OctoBuntu installation equivalent."
+            echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
             apt update
             apt -y install python3-pip python3-venv virtualenv
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
-            sudo -u $user python -m venv /home/$user/OctoPrint
+            sudo -u $user python3 -m venv /home/$user/OctoPrint
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
             #start server and run in background
@@ -479,44 +484,47 @@ prepare () {
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
         fi
     fi
+   main_menu
 }
-
+main_menu() {
+    PS3='Select operation: '
+    if [ -f "/etc/octoprint_instances" ]; then
+        options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+    else
+        options=("Prepare system" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+    fi
+    
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Prepare system")
+                prepare
+                break
+            ;;
+            "New instance")
+                new_instance
+            break ;;
+            "Delete instance")
+                remove_instance
+                break
+            ;;
+            "Add Camera")
+                add_camera
+                break
+            ;;
+            "USB port testing")
+                usb_testing
+                break
+            ;;
+            "Quit")
+                exit 1
+            ;;
+            *) echo "invalid option $REPLY";;
+        esac
+    done
+}
 # initiate logging
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
-PS3='Select operation: '
-if [ -f "/etc/octoprint_instances" ]; then
-    options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
-else
-    options=("Prepare system" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
-fi
-#options=("Prepare system (OctoPi)" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
-select opt in "${options[@]}"
-do
-    case $opt in
-        "Prepare system")
-            prepare
-            break
-        ;;
-        "New instance")
-            new_instance
-        break ;;
-        "Delete instance")
-            remove_instance
-            break
-        ;;
-        "Add Camera")
-            add_camera
-            break
-        ;;
-        "USB port testing")
-            usb_testing
-            break
-        ;;
-        "Quit")
-            exit 1
-        ;;
-        *) echo "invalid option $REPLY";;
-    esac
-done
+main_menu
