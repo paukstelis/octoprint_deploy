@@ -8,6 +8,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Put the latest OctoPi image on your SD card
   * ssh into your Pi (pi@octopi.local; good idea to change your password now!)
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
+  * switch to the fullprep branch (For now; `cd octoprint_deploy; git checkout fullprep; cd`)
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
   * Choose `Prepare System` from the menu
   * Setup admin user by connecting to http://octopi.local via browser
@@ -16,6 +17,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
 * Ubuntu (may work for other deb systems, not tested yet)
   * Install Ubuntu 20.X on your system (make sure your user is admin for sudo)
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
+  * switch to the fullprep branch (For now; `cd octoprint_deploy; git checkout fullprep; cd`)
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
   * Choose `Prepare System` from the menu. This will install necessary packages, install octoprint, and start an instance
   * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via browser
