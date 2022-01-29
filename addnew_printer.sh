@@ -160,21 +160,24 @@ new_instance () {
     fi
     
     #Failed state. Nothing detected
-    if [ -z "$UDEV" && -z "$TEMPUSB"]; then
-       echo "Not printer was detected during the detection period. Check your USB cable and try again."
+    if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
+       echo
+       echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable and try again."
+       echo
+       echo
        main_menu
     fi
-    
+
     #No serial number
     if [ -z "$UDEV" ]; then
         echo "Printer Serial Number not detected"
         prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || exit 0
         echo
         USB=$TEMPUSB
-        echo "Your printer will be setup at the following usb address: $USB" | log
+        echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB" | log
         echo
     else
-        echo "Serial number detected as: $UDEV" | log
+        echo -e "Serial number detected as: \033[0;34m $UDEV" | log
     fi
     
     echo
@@ -326,11 +329,11 @@ add_camera() {
     done
     if [ -z "$CAM" ]; then
         echo "Camera Serial Number not detected" | log
-        echo "Camera will be setup with physical USB address of $TEMPUSBCAM." | log
+        echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM." | log
         echo "The camera will have to stay plugged into this location." | log
         USBCAM=$TEMPUSBCAM
     else
-        echo "Camera detected with serial number: $CAM" | log
+        echo -e "Camera detected with serial number: \033[0;34m $CAM" | log
     fi
     echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
     read CAMPORT
