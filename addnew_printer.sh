@@ -260,9 +260,13 @@ new_instance () {
             #add backend info, bracket with comments so we can remove later if needed. This all needs work, just slapping stuff in for now
             echo "#$INSTANCE on port $PORT" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
-            echo "       reqrep ^([^\ :]*)\ /(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
             echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
-            echo "       server 1$INSTANCE 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+            echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+            echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
+            echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
+            echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
+            echo "       reqadd X-Script-Name:\ /$INSTANCE"
             echo "#end $INSTANCE" >> /etc/haproxy/haproxy.cfg
             #restart haproxy
             sudo systemctl restart haproxy.service
