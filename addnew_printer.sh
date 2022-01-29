@@ -174,10 +174,10 @@ new_instance () {
         prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || exit 0
         echo
         USB=$TEMPUSB
-        echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB" | log
+        echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB\033[0m" | log
         echo
     else
-        echo -e "Serial number detected as: \033[0;34m $UDEV" | log
+        echo -e "Serial number detected as: \033[0;34m $UDEV\033[0m" | log
     fi
     
     echo
@@ -305,6 +305,7 @@ write_camera() {
 }
 
 add_camera() {
+    #TODO - what to do when camera not detected
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
@@ -333,11 +334,11 @@ add_camera() {
     done
     if [ -z "$CAM" ]; then
         echo "Camera Serial Number not detected" | log
-        echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM." | log
+        echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM.\033[0m" | log
         echo "The camera will have to stay plugged into this location." | log
         USBCAM=$TEMPUSBCAM
     else
-        echo -e "Camera detected with serial number: \033[0;34m $CAM" | log
+        echo -e "Camera detected with serial number: \033[0;34m $CAM \033[0m" | log
     fi
     echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
     read CAMPORT
@@ -474,6 +475,8 @@ prepare () {
             systemctl disable octoprint.service
             systemctl disable webcamd.service
             systemctl disable streamer_select.service
+            #webcamd gets restarted? why? get it out of there for now
+            mv /etc/systemd/system/webcamd.service /home/$user/
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint instance and setup admin user'
