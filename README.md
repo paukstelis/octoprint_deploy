@@ -14,8 +14,10 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Setup admin user by connecting to http://octopi.local via browser
   * Back in the ssh session, choose `Add Instance` and follow the instructions.
   * Continue until you have added all the printers you want to use
+  * haproxy entries are updated so you can connect via http://octopi.local/instancename/
 * Ubuntu (may work for other deb systems, not tested yet)
   * Install Ubuntu 20.X on your system (make sure your user is admin for sudo)
+  * Install git if it isn't already: `sudo apt install git`
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * switch to the fullprep branch (For now; `cd octoprint_deploy; git checkout fullprep; cd`)
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
