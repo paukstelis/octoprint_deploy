@@ -161,13 +161,13 @@ new_instance () {
     
     #Failed state. Nothing detected
     if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
-       echo
-       echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable and try again."
-       echo
-       echo
-       main_menu
+        echo
+        echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable and try again."
+        echo
+        echo
+        main_menu
     fi
-
+    
     #No serial number
     if [ -z "$UDEV" ]; then
         echo "Printer Serial Number not detected"
@@ -258,16 +258,16 @@ new_instance () {
             #find frontend line, do insert
             sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
             #add backend info, bracket with comments so we can remove later if needed. This all needs work, just slapping stuff in for now
-            echo "#$INSTANCE on port $PORT" >> /etc/haproxy/haproxy.cfg
+            echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
-            echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
             echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
             echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
             echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
             echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
             echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
-            echo "       reqadd X-Script-Name:\ /$INSTANCE"
-            echo "#end $INSTANCE" >> /etc/haproxy/haproxy.cfg
+            echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
+            echo "#$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
             #restart haproxy
             sudo systemctl restart haproxy.service
         fi
@@ -410,6 +410,12 @@ remove_instance() {
         rm -rf /home/$user/.$opt
         #remove from octoprint_instances
         sed -i "/$opt/d" /etc/octoprint_instances
+        #remove haproxy entry
+        if [ -f /etc/haproxy/haproxy.cfg ]; then
+            sed -i "/use_backend $opt/d" /etc/haproxy/haproxy.cfg
+            sed -i "/#$opt start/,/#$opt stop/d" /etc/haproxy/haproxy.cfg
+            systemctl restart haproxy.service
+        fi
     fi
     main_menu
 }
@@ -497,7 +503,7 @@ prepare () {
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
         fi
     fi
-   main_menu
+    main_menu
 }
 main_menu() {
     PS3='Select operation: '
