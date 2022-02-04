@@ -305,7 +305,7 @@ write_camera() {
 }
 
 add_camera() {
-    #TODO - what to do when camera not detected
+    
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
@@ -332,6 +332,16 @@ add_camera() {
         TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
         counter=$(( $counter + 1 ))
     done
+    #Failed state. Nothing detected
+    if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
+        echo
+        echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
+        echo -e "You can use the Add Camera option to try again after finishing instance installation."
+        echo
+        echo
+        return
+    fi
+
     if [ -z "$CAM" ]; then
         echo "Camera Serial Number not detected" | log
         echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM.\033[0m" | log
@@ -474,9 +484,11 @@ prepare () {
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
             systemctl disable webcamd.service
+            systemctl stop webcamd.service
             systemctl disable streamer_select.service
+            systemctl stop streamer_select.service
             #webcamd gets restarted? why? get it out of there for now
-            mv /etc/systemd/system/webcamd.service /home/$user/
+            #mv /etc/systemd/system/webcamd.service /home/$user/
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint instance and setup admin user'
@@ -485,7 +497,7 @@ prepare () {
             echo "Creating OctoBuntu installation equivalent."
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
-            apt update
+            apt update > /dev/null
             apt -y install python3-pip python3-venv virtualenv
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
@@ -504,6 +516,14 @@ prepare () {
             systemctl start octoprint_default.service
             echo 'Updating config.yaml'
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+            #install mjpg-streamer, not doing any error checking or anything
+            echo 'Installing mjpeg-streamer'
+            sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
+            apt -y install cmake libjpeg8-dev
+            sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
+            sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpeg-streamer
+            sudo -u $user rm -rf mjpeg
+
         fi
     fi
     main_menu
