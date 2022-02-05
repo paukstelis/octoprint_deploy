@@ -498,7 +498,7 @@ prepare () {
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
             apt update > /dev/null
-            apt -y install python3-pip python3-venv virtualenv
+            apt -y install python3-pip python3-venv virtualenv python-is-python3
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
@@ -514,8 +514,10 @@ prepare () {
             -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint_default.service
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
+            systemctl stop octoprint_default.service
             echo 'Updating config.yaml'
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+            systemctl start octoprint_default.service
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
