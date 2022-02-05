@@ -510,7 +510,7 @@ prepare () {
             sed -e "s/OCTOUSER/$user/" \
             -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
             -e "s#OCTOCONFIG#/home/$user/#" \
-            -e "s/NEWINSTANCE/.octoprint/" \
+            -e "s/NEWINSTANCE/octoprint/" \
             -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint_default.service
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
