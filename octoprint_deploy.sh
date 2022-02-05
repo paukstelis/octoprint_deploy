@@ -530,6 +530,10 @@ prepare () {
     main_menu
 }
 main_menu() {
+    UDEV=''
+    TEMPUSB=''
+    CAM=''
+    TEMPUSBCAM=''
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
         options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
