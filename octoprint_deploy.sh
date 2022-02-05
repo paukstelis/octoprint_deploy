@@ -498,7 +498,7 @@ prepare () {
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
             apt update > /dev/null
-            apt -y install python3-pip python3-venv virtualenv python-is-python3
+            apt -y install python3-pip python3-venv virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
@@ -520,7 +520,7 @@ prepare () {
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
-            apt -y install cmake libjpeg8-dev gcc g++
+            apt -y install 
             sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
             sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpeg-streamer
             sudo -u $user rm -rf mjpeg
