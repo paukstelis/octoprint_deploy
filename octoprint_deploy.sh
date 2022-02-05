@@ -519,7 +519,7 @@ prepare () {
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
-            apt -y install cmake libjpeg8-dev
+            apt -y install cmake libjpeg8-dev gcc g++
             sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
             sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpeg-streamer
             sudo -u $user rm -rf mjpeg
