@@ -512,11 +512,10 @@ prepare () {
             -e "s#OCTOCONFIG#/home/$user/#" \
             -e "s/NEWINSTANCE/octoprint/" \
             -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint_default.service
-            echo 'Starting generic service on port 5000'
-            systemctl start octoprint_default.service
-            systemctl stop octoprint_default.service
             echo 'Updating config.yaml'
+            sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+            echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
