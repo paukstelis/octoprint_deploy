@@ -21,6 +21,7 @@ As of 02/22 there is no longer a need to download a specific image file.
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
   * Choose `Prepare System` from the menu. This will install necessary packages, install octoprint, and start an instance
+  * This converts your installation into an 'OctoBuntu' installation.
   * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via browser
   * Continue with octoprint_deploy script and setup all your instances.
 * What else can you do?
