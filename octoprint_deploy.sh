@@ -498,7 +498,7 @@ prepare () {
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
             apt update > /dev/null
-            apt -y install python3-pip python3-venv virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev
+            apt -y install make python3.9-venv virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
