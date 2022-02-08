@@ -465,8 +465,12 @@ prepare () {
                 INSTALL=1
                 break
             ;;
-            "Ubuntu")
+            "Ubuntu 20.X")
                 INSTALL=2
+                break
+            ;;
+            "Ubuntu 21.X")
+                INSTALL=3
                 break
             ;;
             "Quit")
@@ -493,12 +497,17 @@ prepare () {
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint instance and setup admin user'
         fi
-        if [ $INSTALL -eq 2 ]; then
+        if [ $INSTALL -gt 1 ]; then
             echo "Creating OctoBuntu installation equivalent."
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
             apt update > /dev/null
-            apt -y install make python3.9-venv virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
+            if [ $INSTALL -eq 2 ]; then
+            apt -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
+            fi
+            if [ $INSTALL -eq 3 ]; then
+            apt - y install make python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+            fi
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
