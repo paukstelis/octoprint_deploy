@@ -457,7 +457,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu" "Quit")
+    options=("OctoPi" "Ubuntu 20.X" "Ubuntu 21.X" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
