@@ -503,10 +503,10 @@ prepare () {
             #install packages
             apt update > /dev/null
             if [ $INSTALL -eq 2 ]; then
-            apt -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
+            apt-get -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
             fi
             if [ $INSTALL -eq 3 ]; then
-            apt - y install make python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+            apt-get -y install make python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
