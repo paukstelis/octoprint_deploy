@@ -341,7 +341,7 @@ add_camera() {
         echo
         return
     fi
-
+    
     if [ -z "$CAM" ]; then
         echo "Camera Serial Number not detected" | log
         echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM.\033[0m" | log
@@ -457,7 +457,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 20.X" "Ubuntu 21.X" "Quit")
+    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -465,7 +465,7 @@ prepare () {
                 INSTALL=1
                 break
             ;;
-            "Ubuntu 20.X")
+            "Ubuntu 18-20")
                 INSTALL=2
                 break
             ;;
@@ -503,10 +503,10 @@ prepare () {
             #install packages
             apt-get update > /dev/null
             if [ $INSTALL -eq 2 ]; then
-            apt-get -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
+                apt-get -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
             if [ $INSTALL -eq 3 ]; then
-            apt-get -y install make python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                apt-get -y install make python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
@@ -529,11 +529,11 @@ prepare () {
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
-            apt -y install 
+            apt -y install
             sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
             sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpeg-streamer
             sudo -u $user rm -rf mjpeg
-
+            
         fi
     fi
     main_menu
