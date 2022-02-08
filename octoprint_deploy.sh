@@ -501,7 +501,7 @@ prepare () {
             echo "Creating OctoBuntu installation equivalent."
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
-            apt update > /dev/null
+            apt-get update > /dev/null
             if [ $INSTALL -eq 2 ]; then
             apt-get -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essentials python3-setuptools libyaml-dev python3-pip python3-venv 
             fi
