@@ -528,6 +528,7 @@ prepare () {
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
+            systemctl enable octoprint_default.service
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
