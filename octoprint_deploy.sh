@@ -225,7 +225,7 @@ new_instance () {
         
         #just to be on the safe side, add user to dialout and video
         usermod -a -G dialout,video $OCTOUSER
-        
+        echo 'User added to dialout and video groups. You may need to restart before connecting to printers/cameras'
         #Append instance name to list for removal tool
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
@@ -484,6 +484,8 @@ prepare () {
         echo 'instance:generic port:5000' > /etc/octoprint_instances
         echo 'Adding camera port records'
         touch /etc/camera_ports
+        echo 'Adding current user to dialout and video groups.'
+        usermod -a -G dialout,video $user
         if [ $INSTALL -eq 1 ]; then
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
@@ -503,10 +505,10 @@ prepare () {
             #install packages
             apt-get update > /dev/null
             if [ $INSTALL -eq 2 ]; then
-                apt-get -y install make virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
+                apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
             if [ $INSTALL -eq 3 ]; then
-                apt-get -y install make python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
