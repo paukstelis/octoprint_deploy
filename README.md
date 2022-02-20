@@ -24,6 +24,7 @@ As of 02/22 there is no longer a need to download a specific image file.
   * This converts your installation into an 'OctoBuntu' installation.
   * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via browser
   * Continue with octoprint_deploy script and setup all your instances.
+  * You may have to logout/reboot before connecting to printers or cameras as dialout and video permissions are established during setup.
 * What else can you do?
   * Remove instances
   * Add USB webcams AFTER you've created the instance
