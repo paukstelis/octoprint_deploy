@@ -513,6 +513,8 @@ prepare () {
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
+            #pre-install wheel
+            sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
             #start server and run in background
