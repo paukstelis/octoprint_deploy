@@ -487,17 +487,9 @@ prepare () {
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
         
-        #https://gist.github.com/buchireddy/19eb6593f692852d2df7
-        cp /etc/sudoers /tmp/sudoers.bak
-        echo "$user ALL=(ALL) NOPASSWD:ALL /usr/bin/systemctl" >> /tmp/sudoers
-        visudo -cf /tmp/sudoers.bak
-        if [ $? -eq 0 ]; then
-            sudo cp /tmp/sudoers.bak /etc/sudoers
-            echo 'Adding systemctl access to /etc/sudoers for restarting instances.'
-        else
-            echo "Could not modify /etc/sudoers file. Please do this manually."
-        fi
-        #end modify sudoers
+        echo "$user ALL=(ALL) NOPASSWD:ALL /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_service
+        echo "$user ALL=(ALL) NOPASSWD:ALL /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_shutdown
+        
         if [ $INSTALL -eq 1 ]; then
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
