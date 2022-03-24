@@ -487,8 +487,7 @@ prepare () {
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
         
-        echo "$user ALL=(ALL) NOPASSWD:ALL /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_service
-        echo "$user ALL=(ALL) NOPASSWD:ALL /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_shutdown
+        
         
         if [ $INSTALL -eq 1 ]; then
             echo 'Disabling unneeded services....'
@@ -497,6 +496,8 @@ prepare () {
             systemctl stop webcamd.service
             systemctl disable streamer_select.service
             systemctl stop streamer_select.service
+            echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
+            echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
             #webcamd gets restarted? why? get it out of there for now
             #mv /etc/systemd/system/webcamd.service /home/$user/
             echo 'Modifying config.yaml'
@@ -505,6 +506,8 @@ prepare () {
         fi
         if [ $INSTALL -gt 1 ]; then
             echo "Creating OctoBuntu installation equivalent."
+            echo "$user ALL=(ALL) NOPASSWD:ALL /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
+            echo "$user ALL=(ALL) NOPASSWD:ALL /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
             apt-get update > /dev/null
