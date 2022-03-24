@@ -4,6 +4,7 @@ Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukst
 These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer.
 # BIG CHANGES
 As of 02/22 there is no longer a need to download a specific image file.
+YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4&lc
 # How to use
 * OctoPi
   * Put the latest OctoPi image on your SD card
