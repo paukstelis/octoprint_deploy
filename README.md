@@ -14,6 +14,7 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * Choose `Prepare System` from the menu
   * Setup admin user by connecting to http://octopi.local via browser
   * Back in the ssh session, choose `Add Instance` and follow the instructions.
+  * If your printer does not have a serial number, it will time out and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/
 * Ubuntu (may work for other deb systems, not tested yet)
