@@ -457,7 +457,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Quit")
+    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Mint 20.3" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -471,6 +471,10 @@ prepare () {
             ;;
             "Ubuntu 21.X")
                 INSTALL=3
+                break
+            ;;
+            "Mint 20.3")
+                INSTALL=4
                 break
             ;;
             "Quit")
@@ -518,6 +522,10 @@ prepare () {
             fi
             if [ $INSTALL -eq 3 ]; then
                 apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+            fi
+            #Mint requires python3.8-venv?
+            if [ $INSTALL -eq 4 ]; then
+                apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
