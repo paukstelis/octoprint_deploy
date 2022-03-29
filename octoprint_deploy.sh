@@ -561,7 +561,7 @@ prepare () {
             #Will need to do this for mjpeg-streamer as well
             if [ $INSTALL -eq 5 ]; then
                semanage fcontext -a -t bin_t '/home/$user/OctoPrint/bin/.*'
-               chcon -Rv -u system_u -t bin_t '/home/$user/OctoPrint/bin'
+               chcon -Rv -u system_u -t bin_t /home/$user/OctoPrint/bin/
                restorecon -R -v /home/$user/OctoPrint/bin 
             fi
             echo 'Starting generic service on port 5000'
@@ -570,7 +570,7 @@ prepare () {
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
-            apt -y install
+            #apt -y install
             sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
             sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpg-streamer
             sudo -u $user rm -rf mjpeg
