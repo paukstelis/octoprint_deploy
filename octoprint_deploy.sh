@@ -572,7 +572,7 @@ prepare () {
                restorecon -R -v /home/$user/OctoPrint/bin
                semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
                chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
-               restorecon -R -v /home/$user/mjpeg-streamer 
+               restorecon -R -v /home/$user/mjpg-streamer 
             fi
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
