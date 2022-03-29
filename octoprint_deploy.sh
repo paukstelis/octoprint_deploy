@@ -536,7 +536,6 @@ prepare () {
             fi
             #Fedora35
             if [ $INSTALL -eq 5 ]; then
-                dnf update
                 dnf -y install python3-devel cmake libjpeg-turbo-devel
             fi
 
