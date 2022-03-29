@@ -17,8 +17,8 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * If your printer does not have a serial number, it will time out and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/
-* Ubuntu/Mint (may work for other deb systems, not tested yet)
-  * Install Ubuntu 20-21.X or Mint 20.3+ on your system (make sure your user is admin for sudo)
+* Ubuntu/Mint/Fedora (Fedora not completely tested)
+  * Install Ubuntu 20-21.X, Mint 20.3+, or Fedora35+ on your system (make sure your user is admin for sudo)
   * Install git if it isn't already: `sudo apt install git`
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`

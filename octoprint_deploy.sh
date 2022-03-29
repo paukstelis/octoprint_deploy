@@ -570,8 +570,8 @@ prepare () {
                semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
                chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
                restorecon -R -v /home/$user/OctoPrint/bin
-               semanage fcontext -a -t bin_t "/home/$user/mjpeg-streamer/.*"
-               chcon -Rv -u system_u -t bin_t "/home/$user/mjpeg-streamer/"
+               semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
+               chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
                restorecon -R -v /home/$user/mjpeg-streamer 
             fi
             echo 'Starting generic service on port 5000'
