@@ -557,16 +557,7 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
-            #Fedora has SELinux on by default so must make adjustments...
-            #Will need to do this for mjpeg-streamer as well
-            if [ $INSTALL -eq 5 ]; then
-               semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
-               chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
-               restorecon -R -v /home/$user/OctoPrint/bin 
-            fi
-            echo 'Starting generic service on port 5000'
-            systemctl start octoprint_default.service
-            systemctl enable octoprint_default.service
+
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
@@ -574,6 +565,18 @@ prepare () {
             sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
             sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpg-streamer
             sudo -u $user rm -rf mjpeg
+            #Fedora has SELinux on by default so must make adjustments? Don't really know what these do...
+            if [ $INSTALL -eq 5 ]; then
+               semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
+               chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
+               restorecon -R -v /home/$user/OctoPrint/bin
+               semanage fcontext -a -t bin_t "/home/$user/mjpeg-streamer/.*"
+               chcon -Rv -u system_u -t bin_t "/home/$user/mjpeg-streamer/"
+               restorecon -R -v /home/$user/mjpeg-streamer 
+            fi
+            echo 'Starting generic service on port 5000'
+            systemctl start octoprint_default.service
+            systemctl enable octoprint_default.service
             
         fi
     fi
