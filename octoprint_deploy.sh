@@ -560,8 +560,8 @@ prepare () {
             #Fedora has SELinux on by default so must make adjustments...
             #Will need to do this for mjpeg-streamer as well
             if [ $INSTALL -eq 5 ]; then
-               semanage fcontext -a -t bin_t '/home/$user/OctoPrint/bin/.*'
-               chcon -Rv -u system_u -t bin_t /home/$user/OctoPrint/bin/
+               semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
+               chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
                restorecon -R -v /home/$user/OctoPrint/bin 
             fi
             echo 'Starting generic service on port 5000'
