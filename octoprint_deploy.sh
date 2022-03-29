@@ -520,19 +520,23 @@ prepare () {
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
-            apt-get update > /dev/null
+            
             if [ $INSTALL -eq 2 ]; then
+                apt-get update > /dev/null
                 apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
             if [ $INSTALL -eq 3 ]; then
+                apt-get update > /dev/null
                 apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             #Mint requires python3.8-venv?
             if [ $INSTALL -eq 4 ]; then
+                apt-get update > /dev/null
                 apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             #Fedora35
             if [ $INSTALL -eq 5 ]; then
+                dnf update
                 dnf -y install python3-devel cmake libjpeg-turbo-devel
             fi
 
@@ -554,6 +558,13 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+            #Fedora has SELinux on by default so must make adjustments...
+            #Will need to do this for mjpeg-streamer as well
+            if [ $INSTALL -eq 5 ]; then
+               semanage fcontext -a -t bin_t '/home/$user/OctoPrint/bin/.*'
+               chcon -Rv -u system_u -t bin_t '/home/$user/OctoPrint/bin'
+               restorecon -R -v /home/$user/OctoPrint/bin 
+            fi
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
