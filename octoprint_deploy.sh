@@ -477,6 +477,10 @@ prepare () {
                 INSTALL=4
                 break
             ;;
+            "Fedora 35+")
+                INSTALL=5
+                break
+            ;;
             "Quit")
                 exit 1
             ;;
@@ -527,6 +531,11 @@ prepare () {
             if [ $INSTALL -eq 4 ]; then
                 apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
+            #Fedora35
+            if [ $INSTALL -eq 5 ]; then
+                dnf -y install python3-devel cmake libjpeg-turbo-devel
+            fi
+
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
