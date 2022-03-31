@@ -16,7 +16,7 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * Back in the ssh session, choose `Add Instance` and follow the instructions.
   * If your printer does not have a serial number, it will time out and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use
-  * haproxy entries are updated so you can connect via http://octopi.local/instancename/
+  * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed)
 * Ubuntu/Mint/Fedora (Fedora not completely tested)
   * Install Ubuntu 20-21.X, Mint 20.3+, or Fedora35+ on your system (make sure your user is admin for sudo)
   * Install git if it isn't already: `sudo apt install git`
