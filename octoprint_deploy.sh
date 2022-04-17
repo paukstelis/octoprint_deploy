@@ -181,6 +181,8 @@ new_instance () {
         echo
     else
         echo -e "Serial number detected as: \033[0;34m $UDEV\033[0m" | log
+        check_sn "$UDEV"
+        echo
     fi
     
     echo
@@ -446,7 +448,7 @@ usb_testing() {
         TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')
         counter=$(( $counter + 1 ))
         if [ -n "$TEMPUSB" ]; then
-            echo 'Detected devince at $TEMPUSB' | log
+            echo "Detected device at $TEMPUSB" | log
         fi
         if [ -n "$UDEV" ]; then
             echo "Serial Number detected: $UDEV" | log
