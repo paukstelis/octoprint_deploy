@@ -22,11 +22,10 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git`
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
-  * Choose `Prepare System` from the menu. This will install necessary packages, install octoprint, and start an instance
-  * This converts your installation into an 'OctoBuntu'-style installation.
+  * Choose `Prepare System` from the menu. Select your distribution type. This will install necessary packages, install octoprint, and start a template instance
+  * This converts your installation into an 'OctoBuntu'-style installation. Use `OctoBuntu` for all identifiers after this point.
   * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via browser
   * Continue with octoprint_deploy script and setup all your instances.
-  * You may have to logout/reboot before connecting to printers or cameras as dialout and video permissions are established during setup.
 * What else can you do?
   * Remove instances
   * Add USB webcams AFTER you've created the instance
