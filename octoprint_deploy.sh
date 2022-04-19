@@ -543,7 +543,7 @@ prepare () {
                 dnf -y install python3-devel cmake libjpeg-turbo-devel
             fi
             #Raspberry Pi OS Buster
-            if [ $INSTALL -eq 5 ]; then
+            if [ $INSTALL -eq 6 ]; then
                 apt-get update > /dev/null
                 apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
