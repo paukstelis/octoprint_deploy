@@ -457,7 +457,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Mint 20.3" "Fedora 35+" "Raspberry Pi OS Buster" "Quit")
+    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Mint 20.3" "Fedora 35+" "Raspberry Pi OS Bullseye" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -481,7 +481,7 @@ prepare () {
                 INSTALL=5
                 break
             ;;
-            "Raspberry Pi OS Buster")
+            "Raspberry Pi OS Bullseye")
                 INSTALL=6
                 break
             ;;
