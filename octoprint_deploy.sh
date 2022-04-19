@@ -368,7 +368,7 @@ add_camera() {
         CAMPORT=$((CAMPORT+1))
         echo Selected port is: $CAMPORT | log
     fi
-    echo "Settings can be modified after initial setup in /etc/systemd/system/octocam_$INSTANCE"
+    echo "Settings can be modified after initial setup in /etc/systemd/system/cam_$INSTANCE"
     echo
     echo "Camera Resolution (no sanity check, so get it right) [default: 640x480]:"
     read RESOLUTION
@@ -497,8 +497,8 @@ prepare () {
 
     if [ $INSTALL -eq 1 ] && [[ "$ARCH" != arm ]]; then
         echo "WARNING! You have selected OctoPi, but are not using an ARM processor."
-        echo "If you are using generic another linux distribution, select it from the list."
-        echo "Unless you really know what you are doing, select N."
+        echo "If you are using another linux distribution, select it from the list."
+        echo "Unless you really know what you are doing, select N now."
         if prompt_confirm "Continue with OctoPi? (Y/N)"; then
             echo "OK!"
         else
