@@ -457,7 +457,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Mint 20.3" "Fedora 35+" "Quit")
+    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Mint 20.3" "Fedora 35+" "Raspberry Pi OS Bullseye" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -479,6 +479,10 @@ prepare () {
             ;;
             "Fedora 35+")
                 INSTALL=5
+                break
+            ;;
+            "Raspberry Pi OS Bullseye")
+                INSTALL=6
                 break
             ;;
             "Quit")
@@ -537,6 +541,11 @@ prepare () {
             #Fedora35
             if [ $INSTALL -eq 5 ]; then
                 dnf -y install python3-devel cmake libjpeg-turbo-devel
+            fi
+            #Raspberry Pi OS Buster
+            if [ $INSTALL -eq 6 ]; then
+                apt-get update > /dev/null
+                apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
 
             echo "Installing OctoPrint in /home/$user/OctoPrint"
