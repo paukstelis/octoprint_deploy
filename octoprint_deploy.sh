@@ -6,7 +6,10 @@ if (( $EUID != 0 )); then
     exit
 fi
 
-
+#Get abbreviated architecture
+ARCH=$(arch)
+ARCH=${ARCH:0:3}
+#echo $ARCH
 # from stackoverflow.com/questions/3231804
 prompt_confirm() {
     while true; do
@@ -37,7 +40,7 @@ new_instance () {
     BUDEFAULT="/home/$user/OctoPrint/bin/octoprint"
     OTHERDEFAULT=""
     PS3='Installation type: '
-    options=("OctoPi" "OctoBuntu" "Other" "Quit")
+    options=("OctoPi" "Linux/OctoBuntu" "Other" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -46,7 +49,7 @@ new_instance () {
                 INSTALL=1
                 break
             ;;
-            "OctoBuntu")
+            "Linux/OctoBuntu")
                 DAEMONPATH=$BUDEFAULT
                 INSTALL=2
                 break
@@ -178,6 +181,8 @@ new_instance () {
         echo
     else
         echo -e "Serial number detected as: \033[0;34m $UDEV\033[0m" | log
+        check_sn "$UDEV"
+        echo
     fi
     
     echo
@@ -349,6 +354,7 @@ add_camera() {
         USBCAM=$TEMPUSBCAM
     else
         echo -e "Camera detected with serial number: \033[0;34m $CAM \033[0m" | log
+        check_sn "$CAM"
     fi
     echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
     read CAMPORT
@@ -362,7 +368,7 @@ add_camera() {
         CAMPORT=$((CAMPORT+1))
         echo Selected port is: $CAMPORT | log
     fi
-    echo "Settings can be modified after initial setup in /etc/systemd/system/octocam_$INSTANCE"
+    echo "Settings can be modified after initial setup in /etc/systemd/system/cam_$INSTANCE"
     echo
     echo "Camera Resolution (no sanity check, so get it right) [default: 640x480]:"
     read RESOLUTION
@@ -442,10 +448,11 @@ usb_testing() {
         TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')
         counter=$(( $counter + 1 ))
         if [ -n "$TEMPUSB" ]; then
-            echo 'Detected devince at $TEMPUSB' | log
+            echo "Detected device at $TEMPUSB" | log
         fi
         if [ -n "$UDEV" ]; then
             echo "Serial Number detected: $UDEV" | log
+            check_sn "$UDEV"
         fi
     done
     main_menu
@@ -491,6 +498,18 @@ prepare () {
             *) echo "invalid option $REPLY";;
         esac
     done
+
+    if [ $INSTALL -eq 1 ] && [[ "$ARCH" != arm ]]; then
+        echo "WARNING! You have selected OctoPi, but are not using an ARM processor."
+        echo "If you are using another linux distribution, select it from the list."
+        echo "Unless you really know what you are doing, select N now."
+        if prompt_confirm "Continue with OctoPi? (Y/N)"; then
+            echo "OK!"
+        else
+            main_menu
+        fi
+    fi
+
     if prompt_confirm "Ready to begin?"
     then
         echo 'instance:generic port:5000' > /etc/octoprint_instances
@@ -498,7 +517,6 @@ prepare () {
         touch /etc/camera_ports
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
-        
         
         
         if [ $INSTALL -eq 1 ]; then
@@ -516,7 +534,9 @@ prepare () {
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint instance and setup admin user'
+            
         fi
+        
         if [ $INSTALL -gt 1 ]; then
             echo "Creating OctoBuntu installation equivalent."
             echo "Adding systemctl and reboot to sudo"
@@ -548,6 +568,7 @@ prepare () {
                 apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
 
+            
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
@@ -566,7 +587,7 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
-
+            
             #install mjpg-streamer, not doing any error checking or anything
             echo 'Installing mjpeg-streamer'
             sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
@@ -576,12 +597,12 @@ prepare () {
             sudo -u $user rm -rf mjpeg
             #Fedora has SELinux on by default so must make adjustments? Don't really know what these do...
             if [ $INSTALL -eq 5 ]; then
-               semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
-               chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
-               restorecon -R -v /home/$user/OctoPrint/bin
-               semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
-               chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
-               restorecon -R -v /home/$user/mjpg-streamer 
+                semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
+                chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
+                restorecon -R -v /home/$user/OctoPrint/bin
+                semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
+                chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
+                restorecon -R -v /home/$user/mjpg-streamer
             fi
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
@@ -591,6 +612,17 @@ prepare () {
     fi
     main_menu
 }
+
+check_sn() {
+    if [ -f "/etc/udev/rules.d/99-octoprint.rules" ]; then
+        if grep -q $1 /etc/udev/rules.d/99-octoprint.rules; then
+            echo "An identical serial number has been detected in the udev rules. Please be warned, this will likely cause instability!" | log
+        else
+            echo "No duplicate serial number detected" | log
+        fi
+    fi
+}
+
 main_menu() {
     #reset
     UDEV=''

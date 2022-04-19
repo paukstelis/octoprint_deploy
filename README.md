@@ -1,4 +1,4 @@
-Updated February 2022.  
+Updated April 2022.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis
 # octoprint_deploy
 These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer.
@@ -19,15 +19,17 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed)
 * Ubuntu/Mint/Fedora (Fedora not completely tested)
   * Install Ubuntu 20-21.X, Mint 20.3+, or Fedora35+ on your system (make sure your user is admin for sudo)
-  * Install git if it isn't already: `sudo apt install git`
+  * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git`
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
-  * Choose `Prepare System` from the menu. This will install necessary packages, install octoprint, and start an instance
-  * This converts your installation into an 'OctoBuntu'-style installation.
+  * Choose `Prepare System` from the menu. Select your distribution type. This will install necessary packages, install octoprint, and start a template instance
+  * This converts your installation into an 'OctoBuntu'-style installation. Use `OctoBuntu` for all identifiers after this point.
   * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via browser
   * Continue with octoprint_deploy script and setup all your instances.
-  * You may have to logout/reboot before connecting to printers or cameras as dialout and video permissions are established during setup.
 * What else can you do?
   * Remove instances
   * Add USB webcams AFTER you've created the instance
   * Test USB connections
+# Recent Changes
+* Add duplicate serial number detection.
+* Add architecture check to minimize errors where a system gets prepared as OctoPi when someone is using Ubuntu/Fedora/etc.
