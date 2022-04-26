@@ -568,7 +568,7 @@ prepare () {
                 apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
 
-            
+       
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
