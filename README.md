@@ -1,5 +1,6 @@
 Updated April 2022.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis
+Need help with octoprint_deploy? You can open issues here or ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
 These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer.
 # BIG CHANGES
