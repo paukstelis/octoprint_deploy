@@ -464,7 +464,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Mint 20.3" "Fedora 35+" "Raspberry Pi OS Bullseye" "Quit")
+    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Ubuntu 22" "Mint 20.3" "Fedora 35+" "Raspberry Pi OS Bullseye" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -480,16 +480,20 @@ prepare () {
                 INSTALL=3
                 break
             ;;
-            "Mint 20.3")
+            "Ubuntu 22")
                 INSTALL=4
                 break
             ;;
-            "Fedora 35+")
+            "Mint 20.3")
                 INSTALL=5
                 break
             ;;
-            "Raspberry Pi OS Bullseye")
+            "Fedora 35+")
                 INSTALL=6
+                break
+            ;;
+            "Raspberry Pi OS Bullseye")
+                INSTALL=7
                 break
             ;;
             "Quit")
@@ -553,17 +557,21 @@ prepare () {
                 apt-get update > /dev/null
                 apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
-            #Mint requires python3.8-venv?
             if [ $INSTALL -eq 4 ]; then
+                apt-get update > /dev/null
+                apt-get -y install make v4l-utils python3.10-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+            fi
+            #Mint requires python3.8-venv?
+            if [ $INSTALL -eq 5 ]; then
                 apt-get update > /dev/null
                 apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
             fi
             #Fedora35
-            if [ $INSTALL -eq 5 ]; then
+            if [ $INSTALL -eq 6 ]; then
                 dnf -y install python3-devel cmake libjpeg-turbo-devel
             fi
             #Raspberry Pi OS Buster
-            if [ $INSTALL -eq 6 ]; then
+            if [ $INSTALL -eq 7 ]; then
                 apt-get update > /dev/null
                 apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
             fi
