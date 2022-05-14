@@ -458,6 +458,30 @@ usb_testing() {
     main_menu
 }
 
+#https://askubuntu.com/questions/39497
+deb_packages() {
+    apt-cache --generate pkgnames \
+    | grep --line-regexp --fixed-strings \
+    -e make \
+    -e v4l-utils \
+    -e python-is-python3 \
+    -e python3-venv \
+    -e python3.9-venv \
+    -e python3.10-venv \
+    -e virtualenv \
+    -e python3-dev \
+    -e build-essential \
+    -e python3-setuptools \
+    -e libyaml-dev \
+    -e python3-pip \
+    -e cmake \
+    -e libjpeg8-dev \
+    -e libjpeg62-turbo-dev \
+    -e gcc \
+    -e g++ \
+    | xargs apt-get install -y
+}
+
 prepare () {
     
     echo 'Beginning system preparation' | log
@@ -502,7 +526,7 @@ prepare () {
             *) echo "invalid option $REPLY";;
         esac
     done
-
+    
     if [ $INSTALL -eq 1 ] && [[ "$ARCH" != arm ]]; then
         echo "WARNING! You have selected OctoPi, but are not using an ARM processor."
         echo "If you are using another linux distribution, select it from the list."
@@ -513,7 +537,7 @@ prepare () {
             main_menu
         fi
     fi
-
+    
     if prompt_confirm "Ready to begin?"
     then
         echo 'instance:generic port:5000' > /etc/octoprint_instances
@@ -551,20 +575,24 @@ prepare () {
             
             if [ $INSTALL -eq 2 ]; then
                 apt-get update > /dev/null
-                apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
+                #apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
+                deb_packages
             fi
             if [ $INSTALL -eq 3 ]; then
                 apt-get update > /dev/null
-                apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                #apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                deb_packages
             fi
             if [ $INSTALL -eq 4 ]; then
                 apt-get update > /dev/null
-                apt-get -y install make v4l-utils python3.10-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                #apt-get -y install make v4l-utils python3.10-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                deb_packages
             fi
             #Mint requires python3.8-venv?
             if [ $INSTALL -eq 5 ]; then
                 apt-get update > /dev/null
-                apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                #apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
+                deb_packages
             fi
             #Fedora35
             if [ $INSTALL -eq 6 ]; then
@@ -573,10 +601,11 @@ prepare () {
             #Raspberry Pi OS Buster
             if [ $INSTALL -eq 7 ]; then
                 apt-get update > /dev/null
-                apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
+                #apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
+                deb_packages
             fi
-
-       
+            
+            
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
