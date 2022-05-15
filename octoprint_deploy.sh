@@ -724,7 +724,8 @@ remove_everything() {
         rm /etc/camera_ports
         rm /etc/udev/rules.d/99-octoprint.rules
         echo "Removing template"
-        rm /home/$user/.octoprint
+        rm -rf /home/$user/.octoprint
+        rm -rf /home/$user/OctoPrint
 
     fi 
 
