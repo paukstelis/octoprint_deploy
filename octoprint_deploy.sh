@@ -156,9 +156,9 @@ new_instance () {
         while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
             UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
             if [[ -z "$TEMPUSB" ]]; then
-            	TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')
+                TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\).*/\2/p')
             else
-            	sleep 1
+                sleep 1
             fi
             counter=$(( $counter + 1 ))
         done
@@ -286,12 +286,32 @@ new_instance () {
 }
 
 write_camera() {
-    cat $SCRIPTDIR/octocam_generic.service | \
-    sed -e "s/OCTOUSER/$OCTOUSER/" \
-    -e "s/OCTOCAM/cam_$INSTANCE/" \
-    -e "s/RESOLUTION/$RESOLUTION/" \
-    -e "s/FRAMERATE/$FRAMERATE/" \
-    -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+    #Establish which streamer system is using, default mjpg-streamer
+    $STREAMER=$(cat /etc/octoprint_streamer)
+    if [ -z "$STREAMER"]; then
+        $STREAMER='mjpg-streamer'
+    fi
+    
+    #mjpg-streamer
+    if [ "$STREAMER" == mjpg-streamer ]; then
+        cat $SCRIPTDIR/octocam_mjpg.service | \
+        sed -e "s/OCTOUSER/$OCTOUSER/" \
+        -e "s/OCTOCAM/cam_$INSTANCE/" \
+        -e "s/RESOLUTION/$RESOLUTION/" \
+        -e "s/FRAMERATE/$FRAMERATE/" \
+        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+    fi
+    
+    #ustreamer
+    if [ "$STREAMER" == ustreamer ]; then
+        cat $SCRIPTDIR/octocam_ustream.service | \
+        sed -e "s/OCTOUSER/$OCTOUSER/" \
+        -e "s/OCTOCAM/cam_$INSTANCE/" \
+        -e "s/RESOLUTION/$RESOLUTION/" \
+        -e "s/FRAMERATE/$FRAMERATE/" \
+        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+    fi
+    
     mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
     echo $CAMPORT >> /etc/camera_ports
     #config.yaml modifications
@@ -484,6 +504,9 @@ deb_packages() {
     -e libjpeg62-turbo-dev \
     -e gcc \
     -e g++ \
+    -e libevent-dev \
+    -e libjpeg-dev \
+    -e libbsd-dev \
     | xargs apt-get install -y | log
 }
 
@@ -520,7 +543,7 @@ prepare () {
         echo "WARNING! You have selected OctoPi, but are not using an ARM processor."
         echo "If you are using another linux distribution, select it from the list."
         echo "Unless you really know what you are doing, select N now."
-        if prompt_confirm "Continue with OctoPi? (Y/N)"; then
+        if prompt_confirm "Continue with OctoPi?"; then
             echo "OK!"
         else
             main_menu
@@ -537,6 +560,20 @@ prepare () {
         
         
         if [ $INSTALL -eq 1 ]; then
+            if grep -q 'firstRun: false' /home/$user/.octoprint/config.yaml; then
+                echo "It looks as though this OctoPi installation may have already been used." | log
+                echo "In order to use the script, the files must be backed up and then moved."
+                echo "If you chose to continue with the installation these files will be moved (not erased)."
+                echo "They will be found at /home/$user/.old-octo"
+                if prompt_confirm "Continue with installation?"; then
+                    echo "Continuing installation." | log
+                    echo "Moving files to /home/$user/.old-octo" | log
+                    mv /home/$user/.octoprint /home/$user/.old-octo
+                else
+                    main_menu
+                fi
+            fi
+            
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
             systemctl disable webcamd.service
@@ -548,6 +585,7 @@ prepare () {
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
             #webcamd gets restarted? why? get it out of there for now
             #mv /etc/systemd/system/webcamd.service /home/$user/
+            echo mjpg-streamer > /etc/octoprint_streamer
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint instance and setup admin user'
@@ -590,21 +628,60 @@ prepare () {
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
             
-            #install mjpg-streamer, not doing any error checking or anything
-            echo 'Installing mjpeg-streamer'
-            sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
-            #apt -y install
-            sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
-            sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpg-streamer
-            sudo -u $user rm -rf mjpeg
+            PS3='Which video streamer you would like to install?: '
+            options=("mjpeg-streamer" "ustreamer" "None")
+            select opt in "${options[@]}"
+            do
+                case $opt in
+                    "mjpeg-streamer")
+                        VID=1
+                        break
+                    ;;
+                    "ustreamer")
+                        VID=2
+                        break
+                    ;;
+                    "None")
+                        break
+                    ;;
+                    *) echo "invalid option $REPLY";;
+                esac
+            done
+            
+            if [ $VID -eq 1 ]; then
+                echo mjpg-streamer > /etc/octoprint_streamer
+                #install mjpg-streamer, not doing any error checking or anything
+                echo 'Installing mjpeg-streamer'
+                sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
+                #apt -y install
+                sudo -u $user make -C mjpeg/mjpg-streamer-experimental > /dev/null
+                sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpg-streamer
+                sudo -u $user rm -rf mjpeg
+            fi
+            
+            if [ $VID -eq 2 ]; then
+                echo ustreamer > /etc/octoprint_streamer
+                #install ustreamer
+                sudo -u $user git clone --depth=1 https://github.com/pikvm/ustreamer
+                sudo -u $user make -C ustreamer > /dev/null
+            fi
+            
             #Fedora has SELinux on by default so must make adjustments? Don't really know what these do...
-            if [ $INSTALL -eq 5 ]; then
+            if [ $INSTALL -eq 3 ]; then
                 semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
                 chcon -Rv -u system_u -t bin_t "/home/$user/OctoPrint/bin/"
                 restorecon -R -v /home/$user/OctoPrint/bin
-                semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
-                chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
-                restorecon -R -v /home/$user/mjpg-streamer
+                if [ $VID -eq 1 ]; then
+                    semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
+                    chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
+                    restorecon -R -v /home/$user/mjpg-streamer
+                fi
+                if [ $VID -eq 2 ]; then
+                    semanage fcontext -a -t bin_t "/home/$user/ustreamer/.*"
+                    chcon -Rv -u system_u -t bin_t "/home/$user/ustreamer/"
+                    restorecon -R -v /home/$user/ustreamer
+                fi
+                
             fi
             echo 'Starting generic service on port 5000'
             systemctl start octoprint_default.service
@@ -625,6 +702,33 @@ check_sn() {
     fi
 }
 
+remove_everything() {
+    if prompt_confirm "Remove everything?"; then
+        readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+        for instance in "${instances[@]}"; do
+            echo "Trying to remove instance $instance"
+            systemctl stop $instance
+            systemctl disable $instance
+            rm /etc/systemd/system/$instance.service
+            echo "Trying to remove camera for $instance"
+            systemctl stop cam_$instance
+            systemctl disable cam_$instance
+            rm /etc/systemd/system/cam_$instance.service
+            echo "Removing instance..."
+            rm -rf /home/$user/.$instance
+        done
+        echo "Removing system stuff"
+        rm /etc/systemd/system/octoprint_default.service
+        rm /etc/octoprint_streamer
+        rm /etc/octoprint_instances
+        rm /etc/camera_ports
+        rm /etc/udev/rules.d/99-octoprint.rules
+        echo "Removing template"
+        rm /home/$user/.octoprint
+
+    fi 
+
+}
 main_menu() {
     #reset
     UDEV=''
@@ -673,4 +777,9 @@ main_menu() {
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
+
+if [ "$1" == remove ]; then
+    remove_everything
+fi
+    
 main_menu
