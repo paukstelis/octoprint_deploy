@@ -464,6 +464,7 @@ usb_testing() {
 
 #https://askubuntu.com/questions/39497
 deb_packages() {
+    #All extra packages needed can be added here for deb based systems. Only available will be selected.
     apt-cache --generate pkgnames \
     | grep --line-regexp --fixed-strings \
     -e make \
@@ -483,7 +484,7 @@ deb_packages() {
     -e libjpeg62-turbo-dev \
     -e gcc \
     -e g++ \
-    | xargs apt-get install -y
+    | xargs apt-get install -y | log
 }
 
 prepare () {
@@ -492,7 +493,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-20" "Ubuntu 21.X" "Ubuntu 22" "Mint 20.3" "Fedora 35+" "Raspberry Pi OS Bullseye" "Quit")
+    options=("OctoPi" "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS" "Fedora 35+" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -500,30 +501,13 @@ prepare () {
                 INSTALL=1
                 break
             ;;
-            "Ubuntu 18-20")
+            "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS")
                 INSTALL=2
-                break
-            ;;
-            "Ubuntu 21.X")
-                INSTALL=3
-                break
-            ;;
-            "Ubuntu 22")
-                INSTALL=4
-                break
-            ;;
-            "Mint 20.3")
-                INSTALL=5
                 break
             ;;
             "Fedora 35+")
                 INSTALL=6
                 break
-            ;;
-            "Raspberry Pi OS Bullseye")
-                INSTALL=7
-                break
-            ;;
             "Quit")
                 exit 1
             ;;
@@ -576,39 +560,15 @@ prepare () {
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
             echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
             #install packages
-            
+            #All DEB based
             if [ $INSTALL -eq 2 ]; then
                 apt-get update > /dev/null
-                #apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
-                deb_packages
-            fi
-            if [ $INSTALL -eq 3 ]; then
-                apt-get update > /dev/null
-                #apt-get -y install make v4l-utils python3.9-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
-                deb_packages
-            fi
-            if [ $INSTALL -eq 4 ]; then
-                apt-get update > /dev/null
-                #apt-get -y install make v4l-utils python3.10-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
-                deb_packages
-            fi
-            #Mint requires python3.8-venv?
-            if [ $INSTALL -eq 5 ]; then
-                apt-get update > /dev/null
-                #apt-get -y install make v4l-utils python3.8-venv cmake libjpeg8-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip
                 deb_packages
             fi
             #Fedora35
-            if [ $INSTALL -eq 6 ]; then
+            if [ $INSTALL -eq 3 ]; then
                 dnf -y install python3-devel cmake libjpeg-turbo-devel
             fi
-            #Raspberry Pi OS Buster
-            if [ $INSTALL -eq 7 ]; then
-                apt-get update > /dev/null
-                #apt-get -y install make v4l-utils virtualenv python-is-python3 cmake libjpeg62-turbo-dev gcc g++ python3-dev build-essential python3-setuptools libyaml-dev python3-pip python3-venv
-                deb_packages
-            fi
-            
             
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
