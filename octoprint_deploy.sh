@@ -506,7 +506,7 @@ prepare () {
                 break
             ;;
             "Fedora 35+")
-                INSTALL=6
+                INSTALL=3
                 break
             ;;
             "Quit")
