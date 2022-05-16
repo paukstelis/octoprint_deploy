@@ -401,7 +401,7 @@ add_camera() {
     fi
     echo "Selected camera resolution: $RESOLUTION" | log
     #TODO check formating
-    echo "Camera Framerate (no sanity check, so get it right) [default: 5]:"
+    echo "Camera Framerate (use 0 for ustreamer hardware) [default: 5]:"
     read FRAMERATE
     if [ -z "$FRAMERATE" ]; then
         FRAMERATE=5
@@ -726,6 +726,8 @@ remove_everything() {
         echo "Removing template"
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
+        systemctl daemon-reload
+        
 
     fi 
 
