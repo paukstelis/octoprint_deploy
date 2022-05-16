@@ -1,0 +1,12 @@
+[Unit]
+Description=the OctoPi(buntu) webcam daemon with the user specified config
+After=network.online.target
+Wants=network.online.target
+
+[Service]
+User=OCTOUSER
+Environment="LD_LIBRARY_PATH=/home/OCTOUSER/mjpg-streamer"
+ExecStart=/home/OCTOUSER/mjpg-streamer/mjpg_streamer -i "input_uvc.so -d /dev/OCTOCAM -r RESOLUTION -f FRAMERATE" -o "output_http.so -p CAMPORT"
+
+[Install]
+WantedBy=multi-user.target
