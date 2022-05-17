@@ -70,12 +70,12 @@ new_instance () {
     read INSTANCE
     if [ -z "$INSTANCE" ]; then
         echo "No instance given. Exiting" | log
-        exit 1
+        main_menu
     fi
     
     if test -f "/etc/systemd/system/$INSTANCE.service"; then
         echo "Already have an entry for $INSTANCE. Exiting." | log
-        exit 1
+        main_menu
     fi
     
     echo "Port on which this instance will run (ENTER will increment from last value in /etc/octoprint_instances):"
@@ -116,7 +116,7 @@ new_instance () {
         echo "Executable path is valid" | log
     else
         echo "Exectuable path is not valid! Aborting" | log
-        exit 1
+        main_menu
     fi
     
     echo "Octoprint Config Path (where the hidden instance directory will be) [/home/$user/]:"
@@ -136,13 +136,13 @@ new_instance () {
         echo "Template path is valid" | log
     else
         echo "Template path is not valid! Aborting" | log
-        exit 1
+        main_menu
     fi
     
     #check to make sure first run is complete
     if grep -q 'firstRun: true' $BFOLD/config.yaml; then
         echo "WARNING!! You must setup the base profile and admin user before continuing" | log
-        exit 1
+        main_menu
     fi
     
     if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
@@ -178,11 +178,14 @@ new_instance () {
     #No serial number
     if [ -z "$UDEV" ]; then
         echo "Printer Serial Number not detected"
-        prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now" || exit 0
-        echo
-        USB=$TEMPUSB
-        echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB\033[0m" | log
-        echo
+        if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
+            echo
+            USB=$TEMPUSB
+            echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB\033[0m" | log
+            echo
+        else
+            main_menu
+        fi
     else
         echo -e "Serial number detected as: \033[0;34m $UDEV\033[0m" | log
         check_sn "$UDEV"
@@ -289,7 +292,7 @@ write_camera() {
     #Establish which streamer system is using, default mjpg-streamer
     STREAMER=$(cat /etc/octoprint_streamer)
     echo $STREAMER
-    if [ -z "$STREAMER"]; then
+    if [ -z "$STREAMER" ]; then
         $STREAMER='mjpg-streamer'
     fi
     
@@ -509,13 +512,13 @@ deb_packages() {
     -e libjpeg-dev \
     -e libbsd-dev \
     | xargs apt-get install -y | log
-
+    
     #pacakges to REMOVE go here
     apt-cache --generate pkgnames \
     | grep --line-regexp --fixed-strings \
     -e brltty \
     | xargs apt-get remove -y | log
-
+    
 }
 
 prepare () {
@@ -575,8 +578,10 @@ prepare () {
                 echo "They will be found at /home/$user/.old-octo"
                 if prompt_confirm "Continue with installation?"; then
                     echo "Continuing installation." | log
+                    systemctl stop octoprint.service
                     echo "Moving files to /home/$user/.old-octo" | log
                     mv /home/$user/.octoprint /home/$user/.old-octo
+                    systemctl start octoprint.service
                 else
                     main_menu
                 fi
@@ -635,7 +640,9 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
-            
+            echo
+            echo
+            echo
             PS3='Which video streamer you would like to install?: '
             options=("mjpeg-streamer" "ustreamer" "None")
             select opt in "${options[@]}"
@@ -738,9 +745,9 @@ remove_everything() {
         rm -rf /home/$user/OctoPrint
         systemctl daemon-reload
         
-
-    fi 
-
+        
+    fi
+    
 }
 main_menu() {
     #reset
@@ -794,5 +801,5 @@ SCRIPTDIR=$(dirname $(readlink -f $0))
 if [ "$1" == remove ]; then
     remove_everything
 fi
-    
+
 main_menu
