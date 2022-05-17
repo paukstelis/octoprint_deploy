@@ -287,7 +287,8 @@ new_instance () {
 
 write_camera() {
     #Establish which streamer system is using, default mjpg-streamer
-    $STREAMER=$(cat /etc/octoprint_streamer)
+    STREAMER=$(cat /etc/octoprint_streamer)
+    echo $STREAMER
     if [ -z "$STREAMER"]; then
         $STREAMER='mjpg-streamer'
     fi
