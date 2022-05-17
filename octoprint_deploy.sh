@@ -508,6 +508,13 @@ deb_packages() {
     -e libjpeg-dev \
     -e libbsd-dev \
     | xargs apt-get install -y | log
+
+    #pacakges to REMOVE go here
+    apt-cache --generate pkgnames \
+    | grep --line-regexp --fixed-strings \
+    -e brltty \
+    | xargs apt-get remove -y | log
+
 }
 
 prepare () {
@@ -723,6 +730,8 @@ remove_everything() {
         rm /etc/octoprint_instances
         rm /etc/camera_ports
         rm /etc/udev/rules.d/99-octoprint.rules
+        rm /etc/sudoers.d/octoprint_reboot
+        rm /etc/sudoers.d/octoprint_systemctl
         echo "Removing template"
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
