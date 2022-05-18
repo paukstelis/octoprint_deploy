@@ -511,6 +511,7 @@ deb_packages() {
     -e libevent-dev \
     -e libjpeg-dev \
     -e libbsd-dev \
+    -e ffmpeg \
     | xargs apt-get install -y | log
     
     #pacakges to REMOVE go here
