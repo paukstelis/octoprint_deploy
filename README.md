@@ -19,9 +19,9 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * Continue until you have added all the printers you want to use
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed)
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
-* Ubuntu/Mint/Fedora (Fedora not completely tested)
+* Ubuntu/Mint/RPiOS/Debian/etc. or Fedora (Fedora not completely tested)
   * __You do not need to install OctoPrint using any Wiki instructions. The script will do it for you__
-  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPi OS, Armbian, or Fedora35+ on your system (make sure your user is admin for sudo)
+  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, or Fedora35+ on your system (make sure your user is admin for sudo)
   * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git`
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
