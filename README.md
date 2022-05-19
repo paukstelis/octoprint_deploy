@@ -18,6 +18,7 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * If your printer does not have a serial number, it will time out and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed)
+  * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
 * Ubuntu/Mint/Fedora (Fedora not completely tested)
   * __You do not need to install OctoPrint using any Wiki instructions. The script will do it for you__
   * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPi OS, Armbian, or Fedora35+ on your system (make sure your user is admin for sudo)
@@ -28,7 +29,7 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
   * This converts your installation into an 'Linux/OctoBuntu'-style installation. Use `OctoBuntu` for all identifiers after this point.
   * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via a browser
-  * __This instances is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add cameras to the generic instance.__
+  * __This instance is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add a camera to the generic instance.__
   * Continue with octoprint_deploy script and setup all your instances.
 * What else can you do?
   * Remove instances
