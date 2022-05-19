@@ -20,14 +20,15 @@ YouTube video for OctoPi setup here: https://www.youtube.com/watch?v=J5VzI4AFav4
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed)
 * Ubuntu/Mint/Fedora (Fedora not completely tested)
   * __You do not need to install OctoPrint using any Wiki instructions. The script will do it for you__
-  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, or Fedora35+ on your system (make sure your user is admin for sudo)
+  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPi OS, Armbian, or Fedora35+ on your system (make sure your user is admin for sudo)
   * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git`
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`
-  * Choose `Prepare System` from the menu. Select your distribution type. This will install necessary packages, install OctoPrint, and start a template instance
+  * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and start a template instance
   * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
-  * This converts your installation into an 'OctoBuntu'-style installation. Use `OctoBuntu` for all identifiers after this point.
-  * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via browser
+  * This converts your installation into an 'Linux/OctoBuntu'-style installation. Use `OctoBuntu` for all identifiers after this point.
+  * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via a browser
+  * __This instances is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add cameras to the generic instance.__
   * Continue with octoprint_deploy script and setup all your instances.
 * What else can you do?
   * Remove instances
