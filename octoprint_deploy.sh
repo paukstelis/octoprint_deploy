@@ -245,8 +245,10 @@ new_instance () {
         cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
         
         #Do config.yaml modifications here if needed..
-        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
-        
+        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml        
+        #uniquify instances
+        sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
+
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
         fi
@@ -323,11 +325,6 @@ write_camera() {
     echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo
-    
-    #uniquify instances
-    #modify upnpUuid
-    UUID=$(uuidgen)
-    sed -i "s/upnpUuid: $PARTITION_COLUMN.*/upnpUuid: $UUID/" $OCTOCONFIG/.$INSTANCE/config.yaml
     
     #Either Serial number or USB port
     #Serial Number
