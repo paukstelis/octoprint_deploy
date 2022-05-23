@@ -514,6 +514,7 @@ deb_packages() {
     -e libjpeg-dev \
     -e libbsd-dev \
     -e ffmpeg \
+    -e uuid-runtime\
     | xargs apt-get install -y | log
     
     #pacakges to REMOVE go here
@@ -596,6 +597,8 @@ prepare () {
             systemctl stop webcamd.service
             systemctl disable streamer_select.service
             systemctl stop streamer_select.service
+            echo 'Installing needed packages'
+            apt-get -y install uuid-runtime
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
