@@ -324,6 +324,11 @@ write_camera() {
     echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo
     
+    #uniquify instances
+    #modify upnpUuid
+    UUID=$(uuidgen)
+    sed -i "s/upnpUuid: $PARTITION_COLUMN.*/upnpUuid: $UUID/" $OCTOCONFIG/.$INSTANCE/config.yaml
+    
     #Either Serial number or USB port
     #Serial Number
     if [ -n "$CAM" ]; then
