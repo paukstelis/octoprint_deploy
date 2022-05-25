@@ -1,6 +1,6 @@
 #Basic setup from:
 #https://community.octoprint.org/t/setting-up-octoprint-on-a-computer-running-fedora-centos-almalinux-or-rockylinux/37137/2
-[/etc/haproxy/haproxy.cfg]
+
 global
         maxconn 4000
         user haproxy
@@ -31,6 +31,5 @@ frontend public
         default_backend octoprint
 
 backend octoprint
-        reqrep ^([^\ :]*)\ /(.*) \1\ /\2
         option forwardfor
         server octoprint1 127.0.0.1:5000

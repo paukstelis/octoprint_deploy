@@ -245,10 +245,10 @@ new_instance () {
         cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
         
         #Do config.yaml modifications here if needed..
-        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml        
+        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
         #uniquify instances
         sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
-
+        
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
         fi
@@ -268,22 +268,29 @@ new_instance () {
         fi
         
         #if we are on octopi, add in haproxy entry
+        #get haproxy version
+        HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
         if [ $INSTALL -gt 1 ]; then
             #find frontend line, do insert
             sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
-            #add backend info, bracket with comments so we can remove later if needed. This all needs work, just slapping stuff in for now
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
-            echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
-            echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
-            echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
-            echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
-            echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
-            echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
-            echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
+            if [ $HAversion -gt 1 ]; then
+                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
+                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+            else
+                echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
+                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
+                echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
+            fi
             echo "#$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
             #restart haproxy
             sudo systemctl restart haproxy.service
+            
         fi
     fi
     main_menu
@@ -649,11 +656,17 @@ prepare () {
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
             echo 'Updating haproxy'
             systemctl stop haproxy
+            #get haproxy version
+            HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.orig
-            cp $SCRIPTDIR/haproxy.basic /etc/haproxy/haproxy.cfg
+            if [ $HAversion -gt 1 ]; then
+                cp $SCRIPTDIR/haproxy2.basic /etc/haproxy/haproxy.cfg
+            else
+                cp $SCRIPTDIR/haproxy1.basic /etc/haproxy/haproxy.cfg
+            fi
             systemctl start haproxy
             systemctl enable haproxy
-
+            
             echo
             echo
             echo
