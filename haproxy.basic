@@ -1,0 +1,45 @@
+#Basic setup from:
+#https://community.octoprint.org/t/setting-up-octoprint-on-a-computer-running-fedora-centos-almalinux-or-rockylinux/37137/2
+[/etc/haproxy/haproxy.cfg]
+global
+        chroot /var/lib/haproxy
+        pidfile /var/lib/haproxy.pid
+        maxconn 4000
+        user haproxy
+        group haproxy
+        daemon
+        log 127.0.0.1 local2
+        # turn on stats unix socket
+        stats socket /var/lib/haproxy/stats
+
+        # utilize system-wide crypto-policies
+        ssl-default-bind-ciphers PROFILE=SYSTEM
+        ssl-default-server-ciphers PROFILE=SYSTEM
+
+defaults
+        log     global
+        mode    http
+        option  httplog
+        option  dontlognull
+        retries 3
+        option redispatch
+        option http-server-close
+        option forwardfor except 127.0.0.0/8
+        timeout http-request    10s
+        timeout queue           1m
+        timeout connect         10s
+        timeout client          1m
+        timeout server          1m
+        timeout http-keep-alive 10s
+        timeout check           10s
+
+frontend public
+        bind :::80 v4v6
+        option forwardfor except 127.0.0.1
+        #use_backend INSTANCE if { path_beg /INSTANCE/ }
+        default_backend octoprint
+
+backend octoprint
+        reqrep ^([^\ :]*)\ /(.*) \1\ /\2
+        option forwardfor
+        server octoprint1 127.0.0.1:5000

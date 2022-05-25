@@ -268,7 +268,7 @@ new_instance () {
         fi
         
         #if we are on octopi, add in haproxy entry
-        if [ $INSTALL -eq 1 ]; then
+        if [ $INSTALL -gt 1 ]; then
             #find frontend line, do insert
             sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
             #add backend info, bracket with comments so we can remove later if needed. This all needs work, just slapping stuff in for now
@@ -515,6 +515,7 @@ deb_packages() {
     -e libbsd-dev \
     -e ffmpeg \
     -e uuid-runtime\
+    -e haproxy\
     | xargs apt-get install -y | log
     
     #pacakges to REMOVE go here
@@ -625,7 +626,7 @@ prepare () {
             fi
             #Fedora35
             if [ $INSTALL -eq 3 ]; then
-                dnf -y install python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel 
+                dnf -y install python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy
             fi
             
             echo "Installing OctoPrint in /home/$user/OctoPrint"
@@ -646,6 +647,13 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+            echo 'Updating haproxy'
+            systemctl stop haproxy
+            mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.orig
+            cp $SCRIPTDIR/haproxy.basic /etc/haproxy/haproxy.cfg
+            systemctl start haproxy
+            systemctl enable haproxy
+
             echo
             echo
             echo
