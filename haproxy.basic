@@ -2,19 +2,11 @@
 #https://community.octoprint.org/t/setting-up-octoprint-on-a-computer-running-fedora-centos-almalinux-or-rockylinux/37137/2
 [/etc/haproxy/haproxy.cfg]
 global
-        chroot /var/lib/haproxy
-        pidfile /var/lib/haproxy.pid
         maxconn 4000
         user haproxy
         group haproxy
         daemon
-        log 127.0.0.1 local2
-        # turn on stats unix socket
-        stats socket /var/lib/haproxy/stats
-
-        # utilize system-wide crypto-policies
-        ssl-default-bind-ciphers PROFILE=SYSTEM
-        ssl-default-server-ciphers PROFILE=SYSTEM
+        log 127.0.0.1 local0 debug
 
 defaults
         log     global
@@ -36,7 +28,6 @@ defaults
 frontend public
         bind :::80 v4v6
         option forwardfor except 127.0.0.1
-        #use_backend INSTANCE if { path_beg /INSTANCE/ }
         default_backend octoprint
 
 backend octoprint
