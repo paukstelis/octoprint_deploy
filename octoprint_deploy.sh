@@ -660,9 +660,9 @@ prepare () {
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.orig
             if [ $HAversion -gt 1 ]; then
-                cp $SCRIPTDIR/haproxy2.basic /etc/haproxy/haproxy.cfg
+                cp $SCRIPTDIR/haproxy2x.basic /etc/haproxy/haproxy.cfg
             else
-                cp $SCRIPTDIR/haproxy1.basic /etc/haproxy/haproxy.cfg
+                cp $SCRIPTDIR/haproxy1x.basic /etc/haproxy/haproxy.cfg
             fi
             systemctl start haproxy
             systemctl enable haproxy
