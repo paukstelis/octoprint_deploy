@@ -276,10 +276,10 @@ new_instance () {
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             if [ $HAversion -gt 1 ]; then
-                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request replace-path /$INSTANCE(.*)" >> /etc/haproxy/haproxy.cfg
                 echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
             else
-                echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
                 echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
                 echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
                 echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
@@ -708,6 +708,10 @@ prepare () {
                 sudo -u $user make -C ustreamer > /dev/null
             fi
             
+            if [ $VID -eq 3]; then
+                echo "You can install a streamer manually at a later time."
+            fi
+
             #Fedora has SELinux on by default so must make adjustments? Don't really know what these do...
             if [ $INSTALL -eq 3 ]; then
                 semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
