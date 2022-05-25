@@ -625,7 +625,7 @@ prepare () {
             fi
             #Fedora35
             if [ $INSTALL -eq 3 ]; then
-                dnf -y install python3-devel cmake libjpeg-turbo-devel
+                dnf -y install python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel 
             fi
             
             echo "Installing OctoPrint in /home/$user/OctoPrint"
