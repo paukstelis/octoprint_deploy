@@ -276,18 +276,22 @@ new_instance () {
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             if [ $HAversion -gt 1 ]; then
-                echo "       http-request replace-path /$INSTANCE(.*)" >> /etc/haproxy/haproxy.cfg
-                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request replace-path ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request add-header X-Scheme https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request add-header X-Script-Name /$INSTANCE" >> /etc/haproxy/haproxy.cfg          
             else
-                echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
-                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
-                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg                
                 echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
             fi
+            echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+            echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+            
             #restart haproxy
             sudo systemctl restart haproxy.service
             
@@ -654,6 +658,7 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
+            #Add this is as an option
             echo 'Updating haproxy'
             systemctl stop haproxy
             #get haproxy version
