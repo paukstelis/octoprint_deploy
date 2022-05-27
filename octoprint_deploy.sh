@@ -55,12 +55,12 @@ new_instance () {
         echo "No installation type found. Have you run system prepare?"
         main_menu
     fi
-
+    
     if [ "$TYPE" == octopi ]; then
         INSTALL=1
         DAEMONPATH=$PIDEFAULT
     fi
-
+    
     if [ "$TYPE" == linux ]; then
         INSTALL=2
         DAEMONPATH=$BUDEFAULT
@@ -79,70 +79,86 @@ new_instance () {
         main_menu
     fi
     
-    echo "Port on which this instance will run (ENTER will increment from last value in /etc/octoprint_instances):"
-    read PORT
-    if [ -z "$PORT" ]; then
+    if prompt_confirm "Use all default values?"; then
         PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
-        
         if [ -z "$PORT" ]; then
             PORT=5000
         fi
-        
         PORT=$((PORT+1))
         echo Selected port is: $PORT | log
+        OCTOUSER=$user
+        OCTOPATH=$DAEMONPATH
+        OCTOCONFIG="/home/$user/"
+        BFOLD="/home/$user/.octoprint"
+        echo "Your OctoPrint instance will be installed at /home/$user/.$INSTANCE"
+        echo
+        echo
+    else
+        echo "Port on which this instance will run (ENTER will increment from last value in /etc/octoprint_instances):"
+        read PORT
+        if [ -z "$PORT" ]; then
+            PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
+            
+            if [ -z "$PORT" ]; then
+                PORT=5000
+            fi
+            
+            PORT=$((PORT+1))
+            echo Selected port is: $PORT | log
+            
+        fi
         
-    fi
-    
-    if [ -f /etc/octoprint_instances ]; then
-        if grep -q $PORT /etc/octoprint_instances; then
-            echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting." | log
-            exit 1
+        if [ -f /etc/octoprint_instances ]; then
+            if grep -q $PORT /etc/octoprint_instances; then
+                echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting." | log
+                exit 1
+            fi
+        fi
+        
+        #collect user, basedir path, daemon path
+        echo "Octoprint Daemon User [$user]:"
+        read OCTOUSER
+        if [ -z "$OCTOUSER" ]; then
+            OCTOUSER=$user
+        fi
+        
+        echo "Octoprint Executable Daemon Path [$DAEMONPATH]:"
+        read OCTOPATH
+        if [ -z "$OCTOPATH" ]; then
+            OCTOPATH=$DAEMONPATH
+        fi
+        
+        if [ -f "$OCTOPATH" ]; then
+            echo "Executable path is valid" | log
+        else
+            echo "Exectuable path is not valid! Aborting" | log
+            main_menu
+        fi
+        
+        echo "Octoprint Config Path (where the hidden instance directory will be) [/home/$user/]:"
+        read OCTOCONFIG
+        if [ -z "$OCTOCONFIG" ]; then
+            OCTOCONFIG="/home/$user/"
+        fi
+        
+        #octoprint_base is the generic .octoprint folder that contains all configuration, upload, etc.
+        echo "Octoprint instance template path [/home/$user/.octoprint]:"
+        read BFOLD
+        if [ -z "$BFOLD" ]; then
+            BFOLD="/home/$user/.octoprint"
+        fi
+        
+        if [ -d "$BFOLD" ]; then
+            echo "Template path is valid" | log
+        else
+            echo "Template path is not valid! Aborting" | log
+            main_menu
         fi
     fi
-    
-    #collect user, basedir path, daemon path
-    echo "Octoprint Daemon User [$user]:"
-    read OCTOUSER
-    if [ -z "$OCTOUSER" ]; then
-        OCTOUSER=$user
-    fi
-    
-    echo "Octoprint Executable Daemon Path [$DAEMONPATH]:"
-    read OCTOPATH
-    if [ -z "$OCTOPATH" ]; then
-        OCTOPATH=$DAEMONPATH
-    fi
-    
-    if [ -f "$OCTOPATH" ]; then
-        echo "Executable path is valid" | log
-    else
-        echo "Exectuable path is not valid! Aborting" | log
-        main_menu
-    fi
-    
-    echo "Octoprint Config Path (where the hidden instance directory will be) [/home/$user/]:"
-    read OCTOCONFIG
-    if [ -z "$OCTOCONFIG" ]; then
-        OCTOCONFIG="/home/$user/"
-    fi
-    
-    #octoprint_base is the generic .octoprint folder that contains all configuration, upload, etc.
-    echo "Octoprint instance template path [/home/$user/.octoprint]:"
-    read BFOLD
-    if [ -z "$BFOLD" ]; then
-        BFOLD="/home/$user/.octoprint"
-    fi
-    
-    if [ -d "$BFOLD" ]; then
-        echo "Template path is valid" | log
-    else
-        echo "Template path is not valid! Aborting" | log
-        main_menu
-    fi
-    
+
     #check to make sure first run is complete
     if grep -q 'firstRun: true' $BFOLD/config.yaml; then
-        echo "WARNING!! You must setup the base profile and admin user before continuing" | log
+        echo "WARNING!! You must setup the template profile and admin user before continuing" | log
         main_menu
     fi
     
@@ -169,7 +185,7 @@ new_instance () {
     #Failed state. Nothing detected
     if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
         echo
-        echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable and try again."
+        echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable (power only?) and try again."
         echo
         echo
         main_menu
@@ -237,7 +253,7 @@ new_instance () {
         
         #just to be on the safe side, add user to dialout and video
         usermod -a -G dialout,video $OCTOUSER
-        echo 'User added to dialout and video groups. You may need to restart before connecting to printers/cameras'
+        
         #Append instance name to list for removal tool
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
@@ -260,16 +276,15 @@ new_instance () {
         sleep 1
         
         #Start and enable system processes
-        systemctl start $INSTANCE
-        systemctl enable $INSTANCE
+        systemctl start $INSTANCE.service
+        systemctl enable $INSTANCE.service
         if [[ -n $CAM || -n $USBCAM ]]; then
             systemctl start cam_$INSTANCE.service
             systemctl enable cam_$INSTANCE.service
         fi
         
-        #need to find a way to know if haproxy is being used
-        HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
         if [ "$HAPROXY" == true ]; then
+            HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             #find frontend line, do insert
             sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
@@ -369,9 +384,14 @@ add_camera() {
         done
     fi
     
+    if [ "$camopt" == generic] then;
+        echo "Don't add cameras to the generic instance."
+        main_menu
+    fi
+    
     journalctl --rotate > /dev/null 2>&1
     journalctl --vacuum-time=1seconds > /dev/null 2>&1
-    echo "Plug your CAMERA in via USB now (detection time-out in 1 min)"
+    echo "Plug your camera in via USB now (detection time-out in 1 min)"
     counter=0
     while [[ -z "$CAM" ]] && [[ $counter -lt 30 ]]; do
         CAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
@@ -424,7 +444,6 @@ add_camera() {
         FRAMERATE=5
     fi
     echo "Selected camera framerate: $FRAMERATE" | log
-    
     
     #Need to check if this is a one-off install
     if [ -n "$camopt" ]; then
@@ -585,26 +604,27 @@ prepare () {
         touch /etc/camera_ports
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
-        echo 'type: octopi' >> /etc/octoprint_deploy
         
+        #service start/stop may fail on non-OctoPi instances, but that is probably Ok
+        if grep -q 'firstRun: false' /home/$user/.octoprint/config.yaml; then
+            echo "It looks as though this installation has already been in use." | log
+            echo "In order to use the script, the files must be moved."
+            echo "If you chose to continue with the installation these files will be moved (not erased)."
+            echo "They will be found at /home/$user/.old-octo"
+            echo "If you have generated service files for OctoPrint, please stop and disable them."
+            if prompt_confirm "Continue with installation?"; then
+                echo "Continuing installation." | log
+                systemctl stop octoprint.service
+                echo "Moving files to /home/$user/.old-octo" | log
+                mv /home/$user/.octoprint /home/$user/.old-octo
+                systemctl start octoprint.service
+            else
+                main_menu
+            fi
+        fi
         
         if [ $INSTALL -eq 1 ]; then
-            if grep -q 'firstRun: false' /home/$user/.octoprint/config.yaml; then
-                echo "It looks as though this OctoPi installation has already been in use." | log
-                echo "In order to use the script, the files must be moved."
-                echo "If you chose to continue with the installation these files will be moved (not erased)."
-                echo "They will be found at /home/$user/.old-octo"
-                if prompt_confirm "Continue with installation?"; then
-                    echo "Continuing installation." | log
-                    systemctl stop octoprint.service
-                    echo "Moving files to /home/$user/.old-octo" | log
-                    mv /home/$user/.octoprint /home/$user/.old-octo
-                    systemctl start octoprint.service
-                else
-                    main_menu
-                fi
-            fi
-            
+            echo 'type: octopi' >> /etc/octoprint_deploy
             if prompt_confirm "Would you like to install and use ustreamer instead of mjpg-streamer?"; then
                 echo 'streamer: ustreamer' >> /etc/octoprint_deploy
                 apt-get -y install libevent-dev libbsd-dev
@@ -625,11 +645,10 @@ prepare () {
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
-            
             echo 'haproxy: true' >> /etc/octoprint_deploy
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
-            echo 'Connect to your octoprint instance and setup admin user'
+            echo 'Connect to your octoprint (octopi.local) instance and setup admin user'
             
         fi
         
@@ -639,7 +658,7 @@ prepare () {
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
-            echo "This will install necessary packages, download and install OctoPrint and setup a base instance on this machine."
+            echo "This will install necessary packages, download and install OctoPrint and setup a template instance on this machine."
             #install packages
             #All DEB based
             if [ $INSTALL -eq 2 ]; then
@@ -756,6 +775,7 @@ prepare () {
                 
             fi
             echo 'Starting generic service on port 5000'
+            echo 'Connect to your template instance and setup the admin user.'
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
             
