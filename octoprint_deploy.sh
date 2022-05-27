@@ -9,7 +9,19 @@ fi
 #Get abbreviated architecture
 ARCH=$(arch)
 ARCH=${ARCH:0:3}
-#echo $ARCH
+
+get_settings() {
+    #Get octoprint_deploy settings, all of which are written on system prepare
+    if [ -f /etc/octoprint_deploy ]; then
+        TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \([[:alnum:]]*\) .*/\1/p')
+        echo $TYPE
+        STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \([[:alnum:]]*\) .*/\1/p')
+        echo $STREAMER
+        HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \([[:alnum:]]*\) .*/\1/p')
+        echo $HAPROXY
+    fi
+}
+
 # from stackoverflow.com/questions/3231804
 prompt_confirm() {
     while true; do
@@ -33,37 +45,26 @@ log () {
 new_instance () {
     
     echo "$(date) starting instance installation" | log
+    get_settings
     
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     SCRIPTDIR=$(dirname $(readlink -f $0))
     PIDEFAULT="/home/$user/oprint/bin/octoprint"
     BUDEFAULT="/home/$user/OctoPrint/bin/octoprint"
-    OTHERDEFAULT=""
-    PS3='Installation type: '
-    options=("OctoPi" "Linux/OctoBuntu" "Other" "Quit")
-    select opt in "${options[@]}"
-    do
-        case $opt in
-            "OctoPi")
-                DAEMONPATH=$PIDEFAULT
-                INSTALL=1
-                break
-            ;;
-            "Linux/OctoBuntu")
-                DAEMONPATH=$BUDEFAULT
-                INSTALL=2
-                break
-            ;;
-            "Other")
-                DAEMONPATH=$OTHERDEFAULT
-                break
-            ;;
-            "Quit")
-                exit 1
-            ;;
-            *) echo "invalid option $REPLY";;
-        esac
-    done
+    if [ -z "$TYPE" ]; then
+        echo "No installation type found. Have you run system prepare?"
+        main_menu
+    fi
+
+    if [ "$TYPE" == octopi ]; then
+        INSTALL=1
+        DAEMONPATH=$PIDEFAULT
+    fi
+
+    if [ "$TYPE" == linux ]; then
+        INSTALL=2
+        DAEMONPATH=$BUDEFAULT
+    fi
     
     echo "UNPLUG PRINTER YOU ARE INSTALLING NOW (other printers can remain)"
     echo "Enter the name for new printer/instance (no spaces):"
@@ -148,7 +149,6 @@ new_instance () {
     if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
     then
         echo
-        #clear out journalctl - probably a better way to do this
         journalctl --rotate > /dev/null 2>&1
         journalctl --vacuum-time=1seconds > /dev/null 2>&1
         echo "Plug your printer in via USB now (detection time-out in 1 min)"
@@ -267,10 +267,9 @@ new_instance () {
             systemctl enable cam_$INSTANCE.service
         fi
         
-        #if we are on octopi, add in haproxy entry
-        #get haproxy version
+        #need to find a way to know if haproxy is being used
         HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
-        if [ $INSTALL -gt 1 ]; then
+        if [ "$HAPROXY" == true ]; then
             #find frontend line, do insert
             sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
@@ -302,9 +301,8 @@ new_instance () {
 }
 
 write_camera() {
-    #Establish which streamer system is using, default mjpg-streamer
-    STREAMER=$(cat /etc/octoprint_streamer)
-    echo $STREAMER
+    
+    get_settings
     if [ -z "$STREAMER" ]; then
         $STREAMER='mjpg-streamer'
     fi
@@ -368,7 +366,6 @@ add_camera() {
         done
     fi
     
-    #clear out journalctl - probably a better way to do this
     journalctl --rotate > /dev/null 2>&1
     journalctl --vacuum-time=1seconds > /dev/null 2>&1
     echo "Plug your CAMERA in via USB now (detection time-out in 1 min)"
@@ -437,42 +434,43 @@ add_camera() {
 
 remove_instance() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
-    #TODO Check to see that octoprint_instances exists before continuing
-    echo 'Do not remove the generic instance!' | log
-    PS3='Select instance to remove: '
-    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
-    select opt in "${options[@]}"
-    do
-        echo "Selected instance to remove: $opt" | log
-        break
-    done
-    
-    if prompt_confirm "Do you want to remove everything associated with this instance?"
-    then
-        #disable and remove service file
-        if [ -f /etc/systemd/system/$opt.service ]; then
-            systemctl stop $opt.service
-            systemctl disable $opt.service
-            rm /etc/systemd/system/$opt.service
-        fi
+    if [ -f "/etc/octoprint_instances"]; then
+        echo 'Do not remove the generic instance!' | log
+        PS3='Select instance to remove: '
+        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+        select opt in "${options[@]}"
+        do
+            echo "Selected instance to remove: $opt" | log
+            break
+        done
         
-        if [ -f /etc/systemd/system/cam_$opt.service ]; then
-            systemctl stop cam_$opt.service
-            systemctl disable cam_$opt.service
-            rm /etc/systemd/system/cam_$opt.service
-            sed -i "/cam_$opt/d" /etc/udev/rules.d/99-octoprint.rules
-        fi
-        #remove udev entry
-        sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
-        #remove files
-        rm -rf /home/$user/.$opt
-        #remove from octoprint_instances
-        sed -i "/$opt/d" /etc/octoprint_instances
-        #remove haproxy entry
-        if [ -f /etc/haproxy/haproxy.cfg ]; then
-            sed -i "/use_backend $opt/d" /etc/haproxy/haproxy.cfg
-            sed -i "/#$opt start/,/#$opt stop/d" /etc/haproxy/haproxy.cfg
-            systemctl restart haproxy.service
+        if prompt_confirm "Do you want to remove everything associated with this instance?"
+        then
+            #disable and remove service file
+            if [ -f /etc/systemd/system/$opt.service ]; then
+                systemctl stop $opt.service
+                systemctl disable $opt.service
+                rm /etc/systemd/system/$opt.service
+            fi
+            
+            if [ -f /etc/systemd/system/cam_$opt.service ]; then
+                systemctl stop cam_$opt.service
+                systemctl disable cam_$opt.service
+                rm /etc/systemd/system/cam_$opt.service
+                sed -i "/cam_$opt/d" /etc/udev/rules.d/99-octoprint.rules
+            fi
+            #remove udev entry
+            sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
+            #remove files
+            rm -rf /home/$user/.$opt
+            #remove from octoprint_instances
+            sed -i "/$opt/d" /etc/octoprint_instances
+            #remove haproxy entry
+            if [ -f /etc/haproxy/haproxy.cfg ]; then
+                sed -i "/use_backend $opt/d" /etc/haproxy/haproxy.cfg
+                sed -i "/#$opt start/,/#$opt stop/d" /etc/haproxy/haproxy.cfg
+                systemctl restart haproxy.service
+            fi
         fi
     fi
     main_menu
@@ -584,12 +582,13 @@ prepare () {
         touch /etc/camera_ports
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
+        echo 'type: octopi' >> /etc/octoprint_deploy
         
         
         if [ $INSTALL -eq 1 ]; then
             if grep -q 'firstRun: false' /home/$user/.octoprint/config.yaml; then
-                echo "It looks as though this OctoPi installation may have already been used." | log
-                echo "In order to use the script, the files must be backed up and then moved."
+                echo "It looks as though this OctoPi installation has already been in use." | log
+                echo "In order to use the script, the files must be moved."
                 echo "If you chose to continue with the installation these files will be moved (not erased)."
                 echo "They will be found at /home/$user/.old-octo"
                 if prompt_confirm "Continue with installation?"; then
@@ -603,6 +602,15 @@ prepare () {
                 fi
             fi
             
+            if prompt_confirm "Would you like to install and use ustreamer instead of mjpg-streamer?"; then
+                echo 'streamer: ustreamer' >> /etc/octoprint_deploy
+                apt-get -y install libevent-dev libbsd-dev
+                sudo -u $user git clone --depth=1 https://github.com/pikvm/ustreamer
+                sudo -u $user make -C ustreamer > /dev/null
+            else
+                echo 'streamer: mjpg-streamer' >> /etc/octoprint_deploy
+            fi
+            
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
             systemctl disable webcamd.service
@@ -614,9 +622,8 @@ prepare () {
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
-            #webcamd gets restarted? why? get it out of there for now
-            #mv /etc/systemd/system/webcamd.service /home/$user/
-            echo mjpg-streamer > /etc/octoprint_streamer
+            
+            echo 'haproxy: true' >> /etc/octoprint_deploy
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint instance and setup admin user'
@@ -624,6 +631,7 @@ prepare () {
         fi
         
         if [ $INSTALL -gt 1 ]; then
+            echo 'type: linux' >> /etc/octoprint_deploy
             echo "Creating OctoBuntu installation equivalent."
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
@@ -661,9 +669,11 @@ prepare () {
             #Add this is as an option
             echo
             echo
-            echo 'You have the option of setting up haproxy. This binds instances to a name on port 80 instead of having to type the port.'
+            echo 'You now have the option of setting up haproxy. This binds instances to a name on port 80 instead of having to type the port.'
             echo 'If you intend to use this machine only for OctoPrint, it is safe to select yes.'
-            if prompt_confirm "Use haproxy?" then
+            echo
+            if prompt_confirm "Use haproxy?"; then
+                echo 'haproxy: true' >> /etc/octoprint_deploy
                 systemctl stop haproxy
                 #get haproxy version
                 HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
@@ -704,7 +714,7 @@ prepare () {
             done
             
             if [ $VID -eq 1 ]; then
-                echo mjpg-streamer > /etc/octoprint_streamer
+                echo 'streamer: mjpg-streamer' >> /etc/octoprint_deploy
                 #install mjpg-streamer, not doing any error checking or anything
                 echo 'Installing mjpeg-streamer'
                 sudo -u $user git clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
@@ -715,7 +725,7 @@ prepare () {
             fi
             
             if [ $VID -eq 2 ]; then
-                echo ustreamer > /etc/octoprint_streamer
+                echo 'streamer: ustreamer' >> /etc/octoprint_deploy
                 #install ustreamer
                 sudo -u $user git clone --depth=1 https://github.com/pikvm/ustreamer
                 sudo -u $user make -C ustreamer > /dev/null
@@ -779,6 +789,7 @@ remove_everything() {
         echo "Removing system stuff"
         rm /etc/systemd/system/octoprint_default.service
         rm /etc/octoprint_streamer
+        rm /etc/octoprint_deploy
         rm /etc/octoprint_instances
         rm /etc/camera_ports
         rm /etc/udev/rules.d/99-octoprint.rules
