@@ -9,4 +9,5 @@ server:
     commands:
         serverRestartCommand: sudo systemctl restart INSTANCE
         systemRestartCommand: sudo reboot
+        systemShutdownCommand: sudo shutdown -n now
     firstRun: true

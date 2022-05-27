@@ -266,7 +266,7 @@ new_instance () {
         sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
         #Set port
         sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
-        
+
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
         fi
@@ -386,7 +386,7 @@ add_camera() {
         done
     fi
     
-    if [ "$camopt" == generic]; then
+    if [ "$camopt" == generic ]; then
         echo "Don't add cameras to the generic instance."
         main_menu
     fi
