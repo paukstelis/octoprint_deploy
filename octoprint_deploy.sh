@@ -276,13 +276,13 @@ new_instance () {
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             if [ $HAversion -gt 1 ]; then
-                echo "       http-request replace-path ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request replace-path /$INSTANCE/(.*) /\1" >> /etc/haproxy/haproxy.cfg
                 echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
                 echo "       http-request add-header X-Scheme https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
-                echo "       http-request add-header X-Script-Name /$INSTANCE" >> /etc/haproxy/haproxy.cfg          
+                echo "       http-request add-header X-Script-Name /$INSTANCE" >> /etc/haproxy/haproxy.cfg
             else
-                echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg                
+                echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
                 echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
@@ -659,18 +659,26 @@ prepare () {
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
             #Add this is as an option
-            echo 'Updating haproxy'
-            systemctl stop haproxy
-            #get haproxy version
-            HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
-            mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.orig
-            if [ $HAversion -gt 1 ]; then
-                cp $SCRIPTDIR/haproxy2x.basic /etc/haproxy/haproxy.cfg
+            echo
+            echo
+            echo 'You have the option of setting up haproxy. This binds instances to a name on port 80 instead of having to type the port.'
+            echo 'If you intend to use this machine only for OctoPrint, it is safe to select yes.'
+            if prompt_confirm "Use haproxy?" then
+                systemctl stop haproxy
+                #get haproxy version
+                HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
+                mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.orig
+                if [ $HAversion -gt 1 ]; then
+                    cp $SCRIPTDIR/haproxy2x.basic /etc/haproxy/haproxy.cfg
+                else
+                    cp $SCRIPTDIR/haproxy1x.basic /etc/haproxy/haproxy.cfg
+                fi
+                systemctl start haproxy
+                systemctl enable haproxy
             else
-                cp $SCRIPTDIR/haproxy1x.basic /etc/haproxy/haproxy.cfg
+                systemctl stop haproxy
+                systemctl disable haproxy
             fi
-            systemctl start haproxy
-            systemctl enable haproxy
             
             echo
             echo
@@ -716,7 +724,7 @@ prepare () {
             if [ $VID -eq 3]; then
                 echo "You can install a streamer manually at a later time."
             fi
-
+            
             #Fedora has SELinux on by default so must make adjustments? Don't really know what these do...
             if [ $INSTALL -eq 3 ]; then
                 semanage fcontext -a -t bin_t "/home/$user/OctoPrint/bin/.*"
