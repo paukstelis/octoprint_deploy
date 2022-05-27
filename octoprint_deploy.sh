@@ -264,6 +264,8 @@ new_instance () {
         cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
         #uniquify instances
         sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
+        #Set port
+        sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
         
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
@@ -606,20 +608,22 @@ prepare () {
         usermod -a -G dialout,video $user
         
         #service start/stop may fail on non-OctoPi instances, but that is probably Ok
-        if grep -q 'firstRun: false' /home/$user/.octoprint/config.yaml; then
-            echo "It looks as though this installation has already been in use." | log
-            echo "In order to use the script, the files must be moved."
-            echo "If you chose to continue with the installation these files will be moved (not erased)."
-            echo "They will be found at /home/$user/.old-octo"
-            echo "If you have generated service files for OctoPrint, please stop and disable them."
-            if prompt_confirm "Continue with installation?"; then
-                echo "Continuing installation." | log
-                systemctl stop octoprint.service
-                echo "Moving files to /home/$user/.old-octo" | log
-                mv /home/$user/.octoprint /home/$user/.old-octo
-                systemctl start octoprint.service
-            else
-                main_menu
+        if [ -f "/home/$user/.octoprint/config.yaml" ]; then
+            if grep -q 'firstRun: false' /home/$user/.octoprint/config.yaml; then
+                echo "It looks as though this installation has already been in use." | log
+                echo "In order to use the script, the files must be moved."
+                echo "If you chose to continue with the installation these files will be moved (not erased)."
+                echo "They will be found at /home/$user/.old-octo"
+                echo "If you have generated service files for OctoPrint, please stop and disable them."
+                if prompt_confirm "Continue with installation?"; then
+                    echo "Continuing installation." | log
+                    systemctl stop octoprint.service
+                    echo "Moving files to /home/$user/.old-octo" | log
+                    mv /home/$user/.octoprint /home/$user/.old-octo
+                    systemctl start octoprint.service
+                else
+                    main_menu
+                fi
             fi
         fi
         
@@ -649,6 +653,7 @@ prepare () {
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             echo 'Connect to your octoprint (octopi.local) instance and setup admin user'
+            systemctl restart octoprint.service
             
         fi
         
@@ -753,7 +758,7 @@ prepare () {
                 sudo -u $user make -C ustreamer > /dev/null
             fi
             
-            if [ $VID -eq 3]; then
+            if [ $VID -eq 3 ]; then
                 echo "You can install a streamer manually at a later time."
             fi
             
@@ -778,6 +783,9 @@ prepare () {
             echo 'Connect to your template instance and setup the admin user.'
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
+            echo
+            echo
+            systemctl restart octoprint_default.service
             
         fi
     fi
