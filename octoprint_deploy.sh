@@ -14,11 +14,11 @@ get_settings() {
     #Get octoprint_deploy settings, all of which are written on system prepare
     if [ -f /etc/octoprint_deploy ]; then
         TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \(\.*\)/\1/p')
-        echo $TYPE
+        #echo $TYPE
         STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \(\.*\)/\1/p')
-        echo $STREAMER
+        #echo $STREAMER
         HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
-        echo $HAPROXY
+        #echo $HAPROXY
     fi
 }
 
@@ -280,15 +280,18 @@ new_instance () {
                 echo "       http-request add-header X-Scheme https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       http-request add-header X-Script-Name /$INSTANCE" >> /etc/haproxy/haproxy.cfg
+                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
             else
-                echo "       reqrep ^([^\ :]*)\ /$INSTANCE(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
                 echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
                 echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
             fi
-            echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
-            echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
+            
             echo "#$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
             
             #restart haproxy
