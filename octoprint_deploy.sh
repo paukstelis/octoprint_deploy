@@ -155,7 +155,7 @@ new_instance () {
             main_menu
         fi
     fi
-
+    
     #check to make sure first run is complete
     if grep -q 'firstRun: true' $BFOLD/config.yaml; then
         echo "WARNING!! You must setup the template profile and admin user before continuing" | log
@@ -384,7 +384,7 @@ add_camera() {
         done
     fi
     
-    if [ "$camopt" == generic] then;
+    if [ "$camopt" == generic]; then
         echo "Don't add cameras to the generic instance."
         main_menu
     fi
