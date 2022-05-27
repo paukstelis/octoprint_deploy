@@ -13,11 +13,11 @@ ARCH=${ARCH:0:3}
 get_settings() {
     #Get octoprint_deploy settings, all of which are written on system prepare
     if [ -f /etc/octoprint_deploy ]; then
-        TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \([[:alnum:]]*\) .*/\1/p')
+        TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \(\.*\)/\1/p')
         echo $TYPE
-        STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \([[:alnum:]]*\) .*/\1/p')
+        STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \(\.*\)/\1/p')
         echo $STREAMER
-        HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \([[:alnum:]]*\) .*/\1/p')
+        HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
         echo $HAPROXY
     fi
 }
