@@ -830,6 +830,11 @@ remove_everything() {
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
         systemctl daemon-reload
+        if [ -f /etc/haproxy/haproxy.cfg ]; then
+            sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
+            sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
+            systemctl restart haproxy.service
+        fi
         
         
     fi
