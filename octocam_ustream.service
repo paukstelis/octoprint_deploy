@@ -5,7 +5,7 @@ Wants=network.online.target
 
 [Service]
 User=OCTOUSER
-ExecStart=/home/OCTOUSER/ustreamer/ustreamer -d /dev/OCTOCAM -h 0.0.0.0 -m MJPEG -r RESOLUTION -f FRAMERATE -p CAMPORT --device-timeout 8 --device-error-delay 8
+ExecStart=/home/OCTOUSER/ustreamer/ustreamer -d /dev/OCTOCAM -s 0.0.0.0 -m MJPEG -r RESOLUTION -f FRAMERATE -p CAMPORT --device-timeout 8 --device-error-delay 8
 
 [Install]
 WantedBy=multi-user.target
