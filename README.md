@@ -51,4 +51,8 @@ As of 02/22 there is no longer a need to download a specific image file.
 * Add architecture check to minimize errors where a system gets prepared as OctoPi when someone is using Ubuntu/Fedora/etc.
 * Include ustreamer as an option for camera streaming
 * Add remove command-line argument to get rid of all the stuff the script has done.
+# TODO
+* Uniquify tracking ids
+* Cameras behind haproxy?
+* Add Arch (pacman) support
 
