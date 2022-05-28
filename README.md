@@ -2,7 +2,7 @@ Updated May 2022.
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? You can open issues here or ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
-These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer).
+These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer). No need for lots of file editing or complicated Docker compose scripts!
 # BIG CHANGES
 As of 02/22 there is no longer a need to download a specific image file.
 
@@ -15,6 +15,7 @@ As of 02/22 there is no longer a need to download a specific image file.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
   * Choose `Prepare System` from the menu.
   * If you have already been using this system for some time, you will be prompted that files will be moved in order to generate a template instance.
+  * You will be prompted if you want to switch from mjpeg-streamer to ustreamer.
   * Setup admin user by connecting to http://octopi.local via browser.
   * Back in the ssh session, choose `Add Instance` and follow the instructions.
   * If your printer does not have a serial number (all Creality printers), it will time out and use the physical USB address for udev entries.

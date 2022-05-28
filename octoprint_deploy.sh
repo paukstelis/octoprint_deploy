@@ -266,7 +266,7 @@ new_instance () {
         sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
         #Set port
         sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
-
+        
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
         fi
@@ -699,6 +699,7 @@ prepare () {
             echo 'You now have the option of setting up haproxy. This binds instances to a name on port 80 instead of having to type the port.'
             echo 'If you intend to use this machine only for OctoPrint, it is safe to select yes.'
             echo
+            echo
             if prompt_confirm "Use haproxy?"; then
                 echo 'haproxy: true' >> /etc/octoprint_deploy
                 systemctl stop haproxy
@@ -759,7 +760,7 @@ prepare () {
             fi
             
             if [ $VID -eq 3 ]; then
-                echo "You can install a streamer manually at a later time."
+                echo "Good for you! Cameras are just annoying anyway."
             fi
             
             #Fedora has SELinux on by default so must make adjustments? Don't really know what these do...
@@ -785,7 +786,8 @@ prepare () {
             systemctl enable octoprint_default.service
             echo
             echo
-            systemctl restart octoprint_default.service          
+            #this restart seems necessary in some cases
+            systemctl restart octoprint_default.service
         fi
     fi
     main_menu
@@ -815,6 +817,11 @@ remove_everything() {
             rm /etc/systemd/system/cam_$instance.service
             echo "Removing instance..."
             rm -rf /home/$user/.$instance
+            if [ -f /etc/haproxy/haproxy.cfg ]; then
+                sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
+                sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
+                systemctl restart haproxy.service
+            fi
         done
         echo "Removing system stuff"
         rm /etc/systemd/system/octoprint_default.service
@@ -828,12 +835,7 @@ remove_everything() {
         echo "Removing template"
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
-        systemctl daemon-reload
-        if [ -f /etc/haproxy/haproxy.cfg ]; then
-            sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
-            sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
-            systemctl restart haproxy.service
-        fi  
+        systemctl daemon-reload      
     fi
 }
 
@@ -849,7 +851,7 @@ main_menu() {
     if [ -f "/etc/octoprint_instances" ]; then
         options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
     else
-        options=("Prepare system" "New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+        options=("Prepare system" "USB port testing" "Quit")
     fi
     
     select opt in "${options[@]}"
