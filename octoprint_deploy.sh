@@ -785,8 +785,7 @@ prepare () {
             systemctl enable octoprint_default.service
             echo
             echo
-            systemctl restart octoprint_default.service
-            
+            systemctl restart octoprint_default.service          
         fi
     fi
     main_menu
@@ -834,12 +833,10 @@ remove_everything() {
             sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
             sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
             systemctl restart haproxy.service
-        fi
-        
-        
+        fi  
     fi
-    
 }
+
 main_menu() {
     #reset
     UDEV=''
