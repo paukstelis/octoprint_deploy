@@ -548,6 +548,7 @@ deb_packages() {
     -e libbsd-dev \
     -e ffmpeg \
     -e uuid-runtime\
+    -e ssh\
     -e haproxy\
     | xargs apt-get install -y | log
     
@@ -672,7 +673,7 @@ prepare () {
             fi
             #Fedora35
             if [ $INSTALL -eq 3 ]; then
-                dnf -y install python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy
+                dnf -y install python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy openssh openssh-server
             fi
             
             echo "Installing OctoPrint in /home/$user/OctoPrint"
@@ -770,7 +771,7 @@ prepare () {
                 restorecon -R -v /home/$user/OctoPrint/bin
                 if [ $VID -eq 1 ]; then
                     semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
-                    chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
+                    chcon -Rv -u more sysystem_u -t bin_t "/home/$user/mjpg-streamer/"
                     restorecon -R -v /home/$user/mjpg-streamer
                 fi
                 if [ $VID -eq 2 ]; then
