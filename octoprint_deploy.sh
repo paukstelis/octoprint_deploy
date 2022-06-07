@@ -578,13 +578,14 @@ prepare () {
                 INSTALL=2
                 break
             ;;
-            "Fedora/Centos"
+            "Fedora/Centos")
                 INSTALL=3
                 break
             ;;
-            "ArchLinux"
+            "ArchLinux")
                 INSTALL=4
                 break
+            ;;
             "Quit")
                 exit 1
             ;;
