@@ -36,6 +36,7 @@ As of 02/22 there is no longer a need to download a specific image file.
   * __This instance is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add a camera to the generic instance.__
   * Continue with octoprint_deploy script, choose `Add Instance` and follow the instructions.
   * If your printer does not have a serial number (all Creality printers) allow the auto-detection to time-out and it will detect by the USB port you plugged it in to.
+  * After adding the first instance, the template instance will be shutdown. This is normal.
   * Add as many instances as you have printers, following the instructions.
   * Remember, camera installed with this script are experimental and always will be. The script makes some basic assumptions that you may need to change later. Cameras suck up quite a bit of USB bandwidth so while it is quite straightforward to run 10 printers with a modest computer, you can't also run 10 cameras.
 * What else can you do?
