@@ -566,7 +566,7 @@ prepare () {
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS" "Fedora 35+" "Quit")
+    options=("OctoPi" "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -578,10 +578,13 @@ prepare () {
                 INSTALL=2
                 break
             ;;
-            "Fedora 35+")
+            "Fedora/Centos"
                 INSTALL=3
                 break
             ;;
+            "ArchLinux"
+                INSTALL=4
+                break
             "Quit")
                 exit 1
             ;;
@@ -671,11 +674,16 @@ prepare () {
                 apt-get update > /dev/null
                 deb_packages
             fi
-            #Fedora35
+            #Fedora35/CentOS
             if [ $INSTALL -eq 3 ]; then
                 dnf -y install python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy openssh openssh-server
             fi
             
+            #ArchLinux
+            if [ $INSTALL -eq 4 ]; then
+                pacman -S --noconfirm make cmake python python-virtualenv libyaml python-pip libjpeg-turbo python-yaml python-setuptools ffmpeg gcc libevent libbsd openssh haproxy v4l-utils
+            fi
+
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
