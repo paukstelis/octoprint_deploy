@@ -251,9 +251,6 @@ new_instance () {
             echo KERNELS==\"$USB\",SUBSYSTEM==\"tty\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
         
-        #just to be on the safe side, add user to dialout and video
-        usermod -a -G dialout,video $OCTOUSER
-        
         #Append instance name to list for removal tool
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
@@ -264,6 +261,10 @@ new_instance () {
         cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
         #uniquify instances
         sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
+        u1=$(uuidgen)
+        u2=$(uuidgen)
+        awk -i inplace -v id="unique_id: $u1" '/unique_id: (.*)/{c++;if(c==1){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
+        awk -i inplace -v id="unique_id: $u2" '/unique_id: (.*)/{c++;if(c==2){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
         #Set port
         sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
         
@@ -452,6 +453,8 @@ add_camera() {
         write_camera
         systemctl start cam_$INSTANCE.service
         systemctl enable cam_$INSTANCE.service
+        udevadm control --reload-rules
+        udevadm trigger
         main_menu
     fi
 }
@@ -683,6 +686,7 @@ prepare () {
             #ArchLinux
             if [ $INSTALL -eq 4 ]; then
                 pacman -S --noconfirm make cmake python python-virtualenv libyaml python-pip libjpeg-turbo python-yaml python-setuptools ffmpeg gcc libevent libbsd openssh haproxy v4l-utils
+                usermod -a -G uucp $user
             fi
 
             echo "Installing OctoPrint in /home/$user/OctoPrint"
@@ -791,7 +795,7 @@ prepare () {
                 
             fi
             echo 'Starting generic service on port 5000'
-            echo 'Connect to your template instance and setup the admin user.'
+            echo '\033[0;31mConnect to your template instance and setup the admin user.\033[0m'
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
             echo

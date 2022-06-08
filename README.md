@@ -1,4 +1,4 @@
-Updated May 2022.  
+Updated June 8, 2022.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? You can open issues here or ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
@@ -22,11 +22,12 @@ As of 02/22 there is no longer a need to download a specific image file.
   * Continue until you have added all the printers you want to use.
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed).
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
-* General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/etc/)
+* General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
   * Basic guide video here: https://youtu.be/1YINWQ5fNn0
-  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, or Fedora35+ on your system (make sure your user is admin for sudo).
-  * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git`.
+  * All commands assume you are operating out of your home directory.
+  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, Fedora35+, or ArchLinux on your system (make sure your user is admin for sudo).
+  * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git` or `sudo pacman -S git`.
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
   * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and start a template instance.
@@ -45,16 +46,16 @@ As of 02/22 there is no longer a need to download a specific image file.
   * Test USB connections
   * Want to get rid of everything? `sudo octoprint_deploy/octoprint_deploy.sh remove`
 # Recent Changes
+* ArchLinux support
 * Prompt for haproxy for linux installs
 * Implement 'Use all defaults' for adding instances.
 * Prompt for streamer (mjpeg-streamer or ustreamer)
-* Uniquify pnp uuid.
-* Add duplicate serial number detection.
+* Uniquify pnp uuid and tracking uuid's.
+* Add duplicate serial number detection. There is no resolution offered as of yet.
 * Add architecture check to minimize errors where a system gets prepared as OctoPi when someone is using Ubuntu/Fedora/etc.
 * Include ustreamer as an option for camera streaming
 * Add remove command-line argument to get rid of all the stuff the script has done.
 # TODO
-* Uniquify tracking ids
 * Cameras behind haproxy?
-* Add Arch (pacman) support
+
 
