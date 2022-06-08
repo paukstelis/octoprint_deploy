@@ -692,6 +692,8 @@ prepare () {
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
+            #update pip
+            sudo -u $user /home/$user/OctoPrint/bin/pip install --upgrade pip
             #pre-install wheel
             sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
             #install oprint
@@ -834,7 +836,6 @@ remove_everything() {
             if [ -f /etc/haproxy/haproxy.cfg ]; then
                 sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
                 sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
-                systemctl restart haproxy.service
             fi
         done
         echo "Removing system stuff"
@@ -849,6 +850,7 @@ remove_everything() {
         echo "Removing template"
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
+        systemctl restart haproxy.service
         systemctl daemon-reload      
     fi
 }
