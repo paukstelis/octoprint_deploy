@@ -800,12 +800,13 @@ prepare () {
                 
             fi
             
+            systemctl start octoprint_default.service
             firstrun
             #Set default printer as well?
             
             echo 'Starting generic service on port 5000'
             echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
-            systemctl start octoprint_default.service
+           
             systemctl enable octoprint_default.service
             echo
             echo
@@ -836,12 +837,12 @@ firstrun() {
             OCTOPASS=fooselrulz
         fi
         echo "Admin password: $OCTOPASS"
-        $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin
+        $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
     fi
     
     if prompt_confirm "Do first run wizards now?"; then
-        $OCTOEXEC config set server.firstRun false
-        $OCTOEXEC config set server.seenWizards.backup null
+        $OCTOEXEC config set server.firstRun false | log
+        $OCTOEXEC config set server.seenWizards.backup null | log
         if prompt_confirm "Enable online connectivity check?"; then
             $OCTOEXEC config set server.onlineCheck.enabled true
         else
