@@ -705,7 +705,7 @@ prepare () {
             echo 'Creating generic service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
             sed -e "s/OCTOUSER/$user/" \
-            -e "s#OCTOPATH#/$OCTOEXEC#" \
+            -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
             -e "s#OCTOCONFIG#/home/$user/#" \
             -e "s/NEWINSTANCE/octoprint/" \
             -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint_default.service
@@ -800,13 +800,13 @@ prepare () {
                 
             fi
             
-            systemctl start octoprint_default.service
+            
             firstrun
             #Set default printer as well?
             
             echo 'Starting generic service on port 5000'
             echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
-           
+            systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
             echo
             echo
@@ -832,7 +832,7 @@ firstrun() {
         echo "Admin user: $OCTOADMIN"
         echo 'Enter admin user password (no spaces): '
         read OCTOPASS
-        if [ -z OCTOPASS ]; then
+        if [ -z "$OCTOPASS" ]; then
             echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
             OCTOPASS=fooselrulz
         fi
@@ -840,6 +840,8 @@ firstrun() {
         $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
     fi
     
+    echo "The script can complete the first run wizards now. For more information on these, see the OctoPrint website."
+    echo "It is standard to accept these, as no identifying information is exposed through their usage."
     if prompt_confirm "Do first run wizards now?"; then
         $OCTOEXEC config set server.firstRun false | log
         $OCTOEXEC config set server.seenWizards.backup null | log
@@ -860,7 +862,12 @@ firstrun() {
         else
             $OCTOEXEC config set plugins.tracking.enabled false
         fi
+
+        if prompt_confirm "Use default printer (can be changed later)?"; then
+            $OCTOEXEC config set printerProfiles.default _default
+        fi
     fi
+
 }
 
 
