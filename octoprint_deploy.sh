@@ -636,6 +636,7 @@ prepare () {
         fi
         
         if [ $INSTALL -eq 1 ]; then
+            OCTOEXEC=/home/$user/oprint/bin/octoprint
             echo 'type: octopi' >> /etc/octoprint_deploy
             if prompt_confirm "Would you like to install and use ustreamer instead of mjpg-streamer?"; then
                 echo 'streamer: ustreamer' >> /etc/octoprint_deploy
@@ -660,12 +661,14 @@ prepare () {
             echo 'haproxy: true' >> /etc/octoprint_deploy
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
+            firstrun
             echo 'Connect to your octoprint (octopi.local) instance and setup admin user'
             systemctl restart octoprint.service
             
         fi
         
         if [ $INSTALL -gt 1 ]; then
+            OCTOEXEC=/home/$user/OctoPrint/bin/octoprint
             echo 'type: linux' >> /etc/octoprint_deploy
             echo "Creating OctoBuntu installation equivalent."
             echo "Adding systemctl and reboot to sudo"
@@ -688,7 +691,7 @@ prepare () {
                 pacman -S --noconfirm make cmake python python-virtualenv libyaml python-pip libjpeg-turbo python-yaml python-setuptools ffmpeg gcc libevent libbsd openssh haproxy v4l-utils
                 usermod -a -G uucp $user
             fi
-
+            
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
@@ -702,7 +705,7 @@ prepare () {
             echo 'Creating generic service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
             sed -e "s/OCTOUSER/$user/" \
-            -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
+            -e "s#OCTOPATH#/$OCTOEXEC#" \
             -e "s#OCTOCONFIG#/home/$user/#" \
             -e "s/NEWINSTANCE/octoprint/" \
             -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint_default.service
@@ -796,8 +799,12 @@ prepare () {
                 fi
                 
             fi
+            
+            firstrun
+            #Set default printer as well?
+            
             echo 'Starting generic service on port 5000'
-            echo -e "\033[0;31mConnect to your template instance and setup the admin user.\033[0m"
+            echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
             echo
@@ -808,6 +815,54 @@ prepare () {
     fi
     main_menu
 }
+
+firstrun() {
+    echo 'The template instance can be configured at this time.'
+    echo 'This includes setting up admin user and the various wizards.'
+    echo 'This avoids you having to connect to the template to set these up.'
+
+    if prompt_confirm "Do you want to setup your admin user now?"; then
+        echo 'Enter admin user name (no spaces): '
+        read OCTOADMIN
+        if [ -z OCTOADMIN ]; then
+            echo -e "No admin user given! Defaulting to: \033[0;31moctoadmin\033[0m"
+            OCTOADMIN=octoadmin
+        fi
+        echo 'Admin user: $OCTOADMIN'
+        echo 'Enter admin user password (no spaces): '
+        read OCTOPASS
+        if [ -z OCTOPASS ]; then
+            echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
+            OCTOPASS=fooselrulz
+        fi
+        echo 'Admin password: $OCTOPASS'
+        echo 'Admin user added!'
+        $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin
+    fi
+    
+    if prompt_confirm "Do first run wizards now?"; then
+        $OCTOEXEC config set server.firstRun false
+        $OCTOEXEC config set server.seenWizards.backup null
+        if prompt_confirm "Enable online connectivity check?"; then
+            $OCTOEXEC config set server.onlineCheck.enabled true
+        else
+            $OCTOEXEC config set server.onlineCheck.enabled false
+        fi
+        
+        if prompt_confirm "Enable plugin blacklisting?"; then
+            $OCTOEXEC config set server.pluginBlacklist.enabled true
+        else
+            $OCTOEXEC config set server.pluginBlacklist.enabled false
+        fi
+        
+        if prompt_confirm "Enable anonymous usage tracking?"; then
+            $OCTOEXEC config set plugins.tracking.enabled true
+        else
+            $OCTOEXEC config set plugins.tracking.enabled false
+        fi
+    fi
+}
+
 
 check_sn() {
     if [ -f "/etc/udev/rules.d/99-octoprint.rules" ]; then
@@ -851,7 +906,7 @@ remove_everything() {
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
         systemctl restart haproxy.service
-        systemctl daemon-reload      
+        systemctl daemon-reload
     fi
 }
 
