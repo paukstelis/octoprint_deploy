@@ -636,7 +636,7 @@ prepare () {
         fi
         
         if [ $INSTALL -eq 1 ]; then
-            OCTOEXEC=sudo -u $user /home/$user/oprint/bin/octoprint
+            OCTOEXEC="sudo -u $user /home/$user/oprint/bin/octoprint"
             echo 'type: octopi' >> /etc/octoprint_deploy
             if prompt_confirm "Would you like to install and use ustreamer instead of mjpg-streamer?"; then
                 echo 'streamer: ustreamer' >> /etc/octoprint_deploy
@@ -668,7 +668,7 @@ prepare () {
         fi
         
         if [ $INSTALL -gt 1 ]; then
-            OCTOEXEC=sudo -u $user /home/$user/OctoPrint/bin/octoprint
+            OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
             echo 'type: linux' >> /etc/octoprint_deploy
             echo "Creating OctoBuntu installation equivalent."
             echo "Adding systemctl and reboot to sudo"
