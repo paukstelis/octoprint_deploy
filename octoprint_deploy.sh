@@ -461,7 +461,7 @@ add_camera() {
 
 remove_instance() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
-    if [ -f "/etc/octoprint_instances"]; then
+    if [ -f "/etc/octoprint_instances" ]; then
         echo 'Do not remove the generic instance!' | log
         PS3='Select instance to remove: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
