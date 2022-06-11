@@ -257,14 +257,19 @@ new_instance () {
         #copy all files to our new directory
         cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
         
-        #Do config.yaml modifications here if needed..
-        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
         #uniquify instances
-        sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
-        u1=$(uuidgen)
-        u2=$(uuidgen)
-        awk -i inplace -v id="unique_id: $u1" '/unique_id: (.*)/{c++;if(c==1){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
-        awk -i inplace -v id="unique_id: $u2" '/unique_id: (.*)/{c++;if(c==2){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
+        echo 'Uniquifying instance...'
+        #Do config.yaml modifications here
+        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
+        
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
+        #sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
+        #u1=$(uuidgen)
+        #u2=$(uuidgen)
+        #awk -i inplace -v id="unique_id: $u1" '/unique_id: (.*)/{c++;if(c==1){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
+        #awk -i inplace -v id="unique_id: $u2" '/unique_id: (.*)/{c++;if(c==2){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
         #Set port
         sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
         
