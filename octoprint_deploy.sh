@@ -797,7 +797,7 @@ prepare () {
                 
             fi
             echo 'Starting generic service on port 5000'
-            echo '\033[0;31mConnect to your template instance and setup the admin user.\033[0m'
+            echo -e "\033[0;31mConnect to your template instance and setup the admin user.\033[0m"
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
             echo
