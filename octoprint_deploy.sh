@@ -824,19 +824,18 @@ firstrun() {
     if prompt_confirm "Do you want to setup your admin user now?"; then
         echo 'Enter admin user name (no spaces): '
         read OCTOADMIN
-        if [ -z OCTOADMIN ]; then
+        if [ -z "$OCTOADMIN" ]; then
             echo -e "No admin user given! Defaulting to: \033[0;31moctoadmin\033[0m"
             OCTOADMIN=octoadmin
         fi
-        echo 'Admin user: $OCTOADMIN'
+        echo "Admin user: $OCTOADMIN"
         echo 'Enter admin user password (no spaces): '
         read OCTOPASS
         if [ -z OCTOPASS ]; then
             echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
             OCTOPASS=fooselrulz
         fi
-        echo 'Admin password: $OCTOPASS'
-        echo 'Admin user added!'
+        echo "Admin password: $OCTOPASS"
         $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin
     fi
     
