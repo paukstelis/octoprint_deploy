@@ -840,26 +840,26 @@ firstrun() {
     echo "The script can complete the first run wizards now. For more information on these, see the OctoPrint website."
     echo "It is standard to accept these, as no identifying information is exposed through their usage."
     if prompt_confirm "Do first run wizards now?"; then
-        $OCTOEXEC config set server.firstRun false | log
+        $OCTOEXEC config set server.firstRun false --bool | log
         $OCTOEXEC config set server.seenWizards.backup null | log
-        $OCTOEXEC config set server.seenWizards.corewizard 4 | log
+        $OCTOEXEC config set server.seenWizards.corewizard 4 --int | log
 
         if prompt_confirm "Enable online connectivity check?"; then
-            $OCTOEXEC config set server.onlineCheck.enabled true
+            $OCTOEXEC config set server.onlineCheck.enabled true --bool
         else
-            $OCTOEXEC config set server.onlineCheck.enabled false
+            $OCTOEXEC config set server.onlineCheck.enabled false --bool
         fi
         
         if prompt_confirm "Enable plugin blacklisting?"; then
-            $OCTOEXEC config set server.pluginBlacklist.enabled true
+            $OCTOEXEC config set server.pluginBlacklist.enabled true --bool
         else
-            $OCTOEXEC config set server.pluginBlacklist.enabled false
+            $OCTOEXEC config set server.pluginBlacklist.enabled false --bool
         fi
         
         if prompt_confirm "Enable anonymous usage tracking?"; then
-            $OCTOEXEC config set plugins.tracking.enabled true
+            $OCTOEXEC config set plugins.tracking.enabled true -bool
         else
-            $OCTOEXEC config set plugins.tracking.enabled false
+            $OCTOEXEC config set plugins.tracking.enabled false -bool
         fi
         
         if prompt_confirm "Use default printer (can be changed later)?"; then
