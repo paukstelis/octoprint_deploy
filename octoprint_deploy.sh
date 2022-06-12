@@ -720,7 +720,8 @@ prepare () {
             #Add this is as an option
             echo
             echo
-            echo 'You now have the option of setting up haproxy. This binds instances to a name on port 80 instead of having to type the port.'
+            echo 'You now have the option of setting up haproxy.'
+            echo 'This binds instances to a name on port 80 instead of having to type the port.'
             echo 'If you intend to use this machine only for OctoPrint, it is safe to select yes.'
             echo
             echo
@@ -824,9 +825,9 @@ prepare () {
 
 firstrun() {
     echo 'The template instance can be configured at this time.'
-    echo 'This includes setting up admin user and the various wizards.'
+    echo 'This includes setting up the admin user and finishing the startup wizards.'
     echo 'This avoids you having to connect to the template to set these up.'
-
+    
     if prompt_confirm "Do you want to setup your admin user now?"; then
         echo 'Enter admin user name (no spaces): '
         read OCTOADMIN
@@ -867,12 +868,12 @@ firstrun() {
         else
             $OCTOEXEC config set plugins.tracking.enabled false
         fi
-
+        
         if prompt_confirm "Use default printer (can be changed later)?"; then
             $OCTOEXEC config set printerProfiles.default _default
         fi
     fi
-
+    
 }
 
 
@@ -887,6 +888,7 @@ check_sn() {
 }
 
 remove_everything() {
+    get_settings
     if prompt_confirm "Remove everything?"; then
         readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
         for instance in "${instances[@]}"; do
@@ -919,6 +921,11 @@ remove_everything() {
         rm -rf /home/$user/OctoPrint
         systemctl restart haproxy.service
         systemctl daemon-reload
+        
+        #if using OctoPi, restart tempalte
+        if [ "$TYPE" == octopi ]; then
+            systemctl restart octoprint.service
+        fi
     fi
 }
 
