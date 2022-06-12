@@ -1,10 +1,8 @@
-Updated June 8, 2022.  
+Updated June 12, 2022.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? You can open issues here or ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
 These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer). No need for lots of file editing or complicated Docker compose scripts!
-# BIG CHANGES
-As of 02/22 there is no longer a need to download a specific image file.
 
 # How to use
 * OctoPi
@@ -16,9 +14,10 @@ As of 02/22 there is no longer a need to download a specific image file.
   * Choose `Prepare System` from the menu.
   * If you have already been using this system for some time, you will be prompted that files will be moved in order to generate a template instance.
   * You will be prompted if you want to switch from mjpeg-streamer to ustreamer.
-  * Setup admin user by connecting to http://octopi.local via browser.
+  * You will be prompted if you want to setup the admin user and do the first run wizard usaing the commandline. If you do this now you can start making new instances when the system preparation is complete.
+  * If you did not setup admin user in the script, setup admin user by connecting to http://octopi.local via browser.
   * Back in the ssh session, choose `Add Instance` and follow the instructions.
-  * If your printer does not have a serial number (all Creality printers), it will time out and use the physical USB address for udev entries.
+  * If your printer does not have a serial number (all Creality printers), it will time out during serial number detection and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use.
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed).
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
@@ -31,9 +30,10 @@ As of 02/22 there is no longer a need to download a specific image file.
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
   * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and start a template instance.
-  * You will be asked if you want to use haproxy. This will make your instances available on port 80 (e.g. http://localhost/instancename).
+  * You will be asked if you want to use haproxy. This will make your instances available on port 80 (e.g. http://localhost/instancename/).
   * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
-  * Setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via a browser
+  * You will be prompted if you want to setup the admin user and do the first run wizard via the commandline. If you do this now you can start making new instances as soon as the system preparation is complete.
+  * If you didn't setup admin user in the step above, setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via a browser
   * __This instance is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add a camera to the generic instance.__
   * Continue with octoprint_deploy script, choose `Add Instance` and follow the instructions.
   * If your printer does not have a serial number (all Creality printers) allow the auto-detection to time-out and it will detect by the USB port you plugged it in to.
@@ -46,6 +46,8 @@ As of 02/22 there is no longer a need to download a specific image file.
   * Test USB connections
   * Want to get rid of everything? `sudo octoprint_deploy/octoprint_deploy.sh remove`
 # Recent Changes
+* Admin user and first run wizards during Prepare System.
+* Better uuid uniquification
 * ArchLinux support
 * Prompt for haproxy for linux installs
 * Implement 'Use all defaults' for adding instances.
