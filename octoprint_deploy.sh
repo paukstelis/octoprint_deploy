@@ -65,8 +65,7 @@ new_instance () {
         INSTALL=2
         DAEMONPATH=$BUDEFAULT
     fi
-    
-    echo "UNPLUG PRINTER YOU ARE INSTALLING NOW (other printers can remain)"
+
     echo "Enter the name for new printer/instance (no spaces):"
     read INSTANCE
     if [ -z "$INSTANCE" ]; then
@@ -261,17 +260,12 @@ new_instance () {
         echo 'Uniquifying instance...'
         #Do config.yaml modifications here
         cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
-        
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
-        #sed -i "s/upnpUuid: .*/upnpUuid: $(uuidgen)/" $OCTOCONFIG/.$INSTANCE/config.yaml
-        #u1=$(uuidgen)
-        #u2=$(uuidgen)
-        #awk -i inplace -v id="unique_id: $u1" '/unique_id: (.*)/{c++;if(c==1){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
-        #awk -i inplace -v id="unique_id: $u2" '/unique_id: (.*)/{c++;if(c==2){sub("unique_id: (.*)",id);}}1' $OCTOCONFIG/.$INSTANCE/config.yaml
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
         #Set port
-        sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
+        #sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
         
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
@@ -667,7 +661,7 @@ prepare () {
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             firstrun
-            echo 'Connect to your octoprint (octopi.local) instance and setup admin user'
+            echo 'Connect to your octoprint (octopi.local) instance and setup admin user if you have not already'
             systemctl restart octoprint.service
             
         fi
@@ -675,7 +669,6 @@ prepare () {
         if [ $INSTALL -gt 1 ]; then
             OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
             echo 'type: linux' >> /etc/octoprint_deploy
-            echo "Creating OctoBuntu installation equivalent."
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
@@ -707,7 +700,7 @@ prepare () {
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
             #start server and run in background
-            echo 'Creating generic service...'
+            echo 'Creating generic OctoPrint service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
             sed -e "s/OCTOUSER/$user/" \
             -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
@@ -722,7 +715,6 @@ prepare () {
             echo
             echo 'You now have the option of setting up haproxy.'
             echo 'This binds instances to a name on port 80 instead of having to type the port.'
-            echo 'If you intend to use this machine only for OctoPrint, it is safe to select yes.'
             echo
             echo
             if prompt_confirm "Use haproxy?"; then
@@ -806,9 +798,8 @@ prepare () {
                 
             fi
             
-            
+            #Prompt for admin user and firstrun stuff
             firstrun
-            #Set default printer as well?
             
             echo 'Starting generic service on port 5000'
             echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
@@ -851,6 +842,8 @@ firstrun() {
     if prompt_confirm "Do first run wizards now?"; then
         $OCTOEXEC config set server.firstRun false | log
         $OCTOEXEC config set server.seenWizards.backup null | log
+        $OCTOEXEC config set server.seenWizards.corewizard 4 | log
+
         if prompt_confirm "Enable online connectivity check?"; then
             $OCTOEXEC config set server.onlineCheck.enabled true
         else
@@ -922,7 +915,7 @@ remove_everything() {
         systemctl restart haproxy.service
         systemctl daemon-reload
         
-        #if using OctoPi, restart tempalte
+        #if using OctoPi, restart template
         if [ "$TYPE" == octopi ]; then
             systemctl restart octoprint.service
         fi
