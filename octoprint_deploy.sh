@@ -14,7 +14,11 @@ get_settings() {
     #Get octoprint_deploy settings, all of which are written on system prepare
     if [ -f /etc/octoprint_deploy ]; then
         TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \(\.*\)/\1/p')
-        #echo $TYPE
+        if [ "$TYPE" == linux ]; then
+            OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
+        else
+            OCTOEXEC="sudo -u $user /home/$user/oprint/bin/octoprint"
+        fi
         STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \(\.*\)/\1/p')
         #echo $STREAMER
         HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
@@ -110,7 +114,7 @@ new_instance () {
         if [ -f /etc/octoprint_instances ]; then
             if grep -q $PORT /etc/octoprint_instances; then
                 echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting." | log
-                exit 1
+                main_menu
             fi
         fi
         
@@ -264,8 +268,6 @@ new_instance () {
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
-        #Set port
-        #sed -i "/serial:/a\  port: /dev/octo_$INSTANCE" $OCTOCONFIG/.$INSTANCE/config.yaml
         
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
@@ -353,8 +355,7 @@ write_camera() {
     echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-    echo
-    
+    $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
     #Either Serial number or USB port
     #Serial Number
     if [ -n "$CAM" ]; then
@@ -387,7 +388,7 @@ add_camera() {
     fi
     
     if [ "$camopt" == generic ]; then
-        echo "Don't add cameras to the generic instance."
+        echo "Don't add cameras to the template instance."
         main_menu
     fi
     
@@ -710,10 +711,10 @@ prepare () {
             echo 'Updating config.yaml'
             sudo -u $user mkdir /home/$user/.octoprint
             sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
-            #Add this is as an option
+            #Haproxy
             echo
             echo
-            echo 'You now have the option of setting up haproxy.'
+            echo 'You have the option of setting up haproxy.'
             echo 'This binds instances to a name on port 80 instead of having to type the port.'
             echo
             echo
@@ -817,7 +818,7 @@ prepare () {
 firstrun() {
     echo 'The template instance can be configured at this time.'
     echo 'This includes setting up the admin user and finishing the startup wizards.'
-    echo 'This avoids you having to connect to the template to set these up.'
+    echo 'If you do these now, you will not have to connect to the template with a browser.'
     
     if prompt_confirm "Do you want to setup your admin user now?"; then
         echo 'Enter admin user name (no spaces): '
@@ -922,6 +923,37 @@ remove_everything() {
     fi
 }
 
+restart_all() {
+    get_settings
+    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    for instance in "${instances[@]}"; do
+        if [ "$instance" == generic ]; then
+            continue
+        fi
+        echo "Trying to restart instance $instance"
+            systemctl restart $instance
+    done
+    exit 0
+}
+
+back_up() {
+    INSTANCE=$1
+    echo "Creating backup of $INSTANCE...."
+    sudo -p $user tar -cz $INSTANCE_$(date)_backup.tar.gz /home/$user/.$INSTANCE -C /home/$user
+    echo "Tarred and gzipped backup created in /home/$user"
+}
+
+back_up_all() {
+    get_settings
+    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    for instance in "${instances[@]}"; do
+        if [ "$instance" == generic ]; then
+            continue
+        fi
+        back_up $instance
+    done
+
+}
 main_menu() {
     #reset
     UDEV=''
@@ -971,8 +1003,16 @@ if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
 
+#command line arguments
 if [ "$1" == remove ]; then
     remove_everything
 fi
 
+if [ "$1" == restart_all ]; then
+    restart_all
+fi
+
+if [ "$1" == backup ]; then
+    back_up_all
+fi
 main_menu
