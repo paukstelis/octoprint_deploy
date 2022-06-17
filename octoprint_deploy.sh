@@ -934,8 +934,9 @@ create_menu() {
 
         echo "Selected instance to backup: $opt" | log
         back_up $opt
+        main_menu
     done
-    main_menu
+    
     
 }
 
@@ -958,6 +959,22 @@ back_up() {
     d=$(date '+%Y-%m-%d')
     sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
     echo "Tarred and gzipped backup created in /home/$user"
+}
+
+restore_menu() {
+    PS3='Select backup to restore: '
+    readarray -t options < <(ls /home/$user/*.tar.gz)
+    options+=("Quit")
+    select opt in "${options[@]}"
+    do
+        if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+            main_menu
+        fi
+
+        echo "Selected $opt to restore" | log
+        tar -xvf $opt 
+        main_menu
+    done
 }
 
 restore() {
