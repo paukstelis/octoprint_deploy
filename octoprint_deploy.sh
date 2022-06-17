@@ -1007,6 +1007,9 @@ replace_id() {
         #Serial number or KERNELS? Not doing any error checking yet
         detect_printer
         sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\", \(SYMLINK+=\"octo_$opt\"\)/\1\"$UDEV\", \3/" /etc/udev/rules.d/99-octoprint.rules
+        echo "Serial number replaced with: $UDEV"
+        udevadm control --reload-rules
+        udevadm trigger
         exit 0
         
     done
