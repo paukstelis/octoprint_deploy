@@ -940,7 +940,7 @@ back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
     d=$(date '+%Y-%m-%d')
-    sudo -p $user tar -czf $INSTANCE_$d_backup.tar.gz /home/$user/.$INSTANCE -C /home/$user
+    sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz /home/$user/.$INSTANCE
     echo "Tarred and gzipped backup created in /home/$user"
 }
 
@@ -951,6 +951,7 @@ back_up_all() {
         if [ "$instance" == generic ]; then
             continue
         fi
+        echo $instance
         back_up $instance
     done
 
