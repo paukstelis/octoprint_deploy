@@ -167,20 +167,7 @@ new_instance () {
     
     if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
     then
-        echo
-        journalctl --rotate > /dev/null 2>&1
-        journalctl --vacuum-time=1seconds > /dev/null 2>&1
-        echo "Plug your printer in via USB now (detection time-out in 1 min)"
-        counter=0
-        while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
-            UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-            if [[ -z "$TEMPUSB" ]]; then
-                TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
-            else
-                sleep 1
-            fi
-            counter=$(( $counter + 1 ))
-        done
+        detect_printer
     else
         echo "OK. Restart when you are ready" | log; exit 0
     fi
@@ -364,7 +351,7 @@ write_camera() {
     
     #USB port camera
     if [ -n "$USBCAM" ]; then
-        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\",SUBSYSTEMS==\"usb\",ATTR{index}==\"0\",DRIVERS==\"uvcvideo\",SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\", SUBSYSTEMS==\"usb\", ATTR{index}==\"0\", DRIVERS==\"uvcvideo\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
     fi
     
 }
@@ -459,6 +446,23 @@ add_camera() {
     fi
 }
 
+detect_printer() {
+    echo
+    journalctl --rotate > /dev/null 2>&1
+    journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    echo "Plug your printer in via USB now (detection time-out in 1 min)"
+    counter=0
+    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
+        UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
+        if [[ -z "$TEMPUSB" ]]; then
+            TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
+        else
+            sleep 1
+        fi
+        counter=$(( $counter + 1 ))
+    done
+}
+
 remove_instance() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     if [ -f "/etc/octoprint_instances" ]; then
@@ -504,23 +508,11 @@ remove_instance() {
 }
 
 usb_testing() {
-    echo 'USB testing' | log
-    journalctl --rotate > /dev/null 2>&1
-    journalctl --vacuum-time=1seconds > /dev/null 2>&1
-    echo "Plug your printer in via USB now (detection time-out in 1 min)"
-    counter=0
-    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
-        UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-        TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
-        counter=$(( $counter + 1 ))
-        if [ -n "$TEMPUSB" ]; then
-            echo "Detected device at $TEMPUSB" | log
-        fi
-        if [ -n "$UDEV" ]; then
-            echo "Serial Number detected: $UDEV" | log
-            check_sn "$UDEV"
-        fi
-    done
+    
+    echo "Testing printer USB" | log
+    detect_printer
+    echo "Detected device at $TEMPUSB" | log
+    echo "Serial Number detected: $UDEV" | log
     main_menu
 }
 
@@ -931,7 +923,7 @@ create_menu() {
         if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
             main_menu
         fi
-
+        
         echo "Selected instance to backup: $opt" | log
         back_up $opt
         main_menu
@@ -970,9 +962,9 @@ restore_menu() {
         if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
             main_menu
         fi
-
+        
         echo "Selected $opt to restore" | log
-        tar -xvf $opt 
+        tar -xvf $opt
         main_menu
     done
 }
@@ -998,6 +990,26 @@ back_up_all() {
         back_up $instance
     done
     
+}
+
+#Get current udev identification for an instance, replace via auto-detect
+replace_id() {
+    PS3='Select instance to change serial ID: '
+    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    options+=("Quit")
+    select opt in "${options[@]}"
+    do
+        if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+            exit 0
+        fi
+        
+        echo "Selected $opt to replace serial ID" | log
+        #Serial number or KERNELS? Not doing any error checking yet
+        detect_printer
+        sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\", \(SYMLINK+=\"octo_$opt\"\)/\1\"$UDEV\", \3/" /etc/udev/rules.d/99-octoprint.rules
+        exit 0
+        
+    done
 }
 
 main_menu() {
@@ -1068,5 +1080,9 @@ fi
 
 if [ "$1" == backup ]; then
     back_up_all
+fi
+
+if [ "$1" == replace ]; then
+    replace_id
 fi
 main_menu
