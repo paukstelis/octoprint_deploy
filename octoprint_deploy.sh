@@ -939,7 +939,7 @@ restart_all() {
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
-    sudo -p $user tar -czf $INSTANCE_$(date)_backup.tar.gz /home/$user/.$INSTANCE -C /home/$user
+    sudo -p $user tar -czf $INSTANCE_$(date '+%Y-%m-%d')_backup.tar.gz /home/$user/.$INSTANCE -C /home/$user
     echo "Tarred and gzipped backup created in /home/$user"
 }
 
