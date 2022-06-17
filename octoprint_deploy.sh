@@ -69,7 +69,7 @@ new_instance () {
         INSTALL=2
         DAEMONPATH=$BUDEFAULT
     fi
-
+    
     echo "Enter the name for new printer/instance (no spaces):"
     read INSTANCE
     if [ -z "$INSTANCE" ]; then
@@ -844,7 +844,7 @@ firstrun() {
         $OCTOEXEC config set server.firstRun false --bool | log
         $OCTOEXEC config set server.seenWizards.backup null | log
         $OCTOEXEC config set server.seenWizards.corewizard 4 --int | log
-
+        
         if prompt_confirm "Enable online connectivity check?"; then
             $OCTOEXEC config set server.onlineCheck.enabled true --bool
         else
@@ -922,6 +922,22 @@ remove_everything() {
         fi
     fi
 }
+create_menu() {
+    PS3='Select instance to backup: '
+    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    options+=("Quit")
+    select opt in "${options[@]}"
+    do
+        if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+            main_menu
+        fi
+
+        echo "Selected instance to backup: $opt" | log
+        back_up $opt
+    done
+    main_menu
+    
+}
 
 restart_all() {
     get_settings
@@ -931,7 +947,7 @@ restart_all() {
             continue
         fi
         echo "Trying to restart instance $instance"
-            systemctl restart $instance
+        systemctl restart $instance
     done
     exit 0
 }
@@ -940,8 +956,18 @@ back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
     d=$(date '+%Y-%m-%d')
-    sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz /home/$user/.$INSTANCE
+    sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
     echo "Tarred and gzipped backup created in /home/$user"
+}
+
+restore() {
+    INSTANCE=$1
+    TAR=$2
+    echo "Restoring backup of $INSTANCE...."
+    systemctl stop $INSTANCE
+    sudo -p $user tar -xvf $TAR
+    systemctl start $INSTANCE
+    
 }
 
 back_up_all() {
@@ -954,8 +980,9 @@ back_up_all() {
         echo $instance
         back_up $instance
     done
-
+    
 }
+
 main_menu() {
     #reset
     UDEV=''
@@ -966,7 +993,7 @@ main_menu() {
     INSTALL=''
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
-        options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Quit")
+        options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Create Backup" "Restore Backup" "Quit")
     else
         options=("Prepare system" "USB port testing" "Quit")
     fi
@@ -991,6 +1018,14 @@ main_menu() {
             ;;
             "USB port testing")
                 usb_testing
+                break
+            ;;
+            "Create backup")
+                create_menu
+                break
+            ;;
+            "Restore backup")
+                restore_menu
                 break
             ;;
             "Quit")
