@@ -1020,11 +1020,11 @@ main_menu() {
                 usb_testing
                 break
             ;;
-            "Create backup")
+            "Create Backup")
                 create_menu
                 break
             ;;
-            "Restore backup")
+            "Restore Backup")
                 restore_menu
                 break
             ;;
