@@ -363,9 +363,9 @@ add_camera() {
     if [ -z "$INSTANCE" ]; then
         PS3='Select instance to add camera to: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+        options+=("Quit")
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
-        options+=("Quit")
         do
                 if [ "$camopt" == generic ]; then
         echo "Don't add cameras to the template instance."

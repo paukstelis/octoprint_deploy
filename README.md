@@ -49,7 +49,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
 # Recent Changes
-* Added webcam restart to system commands during
+* Added webcam restart to system commands during camera addition.
 * Admin user and first run wizards during Prepare System.
 * Better uuid uniquification
 * ArchLinux support
