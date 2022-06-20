@@ -365,18 +365,18 @@ add_camera() {
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
+        options+=("Quit")
         do
+                if [ "$camopt" == generic ]; then
+        echo "Don't add cameras to the template instance."
+        main_menu
+    fi
             echo "Selected instance for camera: $camopt" | log
             INSTANCE=$camopt
             OCTOCONFIG="/home/$user/"
             OCTOUSER=$user
             break
         done
-    fi
-    
-    if [ "$camopt" == generic ]; then
-        echo "Don't add cameras to the template instance."
-        main_menu
     fi
     
     journalctl --rotate > /dev/null 2>&1
@@ -682,7 +682,8 @@ prepare () {
                 pacman -S --noconfirm make cmake python python-virtualenv libyaml python-pip libjpeg-turbo python-yaml python-setuptools ffmpeg gcc libevent libbsd openssh haproxy v4l-utils
                 usermod -a -G uucp $user
             fi
-            
+            echo "Enabling ssh server..."
+            systemctl enable ssh.service
             echo "Installing OctoPrint in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
@@ -994,6 +995,8 @@ back_up_all() {
 
 #Get current udev identification for an instance, replace via auto-detect
 replace_id() {
+    echo "PLEASE NOTE, this will only work in replacing an existing serial number with another serial number"
+    echo "or an existing USB port with another USB port. You cannot mix and match."
     PS3='Select instance to change serial ID: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
     options+=("Quit")
@@ -1005,17 +1008,23 @@ replace_id() {
         
         echo "Selected $opt to replace serial ID" | log
         #Serial number or KERNELS? Not doing any error checking yet
+        KERN=$(grep octo_$opt /etc/udev/rules.d/99-octoprint.rules | sed -n -e 's/KERNELS==\"\([[:graph:]]*[[:digit:]]\)\".*/\1/p')
         detect_printer
-        sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\", \(SYMLINK+=\"octo_$opt\"\)/\1\"$UDEV\", \3/" /etc/udev/rules.d/99-octoprint.rules
-        echo "Serial number replaced with: $UDEV"
+        if [ -z "$KERN" ]; then
+            sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\"\(.*\)\(\"octo_$opt\"\)/\1\"$UDEV\"\2\3/" /etc/udev/rules.d/99-octoprint.rules
+            echo "Serial number replaced with: $UDEV"
+        else
+            sed -i -e "s/\(KERNELS==\)\"$KERN\"\(.*\)\(\"octo_$opt\"\)/\1\"$USB\"\2\3/"  /etc/udev/rules.d/99-octoprint.rules
+            echo "USB port replaced with: $USB"
+        fi
         udevadm control --reload-rules
         udevadm trigger
         exit 0
-        
     done
 }
 
 main_menu() {
+    VERSION=0.1.0
     #reset
     UDEV=''
     TEMPUSB=''
@@ -1023,6 +1032,10 @@ main_menu() {
     TEMPUSBCAM=''
     INSTANCE=''
     INSTALL=''
+    echo "*************************"
+    echo "octoprint_deploy $VERSION"
+    echo "*************************"
+    echo
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
         options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Create Backup" "Restore Backup" "Quit")
