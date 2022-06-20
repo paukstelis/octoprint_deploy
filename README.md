@@ -45,9 +45,11 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Add USB webcams AFTER you've created the instance
   * Test USB connections
   * Want to get rid of everything? `sudo octoprint_deploy/octoprint_deploy.sh remove`
+  * Backup and restore files for an instance from the menu, or backup all instances with `sudo octoprint_deploy/octoprint_deploy backup`
+  * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
+  * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
 # Recent Changes
 * Added webcam restart to system commands during
-* Added ability to restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
 * Admin user and first run wizards during Prepare System.
 * Better uuid uniquification
 * ArchLinux support
