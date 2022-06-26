@@ -818,7 +818,7 @@ prepare () {
         echo 'instance:generic port:5000' > /etc/octoprint_instances
         echo 'Adding camera port records'
         touch /etc/camera_ports
-        if [ -n $MOVE ] || [ $MOVE -eq 1 ]; then
+        if [ $MOVE -eq 1 ]; then
             echo "You can move your previously uploaded gcode to the template instance now."
             echo "If you do this, ALL new instances will have these gcode files."
             if prompt_confirm "Move old gcode files to template instance?"; then
