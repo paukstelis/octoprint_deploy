@@ -367,10 +367,10 @@ add_camera() {
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
         do
-                if [ "$camopt" == generic ]; then
-        echo "Don't add cameras to the template instance."
-        main_menu
-    fi
+            if [ "$camopt" == generic ]; then
+                echo "Don't add cameras to the template instance."
+                main_menu
+            fi
             echo "Selected instance for camera: $camopt" | log
             INSTANCE=$camopt
             OCTOCONFIG="/home/$user/"
@@ -392,8 +392,6 @@ add_camera() {
     if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
         echo
         echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
-        echo -e "You can use the Add Camera option to try again after finishing instance installation."
-        echo
         echo
         return
     fi
@@ -559,7 +557,6 @@ prepare () {
     
     echo 'Beginning system preparation' | log
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
-    echo 'Run this setup and then connect to OctoPrint through your browser to setup your admin user.'
     PS3='Installation type: '
     options=("OctoPi" "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
     select opt in "${options[@]}"
@@ -601,9 +598,9 @@ prepare () {
     
     if prompt_confirm "Ready to begin?"
     then
-        echo 'instance:generic port:5000' > /etc/octoprint_instances
-        echo 'Adding camera port records'
-        touch /etc/camera_ports
+        #echo 'instance:generic port:5000' > /etc/octoprint_instances
+        #echo 'Adding camera port records'
+        #touch /etc/camera_ports
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
         
@@ -616,6 +613,7 @@ prepare () {
                 echo "They will be found at /home/$user/.old-octo"
                 echo "If you have generated service files for OctoPrint, please stop and disable them."
                 if prompt_confirm "Continue with installation?"; then
+                    MOVE=1
                     echo "Continuing installation." | log
                     systemctl stop octoprint.service
                     echo "Moving files to /home/$user/.old-octo" | log
@@ -629,7 +627,7 @@ prepare () {
         
         if [ $INSTALL -eq 1 ]; then
             OCTOEXEC="sudo -u $user /home/$user/oprint/bin/octoprint"
-            echo 'type: octopi' >> /etc/octoprint_deploy
+            OCTOPIP="sudo -u $user /home/$user/oprint/bin/pip"
             if prompt_confirm "Would you like to install and use ustreamer instead of mjpg-streamer?"; then
                 echo 'streamer: ustreamer' >> /etc/octoprint_deploy
                 apt-get -y install libevent-dev libbsd-dev
@@ -648,23 +646,30 @@ prepare () {
             echo 'Installing needed packages'
             apt-get -y install uuid-runtime
             echo "Adding systemctl and reboot to sudo"
-            echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
-            echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
+            echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
+            echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
             echo 'haproxy: true' >> /etc/octoprint_deploy
             echo 'Modifying config.yaml'
             cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
             firstrun
             echo 'Connect to your octoprint (octopi.local) instance and setup admin user if you have not already'
+            echo 'type: octopi' >> /etc/octoprint_deploy
+            if prompt_confirm "Would you like to install recommended plugins now?"; then
+                plugin_menu
+            fi
+            if prompt_confirm "Would you like to install cloud service plugins now?"; then
+                plugin_menu_cloud
+            fi
             systemctl restart octoprint.service
             
         fi
         
         if [ $INSTALL -gt 1 ]; then
             OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
-            echo 'type: linux' >> /etc/octoprint_deploy
+            OCTOPIP="suod -u $user /home/$user/OctoPrint/bin/pip"
             echo "Adding systemctl and reboot to sudo"
-            echo "$user ALL=NOPASSWD: /usr/bin/systemctl" >> /etc/sudoers.d/octoprint_systemctl
-            echo "$user ALL=NOPASSWD: /usr/sbin/reboot" >> /etc/sudoers.d/octoprint_reboot
+            echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
+            echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
             echo "This will install necessary packages, download and install OctoPrint and setup a template instance on this machine."
             #install packages
             #All DEB based
@@ -684,7 +689,7 @@ prepare () {
             fi
             echo "Enabling ssh server..."
             systemctl enable ssh.service
-            echo "Installing OctoPrint in /home/$user/OctoPrint"
+            echo "Installing OctoPrint virtual environment in /home/$user/OctoPrint"
             #make venv
             sudo -u $user python3 -m venv /home/$user/OctoPrint
             #update pip
@@ -794,16 +799,31 @@ prepare () {
             
             #Prompt for admin user and firstrun stuff
             firstrun
-            
+            echo 'type: linux' >> /etc/octoprint_deploy
             echo 'Starting generic service on port 5000'
             echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
             echo
             echo
+            #plugins, recommended
+            plugin_menu
+            #plugins, cloud
+            plugin_menu_cloud
             #this restart seems necessary in some cases
             systemctl restart octoprint_default.service
         fi
+        echo 'instance:generic port:5000' > /etc/octoprint_instances
+        echo 'Adding camera port records'
+        touch /etc/camera_ports
+        if [ $MOVE -eq 1 ]; then
+            echo "You can move your previously uploaded gcode to the template instance now."
+            echo "If you do this, ALL new instances will have these gcode files."
+            if prompt_confirm "Move old gcode files to template instance?"; then
+                mv /home/$user/.old-octo/uploads /home/$user/.octoprint/uploads
+            fi
+        fi
+        
     fi
     main_menu
 }
@@ -929,8 +949,6 @@ create_menu() {
         back_up $opt
         main_menu
     done
-    
-    
 }
 
 restart_all() {
@@ -1084,6 +1102,7 @@ main_menu() {
 if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
+source $SCRIPTDIR/plugins.sh
 
 #command line arguments
 if [ "$1" == remove ]; then

@@ -1,0 +1,7 @@
+plugin:CancelObject path:https://github.com/paukstelis/OctoPrint-Cancelobject/archive/master.zip
+plugin:Bed Visualizer path:https://github.com/jneilliii/OctoPrint-BedLevelVisualizer/archive/master.zip
+plugin:Firmware Updater path:https://github.com/OctoPrint/OctoPrint-FirmwareUpdater/archive/master.zip
+plugin:Terminal Commands Extended: path:https://github.com/jneilliii/OctoPrint-TerminalCommandsExtended/archive/master.zip
+plugin:Active Filters Extended path:https://github.com/jneilliii/OctoPrint-ActiveFiltersExtended/archive/master.zip
+plugin:PrintTimeGenius path:https://github.com/eyal0/OctoPrint-PrintTimeGenius/archive/master.zip
+plugin:Themify path:https://github.com/birkbjo/OctoPrint-Themeify/archive/master.zip
