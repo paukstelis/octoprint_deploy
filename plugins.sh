@@ -15,7 +15,7 @@ plugin_menu() {
     do
         if [ "$plugin" == Quit ]; then
             break
-            return
+            
         fi
         
         #some special thing to do if All Recommended
@@ -27,7 +27,6 @@ plugin_menu() {
                 fi
             done
             break
-            return
         fi
         #install single plugin
         #get plugin path
@@ -51,7 +50,6 @@ plugin_menu_cloud() {
     do
         if [ "$plugin" == Quit ]; then
             break
-            return
         fi
         plugin_path=$(cat $SCRIPTDIR/plugins_cloud | sed -n -e "s/^plugin:$plugin path:\([[:graph:]]*\)/\1/p")
         install_plugin 
