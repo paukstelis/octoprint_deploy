@@ -26,12 +26,13 @@ plugin_menu() {
                     install_plugin $plugin $plugin_path
                 fi
             done
+            break
             return
         fi
         #install single plugin
         #get plugin path
         plugin_path=$(cat $SCRIPTDIR/plugins_list | sed -n -e "s/^plugin:$plugin path:\([[:graph:]]*\)/\1/p")
-        install_plugin $plugin $plugin_path
+        install_plugin 
 
         plugin_menu #keep going until quit
     done
@@ -40,7 +41,7 @@ plugin_menu() {
 
 plugin_menu_cloud() {
     echo
-    echo "You can setup cloud-based plugins at this time. Most will have to be configured"
+    echo "You can setup cloud-based plugins at this time. Some will have to be configured"
     echo "in your template instance before making new instances."
     echo
     PS3='Select cloud-based plugins to install: '
@@ -49,10 +50,11 @@ plugin_menu_cloud() {
     select plugin in "${plugins[@]}"
     do
         if [ "$plugin" == Quit ]; then
+            break
             return
         fi
         plugin_path=$(cat $SCRIPTDIR/plugins_list | sed -n -e "s/^plugin:$plugin path:\([[:graph:]]*\)/\1/p")
-        install_plugin $plugin $plugin_path
+        install_plugin 
         plugin_menu_cloud #keep going until quit
     done
 }
