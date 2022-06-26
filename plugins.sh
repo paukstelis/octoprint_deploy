@@ -14,6 +14,7 @@ plugin_menu() {
     select plugin in "${plugins[@]}"
     do
         if [ "$plugin" == Quit ]; then
+            break
             return
         fi
         
