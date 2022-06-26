@@ -666,7 +666,7 @@ prepare () {
         
         if [ $INSTALL -gt 1 ]; then
             OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
-            OCTOPIP="suod -u $user /home/$user/OctoPrint/bin/pip"
+            OCTOPIP="sudo -u $user /home/$user/OctoPrint/bin/pip"
             echo "Adding systemctl and reboot to sudo"
             echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
@@ -806,17 +806,19 @@ prepare () {
             systemctl enable octoprint_default.service
             echo
             echo
-            #plugins, recommended
-            plugin_menu
-            #plugins, cloud
-            plugin_menu_cloud
+            if prompt_confirm "Would you like to install recommended plugins now?"; then
+                plugin_menu
+            fi
+            if prompt_confirm "Would you like to install cloud service plugins now?"; then
+                plugin_menu_cloud
+            fi
             #this restart seems necessary in some cases
             systemctl restart octoprint_default.service
         fi
         echo 'instance:generic port:5000' > /etc/octoprint_instances
         echo 'Adding camera port records'
         touch /etc/camera_ports
-        if [ $MOVE -eq 1 ]; then
+        if [ -n $MOVE ]; then
             echo "You can move your previously uploaded gcode to the template instance now."
             echo "If you do this, ALL new instances will have these gcode files."
             if prompt_confirm "Move old gcode files to template instance?"; then
