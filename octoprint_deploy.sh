@@ -554,7 +554,9 @@ deb_packages() {
 }
 
 prepare () {
-    
+    echo
+    echo
+    MOVE=0
     echo 'Beginning system preparation' | log
     echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     PS3='Installation type: '
