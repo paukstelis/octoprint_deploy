@@ -1,8 +1,8 @@
 #!/bin/bash
 
 install_plugin() {
-    "Installing $1...." | log
-    $OCTOPIP $2
+    "Installing $plugin...." | log
+    $OCTOPIP $plugin_path
 }
 
 plugin_menu() {
