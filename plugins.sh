@@ -2,7 +2,7 @@
 
 install_plugin() {
     echo "Installing $plugin...." | log
-    $OCTOPIP $plugin_path
+    $OCTOPIP install $plugin_path
 }
 
 plugin_menu() {
