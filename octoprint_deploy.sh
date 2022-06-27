@@ -446,6 +446,7 @@ add_camera() {
 
 detect_printer() {
     echo
+    echo
     journalctl --rotate > /dev/null 2>&1
     journalctl --vacuum-time=1seconds > /dev/null 2>&1
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
@@ -462,6 +463,8 @@ detect_printer() {
 }
 
 remove_instance() {
+    echo
+    echo
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     if [ -f "/etc/octoprint_instances" ]; then
         echo 'Do not remove the generic instance!' | log
@@ -506,7 +509,8 @@ remove_instance() {
 }
 
 usb_testing() {
-    
+    echo
+    echo
     echo "Testing printer USB" | log
     detect_printer
     echo "Detected device at $TEMPUSB" | log
@@ -558,7 +562,6 @@ prepare () {
     echo
     MOVE=0
     echo 'Beginning system preparation' | log
-    echo 'This only needs to be run once to prepare your system to use octoprint_deploy.'
     PS3='Installation type: '
     options=("OctoPi" "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
     select opt in "${options[@]}"
@@ -588,16 +591,21 @@ prepare () {
     done
     
     if [ $INSTALL -eq 1 ] && [[ "$ARCH" != arm ]]; then
+        echo
+        echo
         echo "WARNING! You have selected OctoPi, but are not using an ARM processor."
         echo "If you are using another linux distribution, select it from the list."
         echo "Unless you really know what you are doing, select N now."
+        echo
+        echo
         if prompt_confirm "Continue with OctoPi?"; then
             echo "OK!"
         else
             main_menu
         fi
     fi
-    
+    echo
+    echo
     if prompt_confirm "Ready to begin?"
     then
         #echo 'instance:generic port:5000' > /etc/octoprint_instances
@@ -630,6 +638,8 @@ prepare () {
         if [ $INSTALL -eq 1 ]; then
             OCTOEXEC="sudo -u $user /home/$user/oprint/bin/octoprint"
             OCTOPIP="sudo -u $user /home/$user/oprint/bin/pip"
+            echo
+            echo
             if prompt_confirm "Would you like to install and use ustreamer instead of mjpg-streamer?"; then
                 echo 'streamer: ustreamer' >> /etc/octoprint_deploy
                 apt-get -y install libevent-dev libbsd-dev
@@ -656,9 +666,13 @@ prepare () {
             firstrun
             echo 'Connect to your octoprint (octopi.local) instance and setup admin user if you have not already'
             echo 'type: octopi' >> /etc/octoprint_deploy
+            echo
+            echo
             if prompt_confirm "Would you like to install recommended plugins now?"; then
                 plugin_menu
             fi
+            echo
+            echo
             if prompt_confirm "Would you like to install cloud service plugins now?"; then
                 plugin_menu_cloud
             fi
@@ -811,6 +825,8 @@ prepare () {
             if prompt_confirm "Would you like to install recommended plugins now?"; then
                 plugin_menu
             fi
+            echo
+            echo
             if prompt_confirm "Would you like to install cloud service plugins now?"; then
                 plugin_menu_cloud
             fi
@@ -833,10 +849,13 @@ prepare () {
 }
 
 firstrun() {
+    echo
+    echo
     echo 'The template instance can be configured at this time.'
     echo 'This includes setting up the admin user and finishing the startup wizards.'
     echo 'If you do these now, you will not have to connect to the template with a browser.'
-    
+    echo
+    echo
     if prompt_confirm "Do you want to setup your admin user now?"; then
         echo 'Enter admin user name (no spaces): '
         read OCTOADMIN
@@ -854,9 +873,12 @@ firstrun() {
         echo "Admin password: $OCTOPASS"
         $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
     fi
-    
+    echo
+    echo
     echo "The script can complete the first run wizards now. For more information on these, see the OctoPrint website."
     echo "It is standard to accept these, as no identifying information is exposed through their usage."
+    echo
+    echo
     if prompt_confirm "Do first run wizards now?"; then
         $OCTOEXEC config set server.firstRun false --bool | log
         $OCTOEXEC config set server.seenWizards.backup null | log
