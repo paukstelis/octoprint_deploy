@@ -1,4 +1,4 @@
-Updated June 12, 2022.  
+Updated June 26, 2022.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? You can open issues here or ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
@@ -15,6 +15,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * If you have already been using this system for some time, you will be prompted that files will be moved in order to generate a template instance.
   * You will be prompted if you want to switch from mjpeg-streamer to ustreamer.
   * You will be prompted if you want to setup the admin user and do the first run wizard usaing the commandline. If you do this now you can start making new instances when the system preparation is complete.
+  * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
   * If you did not setup admin user in the script, setup admin user by connecting to http://octopi.local via browser.
   * Back in the ssh session, choose `Add Instance` and follow the instructions.
   * If your printer does not have a serial number (all Creality printers), it will time out during serial number detection and use the physical USB address for udev entries.
@@ -33,6 +34,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * You will be asked if you want to use haproxy. This will make your instances available on port 80 (e.g. http://localhost/instancename/).
   * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
   * You will be prompted if you want to setup the admin user and do the first run wizard via the commandline. If you do this now you can start making new instances as soon as the system preparation is complete.
+  * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
   * If you didn't setup admin user in the step above, setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via a browser
   * __This instance is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add a camera to the generic instance.__
   * Continue with octoprint_deploy script, choose `Add Instance` and follow the instructions.
@@ -49,18 +51,10 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
 # Recent Changes
+* Add option for plugin installation during system preparation.
+* Enable ssh.
 * Added webcam restart to system commands during camera addition.
 * Admin user and first run wizards during Prepare System.
-* Better uuid uniquification
-* ArchLinux support
-* Prompt for haproxy for linux installs
-* Implement 'Use all defaults' for adding instances.
-* Prompt for streamer (mjpeg-streamer or ustreamer)
-* Uniquify pnp uuid and tracking uuid's.
-* Add duplicate serial number detection. There is no resolution offered as of yet.
-* Add architecture check to minimize errors where a system gets prepared as OctoPi when someone is using Ubuntu/Fedora/etc.
-* Include ustreamer as an option for camera streaming
-* Add remove command-line argument to get rid of all the stuff the script has done.
 # TODO
 * Cameras behind haproxy?
 
