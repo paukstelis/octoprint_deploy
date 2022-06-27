@@ -33,8 +33,6 @@ plugin_menu() {
         #get plugin path
         plugin_path=$(cat $SCRIPTDIR/plugins_list | sed -n -e "s/^plugin:$plugin path:\([[:graph:]]*\)/\1/p")
         install_plugin 
-
-        plugin_menu #keep going until quit
     done
     
 }
@@ -54,6 +52,5 @@ plugin_menu_cloud() {
         fi
         plugin_path=$(cat $SCRIPTDIR/plugins_cloud | sed -n -e "s/^plugin:$plugin path:\([[:graph:]]*\)/\1/p")
         install_plugin 
-        plugin_menu_cloud #keep going until quit
     done
 }
