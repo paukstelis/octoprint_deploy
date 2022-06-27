@@ -843,6 +843,7 @@ prepare () {
                 mv /home/$user/.old-octo/uploads /home/$user/.octoprint/uploads
             fi
         fi
+        echo "System preparation complete!"
         
     fi
     main_menu
@@ -1076,6 +1077,8 @@ main_menu() {
     TEMPUSBCAM=''
     INSTANCE=''
     INSTALL=''
+    echo
+    echo
     echo "*************************"
     echo "octoprint_deploy $VERSION"
     echo "*************************"
