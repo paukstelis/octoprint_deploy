@@ -361,8 +361,8 @@ add_camera() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
-        PS3='Select instance to add camera to: '
-        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+        PS3='Select instance number to add camera to: '
+        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
         options+=("Quit")
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
@@ -468,8 +468,8 @@ remove_instance() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     if [ -f "/etc/octoprint_instances" ]; then
         echo 'Do not remove the generic instance!' | log
-        PS3='Select instance to remove: '
-        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+        PS3='Select instance number to remove: '
+        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
         select opt in "${options[@]}"
         do
             echo "Selected instance to remove: $opt" | log
@@ -924,7 +924,7 @@ check_sn() {
 remove_everything() {
     get_settings
     if prompt_confirm "Remove everything?"; then
-        readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+        readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
         for instance in "${instances[@]}"; do
             echo "Trying to remove instance $instance"
             systemctl stop $instance
@@ -963,8 +963,8 @@ remove_everything() {
     fi
 }
 create_menu() {
-    PS3='Select instance to backup: '
-    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    PS3='Select instance number to backup: '
+    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
     select opt in "${options[@]}"
     do
@@ -980,7 +980,7 @@ create_menu() {
 
 restart_all() {
     get_settings
-    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     for instance in "${instances[@]}"; do
         if [ "$instance" == generic ]; then
             continue
@@ -1027,7 +1027,7 @@ restore() {
 
 back_up_all() {
     get_settings
-    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     for instance in "${instances[@]}"; do
         if [ "$instance" == generic ]; then
             continue
@@ -1043,7 +1043,7 @@ replace_id() {
     echo "PLEASE NOTE, this will only work in replacing an existing serial number with another serial number"
     echo "or an existing USB port with another USB port. You cannot mix and match."
     PS3='Select instance to change serial ID: '
-    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:alnum:]]*\) .*/\1/p')
+    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
     select opt in "${options[@]}"
     do
@@ -1069,7 +1069,7 @@ replace_id() {
 }
 
 main_menu() {
-    VERSION=0.1.0
+    VERSION=0.1.1
     #reset
     UDEV=''
     TEMPUSB=''
