@@ -313,7 +313,7 @@ write_camera() {
     
     get_settings
     if [ -z "$STREAMER" ]; then
-        $STREAMER='mjpg-streamer'
+        $STREAMER=mjpg-streamer
     fi
     
     #mjpg-streamer
