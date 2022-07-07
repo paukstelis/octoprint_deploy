@@ -470,8 +470,12 @@ remove_instance() {
         echo 'Do not remove the generic instance!' | log
         PS3='Select instance number to remove: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
+        options+=("Quit")
         select opt in "${options[@]}"
         do
+            if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+                main_menu
+            fi
             echo "Selected instance to remove: $opt" | log
             break
         done
