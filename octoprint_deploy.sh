@@ -579,7 +579,7 @@ prepare () {
                 INSTALL=2
                 break
             ;;
-            "Fedora/Centos")
+            "Fedora/CentOS")
                 INSTALL=3
                 break
             ;;
@@ -656,7 +656,7 @@ prepare () {
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
             systemctl disable webcamd.service
-            systemctl stop webcamd.service
+            systemctl stop webcamd.service 
             systemctl disable streamer_select.service
             systemctl stop streamer_select.service
             echo 'Installing needed packages'
