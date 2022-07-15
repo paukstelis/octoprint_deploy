@@ -419,13 +419,20 @@ add_camera() {
     fi
     echo "Settings can be modified after initial setup in /etc/systemd/system/cam_$INSTANCE"
     echo
-    echo "Camera Resolution (no sanity check, so get it right) [default: 640x480]:"
-    read RESOLUTION
-    if [ -z "$RESOLUTION" ]; then
-        RESOLUTION="640x480"
-    fi
+    while true; do
+        echo "Camera Resolution [default: 640x480]:"
+        read RESOLUTION
+        if [ -z $RESOLUTION]
+        then
+            RESOLUTION="640x480"
+            break
+        elif [[ $RESOLUTION =~ ^[0-9]+x[0-9]+$ ]]
+        then
+            break
+        fi
+        echo "Invalid resolution"
+    done
     echo "Selected camera resolution: $RESOLUTION" | log
-    #TODO check formating
     echo "Camera Framerate (use 0 for ustreamer hardware) [default: 5]:"
     read FRAMERATE
     if [ -z "$FRAMERATE" ]; then
