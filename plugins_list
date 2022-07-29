@@ -4,4 +4,4 @@ plugin:Firmware Updater path:https://github.com/OctoPrint/OctoPrint-FirmwareUpda
 plugin:Terminal Commands Extended: path:https://github.com/jneilliii/OctoPrint-TerminalCommandsExtended/archive/master.zip
 plugin:Active Filters Extended path:https://github.com/jneilliii/OctoPrint-ActiveFiltersExtended/archive/master.zip
 plugin:PrintTimeGenius path:https://github.com/eyal0/OctoPrint-PrintTimeGenius/archive/master.zip
-plugin:Themify path:https://github.com/birkbjo/OctoPrint-Themeify/archive/master.zip  
+plugin:UI Customizer path:https://github.com/LazeMSS/OctoPrint-UICustomizer/archive/main.zip  

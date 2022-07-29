@@ -25,6 +25,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
+  * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux)
   * Basic guide video here: https://youtu.be/1YINWQ5fNn0
   * All commands assume you are operating out of your home directory.
   * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, Fedora35+, or ArchLinux on your system (make sure your user is admin for sudo).
@@ -53,6 +54,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
 # Recent Changes
+* Write /etc/octoprint_deploy if missing (older version system preparation)
 * Add option for plugin installation during system preparation.
 * Enable ssh.
 * Added webcam restart to system commands during camera addition.

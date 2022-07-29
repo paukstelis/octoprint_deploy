@@ -909,9 +909,9 @@ firstrun() {
         fi
         
         if prompt_confirm "Enable anonymous usage tracking?"; then
-            $OCTOEXEC config set plugins.tracking.enabled true -bool
+            $OCTOEXEC config set plugins.tracking.enabled true --bool
         else
-            $OCTOEXEC config set plugins.tracking.enabled false -bool
+            $OCTOEXEC config set plugins.tracking.enabled false --bool
         fi
         
         if prompt_confirm "Use default printer (can be changed later)?"; then
@@ -1080,7 +1080,7 @@ replace_id() {
 }
 
 main_menu() {
-    VERSION=0.1.1
+    VERSION=0.1.2
     #reset
     UDEV=''
     TEMPUSB=''
@@ -1143,6 +1143,30 @@ if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
 source $SCRIPTDIR/plugins.sh
+# gather info and write /etc/octoprint_deploy if missing
+if [ ! -f /etc/octoprint_deploy ] && [ -f /etc/octoprint_instances ]; then
+    echo "/etc/octoprint_deploy is missing. You may have prepared the system with an older vesion."
+    echo "The file will be created now."  
+    streamer_type=("mjpg-streamer" "ustreamer")
+    haproxy_bool=("true" "false")
+    if [ -f /etc/octopi_version ]; then
+        echo "type: octopi" >> /etc/octoprint_deploy
+        apt-get -y install uuid-runtime
+    else
+        echo "type: linux" >> /etc/octoprint_deploy
+    fi
+    PS3='Select streamer type: '
+    select str in "${streamer_type[@]}"; do
+        echo "streamer: $str" >> /etc/octoprint_deploy
+        break
+    done
+    PS3='Using haproxy (select true if using octopi): '
+    select prox in "${haproxy_bool[@]}"; do
+        echo "haproxy: $prox" >> /etc/octoprint_deploy
+        break
+    done
+
+fi   
 
 #command line arguments
 if [ "$1" == remove ]; then
