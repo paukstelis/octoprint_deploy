@@ -422,7 +422,7 @@ add_camera() {
     while true; do
         echo "Camera Resolution [default: 640x480]:"
         read RESOLUTION
-        if [ -z $RESOLUTION]
+        if [ -z $RESOLUTION ]
         then
             RESOLUTION="640x480"
             break
