@@ -673,7 +673,7 @@ prepare () {
             echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
             echo 'haproxy: true' >> /etc/octoprint_deploy
             echo 'Modifying config.yaml'
-            cp -p $SCRIPTDIR/config.basic /home/pi/.octoprint/config.yaml
+            cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
             firstrun
             echo 'Connect to your octoprint (octopi.local) instance and setup admin user if you have not already'
             echo 'type: octopi' >> /etc/octoprint_deploy
