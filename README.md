@@ -17,7 +17,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * You will be prompted if you want to setup the admin user and do the first run wizard usaing the commandline. If you do this now you can start making new instances when the system preparation is complete.
   * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
   * If you did not setup admin user in the script, setup admin user by connecting to http://octopi.local via browser.
-  * Back in the ssh session, choose `Add Instance` and follow the instructions.
+  * Back in the ssh session, choose `New Instance` and follow the instructions.
   * Do not plug your printer in by USB until you are asked to do so.
   * If your printer does not have a serial number (all Creality printers), it will time out during serial number detection and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use.
@@ -39,7 +39,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
   * If you didn't setup admin user in the step above, setup admin user by connecting to your system (either http://localhost:5000 or http://[hostname]:5000 via a browser
   * __This instance is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add a camera to the generic instance.__
-  * Continue with octoprint_deploy script, choose `Add Instance` and follow the instructions.
+  * Continue with octoprint_deploy script, choose `New Instance` and follow the instructions.
   * Do not plug the printer in by USB until you are asked to do so.
   * If your printer does not have a serial number (all Creality printers) allow the auto-detection to time-out and it will detect by the USB port you plugged it in to.
   * After adding the first instance, the template instance will be shutdown. This is normal.
