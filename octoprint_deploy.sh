@@ -557,6 +557,7 @@ deb_packages() {
     -e ffmpeg \
     -e uuid-runtime\
     -e ssh\
+    -e libffi-dev\
     -e haproxy\
     | xargs apt-get install -y | log
     

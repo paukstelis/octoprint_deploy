@@ -23,6 +23,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Continue until you have added all the printers you want to use.
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed).
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
+  * To add more printers at a later date, just run the script again!
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
   * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux)
@@ -44,6 +45,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * If your printer does not have a serial number (all Creality printers) allow the auto-detection to time-out and it will detect by the USB port you plugged it in to.
   * After adding the first instance, the template instance will be shutdown. This is normal.
   * Add as many instances as you have printers, following the instructions.
+  * To add more printers at a later date, or to add cameras to an instance if you did not do that while setting up the printers, simply run the script again (`sudo octoprint_deploy/octoprint_deploy.sh`) and choose the appropriate options.
   * Remember, camera installed with this script are experimental and always will be. The script makes some basic assumptions that you may need to change later. Cameras suck up quite a bit of USB bandwidth so while it is quite straightforward to run 10 printers with a modest computer, you can't also run 10 cameras.
 * What else can you do?
   * Remove instances
