@@ -470,7 +470,7 @@ detect_printer() {
         fi
         counter=$(( $counter + 1 ))
         #No need to complete timeout in this case
-        if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]
+        if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
             break
         fi
     done
