@@ -461,13 +461,9 @@ detect_printer() {
     dmesg -C
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
     counter=0
-    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
+    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do  
+        TEMPUSB=$(timeout 1s dmesg -w | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
         UDEV=$(timeout 1s dmesg -w | sed -n -e 's/^.*SerialNumber: //p')
-        if [[ -z "$TEMPUSB" ]]; then
-            TEMPUSB=$(timeout 1s dmesg -w | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
-        else
-            sleep 1
-        fi
         counter=$(( $counter + 1 ))
         #No need to complete timeout in this case
         if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
