@@ -14,7 +14,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Choose `Prepare System` from the menu.
   * If you have already been using this system for some time, you will be prompted that files will be moved in order to generate a template instance.
   * You will be prompted if you want to switch from mjpeg-streamer to ustreamer.
-  * You will be prompted if you want to setup the admin user and do the first run wizard usaing the commandline. If you do this now you can start making new instances when the system preparation is complete.
+  * You will be prompted if you want to setup the admin user and do the first run wizard using the commandline. If you do this now you can start making new instances when the system preparation is complete.
   * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
   * If you did not setup admin user in the script, setup admin user by connecting to http://octopi.local via browser.
   * Back in the ssh session, choose `New Instance` and follow the instructions.
