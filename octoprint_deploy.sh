@@ -187,7 +187,7 @@ new_instance () {
         if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
             echo
             USB=$TEMPUSB
-            echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB\033[0m" | log
+            echo -e "Your printer will be setup at the following usb address: $USB" | log
             echo
         else
             main_menu
@@ -379,13 +379,14 @@ add_camera() {
         done
     fi
     
-    journalctl --rotate > /dev/null 2>&1
-    journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    #journalctl --rotate > /dev/null 2>&1
+    #journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    dmesg -C
     echo "Plug your camera in via USB now (detection time-out in 1 min)"
     counter=0
     while [[ -z "$CAM" ]] && [[ $counter -lt 30 ]]; do
-        CAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-        TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
+        CAM=$(timeout 1s dmesg -w | sed -n -e 's/^.*SerialNumber: //p')
+        TEMPUSBCAM=$(timeout 1s dmesg -w | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
         counter=$(( $counter + 1 ))
     done
     #Failed state. Nothing detected
