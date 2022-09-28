@@ -193,7 +193,7 @@ new_instance () {
             main_menu
         fi
     else
-        echo -e "Serial number detected as: \033[0;34m $UDEV\033[0m" | log
+        echo -e "Serial number detected as: $UDEV" | log
         check_sn "$UDEV"
         echo
     fi
@@ -388,9 +388,12 @@ add_camera() {
         CAM=$(timeout 1s dmesg -w | sed -n -e 's/^.*SerialNumber: //p')
         TEMPUSBCAM=$(timeout 1s dmesg -w | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
         counter=$(( $counter + 1 ))
+        if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]
+            break
+        fi
     done
     #Failed state. Nothing detected
-    if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
+    if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
         echo
         echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
         echo
@@ -468,6 +471,10 @@ detect_printer() {
             sleep 1
         fi
         counter=$(( $counter + 1 ))
+        #No need to complete timeout in this case
+        if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]
+            break
+        fi
     done
 }
 
