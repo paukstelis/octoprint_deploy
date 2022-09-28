@@ -469,7 +469,10 @@ detect_printer() {
         if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
             break
         fi
+    #run this one more time just to catch the USB position,even if we have a serial number
     done
+    TEMPUSB=$(dmesg | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
+
 }
 
 remove_instance() {
