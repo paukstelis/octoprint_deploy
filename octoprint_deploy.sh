@@ -379,8 +379,6 @@ add_camera() {
         done
     fi
     
-    #journalctl --rotate > /dev/null 2>&1
-    #journalctl --vacuum-time=1seconds > /dev/null 2>&1
     dmesg -C
     echo "Plug your camera in via USB now (detection time-out in 1 min)"
     counter=0
@@ -388,7 +386,7 @@ add_camera() {
         CAM=$(timeout 1s dmesg -w | sed -n -e 's/^.*SerialNumber: //p')
         TEMPUSBCAM=$(timeout 1s dmesg -w | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
         counter=$(( $counter + 1 ))
-        if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]
+        if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]; then
             break
         fi
     done
