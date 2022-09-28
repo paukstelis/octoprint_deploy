@@ -454,14 +454,15 @@ add_camera() {
 detect_printer() {
     echo
     echo
-    journalctl --rotate > /dev/null 2>&1
-    journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    #journalctl --rotate > /dev/null 2>&1
+    #journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    dmesg -C
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
     counter=0
     while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
-        UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
+        UDEV=$(timeout 1s dmesg -w | sed -n -e 's/^.*SerialNumber: //p')
         if [[ -z "$TEMPUSB" ]]; then
-            TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
+            TEMPUSB=$(timeout 1s dmesg -w | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
         else
             sleep 1
         fi
