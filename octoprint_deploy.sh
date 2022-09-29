@@ -6,8 +6,9 @@ if (( $EUID != 0 )); then
     exit
 fi
 
-#this is a weak check, but while catch most cases
-if [ "$USER" == root ]; then
+#this is a weak check, but will catch most cases
+if [ $SUDO_USER ]; then user=$SUDO_USER; fi
+if [ "$user" == root ]; then
     echo "You should not run this script as root. Use sudo as a normal user"
     exit
 fi
@@ -1150,7 +1151,6 @@ main_menu() {
     done
 }
 # initiate logging
-if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
 source $SCRIPTDIR/plugins.sh
