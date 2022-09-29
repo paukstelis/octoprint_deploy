@@ -55,6 +55,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Backup and restore files for an instance from the menu, or backup all instances with `sudo octoprint_deploy/octoprint_deploy backup`
   * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
+  * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
 * 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by the USB port but it does not have a serial number.
 * Fail if sudouser is root.
