@@ -58,6 +58,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
 # Recent Changes
 * 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by the USB port but it does not have a serial number.
 * Fail if sudouser is root.
+* Add MIT license
 * Write /etc/octoprint_deploy if missing (older version system preparation)
 * Add option for plugin installation during system preparation.
 * Enable ssh.
