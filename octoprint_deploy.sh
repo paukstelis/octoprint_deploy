@@ -2,7 +2,14 @@
 
 #all operations must be with root/sudo
 if (( $EUID != 0 )); then
-    echo "Please run as root (sudo)"
+    echo "Please run with sudo"
+    exit
+fi
+
+#this is a weak check, but will catch most cases
+if [ $SUDO_USER ]; then user=$SUDO_USER; fi
+if [ "$user" == root ]; then
+    echo "You should not run this script as root. Use sudo as a normal user"
     exit
 fi
 
@@ -187,13 +194,13 @@ new_instance () {
         if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
             echo
             USB=$TEMPUSB
-            echo -e "Your printer will be setup at the following usb address:\033[0;34m $USB\033[0m" | log
+            echo -e "Your printer will be setup at the following usb address: $USB" | log
             echo
         else
             main_menu
         fi
     else
-        echo -e "Serial number detected as: \033[0;34m $UDEV\033[0m" | log
+        echo -e "Serial number detected as: $UDEV" | log
         check_sn "$UDEV"
         echo
     fi
@@ -379,17 +386,21 @@ add_camera() {
         done
     fi
     
-    journalctl --rotate > /dev/null 2>&1
-    journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    dmesg -C
     echo "Plug your camera in via USB now (detection time-out in 1 min)"
     counter=0
-    while [[ -z "$CAM" ]] && [[ $counter -lt 30 ]]; do
-        CAM=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-        TEMPUSBCAM=$(timeout 1s journalctl -kf | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
+    while [[ -z "$CAM" ]] && [[ $counter -lt 60 ]]; do
+        CAM=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
+        TEMPUSBCAM=$(dmesg | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
         counter=$(( $counter + 1 ))
+        if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]; then
+            break
+        fi
+        sleep 1
     done
+    dmesg -C
     #Failed state. Nothing detected
-    if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
+    if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
         echo
         echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
         echo
@@ -454,19 +465,19 @@ add_camera() {
 detect_printer() {
     echo
     echo
-    journalctl --rotate > /dev/null 2>&1
-    journalctl --vacuum-time=1seconds > /dev/null 2>&1
+    dmesg -C
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
     counter=0
-    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do
-        UDEV=$(timeout 1s journalctl -kf | sed -n -e 's/^.*SerialNumber: //p')
-        if [[ -z "$TEMPUSB" ]]; then
-            TEMPUSB=$(timeout 1s journalctl -kf | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
-        else
-            sleep 1
-        fi
+    while [[ -z "$UDEV" ]] && [[ $counter -lt 60 ]]; do  
+        TEMPUSB=$(dmesg | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
+        UDEV=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
         counter=$(( $counter + 1 ))
+        if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
+            break
+        fi
+        sleep 1
     done
+    dmesg -C
 }
 
 remove_instance() {
@@ -1081,7 +1092,7 @@ replace_id() {
 }
 
 main_menu() {
-    VERSION=0.1.2
+    VERSION=0.1.3
     #reset
     UDEV=''
     TEMPUSB=''
@@ -1140,7 +1151,6 @@ main_menu() {
     done
 }
 # initiate logging
-if [ $SUDO_USER ]; then user=$SUDO_USER; fi
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
 source $SCRIPTDIR/plugins.sh
