@@ -2,7 +2,13 @@
 
 #all operations must be with root/sudo
 if (( $EUID != 0 )); then
-    echo "Please run as root (sudo)"
+    echo "Please run with sudo"
+    exit
+fi
+
+#this is a weak check, but while catch most cases
+if [ "$USER" == root ]; then
+    echo "You should not run this script as root. Use sudo as a normal user"
     exit
 fi
 

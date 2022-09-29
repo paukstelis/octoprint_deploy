@@ -1,8 +1,8 @@
-Updated June 26, 2022.  
+Updated September 28, 2022.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? You can open issues here or ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
-These files provide a simple bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer). No need for lots of file editing or complicated Docker compose scripts!
+These files provide a bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer). No need for lots of file editing or complicated Docker compose scripts!
 
 # How to use
 * OctoPi
@@ -56,13 +56,13 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
 # Recent Changes
-* 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by USB port but it does not have a serial number.
+* 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by the USB port but it does not have a serial number.
 * Write /etc/octoprint_deploy if missing (older version system preparation)
 * Add option for plugin installation during system preparation.
 * Enable ssh.
 * Added webcam restart to system commands during camera addition.
 * Admin user and first run wizards during Prepare System.
 # TODO
-* Cameras behind haproxy?
+* Multiple cameras for an instance (see multi-camera branch)
 
 
