@@ -382,14 +382,14 @@ add_camera() {
     dmesg -C
     echo "Plug your camera in via USB now (detection time-out in 1 min)"
     counter=0
-    while [[ -z "$CAM" ]] && [[ $counter -lt 30 ]]; do
+    while [[ -z "$CAM" ]] && [[ $counter -lt 60 ]]; do
         CAM=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
         TEMPUSBCAM=$(dmesg | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
         counter=$(( $counter + 1 ))
         if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]; then
             break
         fi
-        sleep 2
+        sleep 1
     done
     dmesg -C
     #Failed state. Nothing detected
@@ -458,20 +458,17 @@ add_camera() {
 detect_printer() {
     echo
     echo
-    #journalctl --rotate > /dev/null 2>&1
-    #journalctl --vacuum-time=1seconds > /dev/null 2>&1
     dmesg -C
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
     counter=0
-    while [[ -z "$UDEV" ]] && [[ $counter -lt 30 ]]; do  
+    while [[ -z "$UDEV" ]] && [[ $counter -lt 60 ]]; do  
         TEMPUSB=$(dmesg | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
         UDEV=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
         counter=$(( $counter + 1 ))
-        #No need to complete timeout in this case
         if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
             break
         fi
-        sleep 2
+        sleep 1
     done
     dmesg -C
 }
@@ -1088,7 +1085,7 @@ replace_id() {
 }
 
 main_menu() {
-    VERSION=0.1.2
+    VERSION=0.1.3
     #reset
     UDEV=''
     TEMPUSB=''

@@ -19,7 +19,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * If you did not setup admin user in the script, setup admin user by connecting to http://octopi.local via browser.
   * Back in the ssh session, choose `New Instance` and follow the instructions.
   * Do not plug your printer in by USB until you are asked to do so.
-  * If your printer does not have a serial number (all Creality printers), it will time out during serial number detection and use the physical USB address for udev entries.
+  * If your printer does not have a serial number (all Creality printers), it will detect and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use.
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed).
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
@@ -42,7 +42,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * __This instance is just a generic template used for making all your other instances. You need to make at least one instance using the script when this is done. Do not add a camera to the generic instance.__
   * Continue with octoprint_deploy script, choose `New Instance` and follow the instructions.
   * Do not plug the printer in by USB until you are asked to do so.
-  * If your printer does not have a serial number (all Creality printers) allow the auto-detection to time-out and it will detect by the USB port you plugged it in to.
+  * If your printer does not have a serial number (all Creality printers) it will detect by the USB port you plugged it in to.
   * After adding the first instance, the template instance will be shutdown. This is normal.
   * Add as many instances as you have printers, following the instructions.
   * To add more printers at a later date, or to add cameras to an instance if you did not do that while setting up the printers, simply run the script again (`sudo octoprint_deploy/octoprint_deploy.sh`) and choose the appropriate options.
@@ -56,6 +56,7 @@ These files provide a simple bash script for quickly deploying multiple octoprin
   * Restart all non-template instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
 # Recent Changes
+* 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by USB port but it does not have a serial number.
 * Write /etc/octoprint_deploy if missing (older version system preparation)
 * Add option for plugin installation during system preparation.
 * Enable ssh.
