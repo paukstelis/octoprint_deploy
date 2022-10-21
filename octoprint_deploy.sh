@@ -284,7 +284,7 @@ new_instance () {
         if [ "$HAPROXY" == true ]; then
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             #find frontend line, do insert
-            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
+            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ } /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             if [ $HAversion -gt 1 ]; then
