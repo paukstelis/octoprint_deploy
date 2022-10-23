@@ -468,7 +468,7 @@ detect_printer() {
     dmesg -C
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
     counter=0
-    while [[ -z "$UDEV" ]] && [[ $counter -lt 60 ]]; do  
+    while [[ -z "$UDEV" ]] && [[ $counter -lt 60 ]]; do
         TEMPUSB=$(dmesg | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
         UDEV=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
         counter=$(( $counter + 1 ))
@@ -675,7 +675,7 @@ prepare () {
             echo 'Disabling unneeded services....'
             systemctl disable octoprint.service
             systemctl disable webcamd.service
-            systemctl stop webcamd.service 
+            systemctl stop webcamd.service
             systemctl disable streamer_select.service
             systemctl stop streamer_select.service
             echo 'Installing needed packages'
@@ -1014,6 +1014,41 @@ restart_all() {
     exit 0
 }
 
+sync_users() {
+    PS3='Select instance that contains current user list: '
+    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+    options+=("Quit")
+    select opt in "${options[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+        
+        if prompt_confirm "Copy users from instance $opt to all other instances?"; then
+            if [ "$opt" == generic ]; then
+                userfile=/home/$user/.octoprint/users.yaml
+            else
+                userfile=/home/$user/.$opt/users.yaml
+            fi
+            #re-read to avoid the Quit
+            readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+            for instance in "${instances[@]}"; do
+                if [ "$instance" == generic ]; then
+                    sudo -u $user cp $userfile /home/$user/.octoprint/
+                else
+                    sudo -u $user cp $userfile /home/$user/.$instance/
+                fi
+            done
+
+            if prompt_confirm "Restart all instances now for changes to take effect?"; then
+                restart_all
+            fi
+        fi
+        
+        main_menu
+    done
+}
+
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
@@ -1091,8 +1126,13 @@ replace_id() {
     done
 }
 
+octo_deploy_update() {
+    sudo -u $user git -C octoprint_deploy pull
+    exit
+}
+
 main_menu() {
-    VERSION=0.1.3
+    VERSION=0.1.5
     #reset
     UDEV=''
     TEMPUSB=''
@@ -1108,9 +1148,9 @@ main_menu() {
     echo
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
-        options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Create Backup" "Restore Backup" "Quit")
+        options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Sync Users" "Create Backup" "Restore Backup" "Update" "Quit")
     else
-        options=("Prepare system" "USB port testing" "Quit")
+        options=("Prepare system" "USB port testing" "Update" "Quit")
     fi
     
     select opt in "${options[@]}"
@@ -1135,12 +1175,20 @@ main_menu() {
                 usb_testing
                 break
             ;;
+            "Sync Users")
+                sync_users
+                break
+            ;;
             "Create Backup")
                 create_menu
                 break
             ;;
             "Restore Backup")
                 restore_menu
+                break
+            ;;
+            "Update")
+                octo_deploy_update
                 break
             ;;
             "Quit")
@@ -1157,7 +1205,7 @@ source $SCRIPTDIR/plugins.sh
 # gather info and write /etc/octoprint_deploy if missing
 if [ ! -f /etc/octoprint_deploy ] && [ -f /etc/octoprint_instances ]; then
     echo "/etc/octoprint_deploy is missing. You may have prepared the system with an older vesion."
-    echo "The file will be created now."  
+    echo "The file will be created now."
     streamer_type=("mjpg-streamer" "ustreamer")
     haproxy_bool=("true" "false")
     if [ -f /etc/octopi_version ]; then
@@ -1176,8 +1224,8 @@ if [ ! -f /etc/octoprint_deploy ] && [ -f /etc/octoprint_instances ]; then
         echo "haproxy: $prox" >> /etc/octoprint_deploy
         break
     done
-
-fi   
+    
+fi
 
 #command line arguments
 if [ "$1" == remove ]; then
