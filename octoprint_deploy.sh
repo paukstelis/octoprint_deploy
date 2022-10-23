@@ -1033,6 +1033,9 @@ sync_users() {
             #re-read to avoid the Quit
             readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
             for instance in "${instances[@]}"; do
+                if [ "$instance" == "$opt" ]; then
+                    continue
+                fi
                 if [ "$instance" == generic ]; then
                     sudo -u $user cp $userfile /home/$user/.octoprint/
                 else
