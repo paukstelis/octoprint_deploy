@@ -485,7 +485,7 @@ remove_instance() {
     echo
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     if [ -f "/etc/octoprint_instances" ]; then
-        echo 'Do not remove the generic instance!' | log
+        #echo 'Do not remove the generic instance!' | log
         PS3='Select instance number to remove: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
         options+=("Quit")
@@ -631,9 +631,6 @@ prepare () {
     echo
     if prompt_confirm "Ready to begin?"
     then
-        #echo 'instance:generic port:5000' > /etc/octoprint_instances
-        #echo 'Adding camera port records'
-        #touch /etc/camera_ports
         echo 'Adding current user to dialout and video groups.'
         usermod -a -G dialout,video $user
         
@@ -839,7 +836,7 @@ prepare () {
             #Prompt for admin user and firstrun stuff
             firstrun
             echo 'type: linux' >> /etc/octoprint_deploy
-            echo 'Starting generic service on port 5000'
+            echo 'Starting template service on port 5000'
             echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
             systemctl start octoprint_default.service
             systemctl enable octoprint_default.service
@@ -856,7 +853,8 @@ prepare () {
             #this restart seems necessary in some cases
             systemctl restart octoprint_default.service
         fi
-        echo 'instance:generic port:5000' > /etc/octoprint_instances
+        #echo 'instance:generic port:5000' > /etc/octoprint_instances
+        touch /etc/octoprint_instances
         echo 'Adding camera port records'
         touch /etc/camera_ports
         if [ $MOVE -eq 1 ]; then
@@ -1135,7 +1133,7 @@ octo_deploy_update() {
 }
 
 main_menu() {
-    VERSION=0.1.5
+    VERSION=0.1.6
     #reset
     UDEV=''
     TEMPUSB=''
