@@ -1141,14 +1141,14 @@ instance_status() {
     echo "Instance:                    Status:"
     for instance in "${instances[@]}"; do
         status=$(systemctl status $instance | sed -n -e 's/Active: \([[:graph:]]*\) .*/\1/p')
-        echo "$instance                 $status"
+        echo "$instance                    $status"
     done
     echo "*******************************************"
     main_menu
 }
 
 main_menu() {
-    VERSION=0.1.6
+    VERSION=0.1.7
     #reset
     UDEV=''
     TEMPUSB=''
