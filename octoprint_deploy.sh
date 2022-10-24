@@ -371,9 +371,14 @@ add_camera() {
         PS3='Select instance number to add camera to: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
         options+=("Quit")
+        instance_Filter options
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
         do
+            if [ "$camopt" == generic ]; then
+                main_menu
+            fi
+
             if [ "$camopt" == generic ]; then
                 echo "Don't add cameras to the template instance."
                 main_menu
@@ -489,6 +494,7 @@ remove_instance() {
         PS3='Select instance number to remove: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
         options+=("Quit")
+        instance_filter options
         select opt in "${options[@]}"
         do
             if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
@@ -853,7 +859,7 @@ prepare () {
             #this restart seems necessary in some cases
             systemctl restart octoprint_default.service
         fi
-        #echo 'instance:generic port:5000' > /etc/octoprint_instances
+        echo 'instance:generic port:5000' > /etc/octoprint_instances
         touch /etc/octoprint_instances
         echo 'Adding camera port records'
         touch /etc/camera_ports
@@ -1002,6 +1008,7 @@ create_menu() {
 restart_all() {
     get_settings
     readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+    instance_filter instances
     for instance in "${instances[@]}"; do
         if [ "$instance" == generic ]; then
             continue
@@ -1087,6 +1094,7 @@ restore() {
 back_up_all() {
     get_settings
     readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+    instance_filter instances
     for instance in "${instances[@]}"; do
         if [ "$instance" == generic ]; then
             continue
@@ -1104,6 +1112,7 @@ replace_id() {
     PS3='Select instance to change serial ID: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
+    instance_filter options
     select opt in "${options[@]}"
     do
         if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
@@ -1130,6 +1139,12 @@ replace_id() {
 octo_deploy_update() {
     sudo -u $user git -C octoprint_deploy pull
     exit
+}
+
+instance_filter() {
+    local input_array=$1
+    unset 'input_array[0]'
+    eval $input_array
 }
 
 main_menu() {
