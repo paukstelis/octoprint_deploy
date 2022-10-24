@@ -371,7 +371,7 @@ add_camera() {
         PS3='Select instance number to add camera to: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
         options+=("Quit")
-        instance_Filter options
+        unset 'options[0]'
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
         do
@@ -494,7 +494,7 @@ remove_instance() {
         PS3='Select instance number to remove: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
         options+=("Quit")
-        instance_filter options
+        unset 'options[0]'
         select opt in "${options[@]}"
         do
             if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
@@ -1008,7 +1008,7 @@ create_menu() {
 restart_all() {
     get_settings
     readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-    instance_filter instances
+    unset 'instances[0]'
     for instance in "${instances[@]}"; do
         if [ "$instance" == generic ]; then
             continue
@@ -1094,7 +1094,7 @@ restore() {
 back_up_all() {
     get_settings
     readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-    instance_filter instances
+    unset 'instances[0]'
     for instance in "${instances[@]}"; do
         if [ "$instance" == generic ]; then
             continue
@@ -1112,7 +1112,7 @@ replace_id() {
     PS3='Select instance to change serial ID: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
-    instance_filter options
+    unset 'options[0]'
     select opt in "${options[@]}"
     do
         if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
@@ -1139,12 +1139,6 @@ replace_id() {
 octo_deploy_update() {
     sudo -u $user git -C octoprint_deploy pull
     exit
-}
-
-instance_filter() {
-    local input_array=$1
-    unset 'input_array[0]'
-    eval $input_array
 }
 
 main_menu() {
