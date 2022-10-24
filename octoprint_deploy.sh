@@ -375,12 +375,7 @@ add_camera() {
         #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
         do
-            if [ "$camopt" == generic ]; then
-                main_menu
-            fi
-
-            if [ "$camopt" == generic ]; then
-                echo "Don't add cameras to the template instance."
+            if [ "$camopt" == Quit ]; then
                 main_menu
             fi
             echo "Selected instance for camera: $camopt" | log
@@ -490,14 +485,14 @@ remove_instance() {
     echo
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     if [ -f "/etc/octoprint_instances" ]; then
-        #echo 'Do not remove the generic instance!' | log
+        
         PS3='Select instance number to remove: '
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
         options+=("Quit")
         unset 'options[0]'
         select opt in "${options[@]}"
         do
-            if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+            if [ "$opt" == Quit ]; then
                 main_menu
             fi
             echo "Selected instance to remove: $opt" | log
@@ -741,7 +736,7 @@ prepare () {
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
             #start server and run in background
-            echo 'Creating generic OctoPrint service...'
+            echo 'Creating generic OctoPrint template service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
             sed -e "s/OCTOUSER/$user/" \
             -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
@@ -1096,9 +1091,6 @@ back_up_all() {
     readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     unset 'instances[0]'
     for instance in "${instances[@]}"; do
-        if [ "$instance" == generic ]; then
-            continue
-        fi
         echo $instance
         back_up $instance
     done
@@ -1115,8 +1107,8 @@ replace_id() {
     unset 'options[0]'
     select opt in "${options[@]}"
     do
-        if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
-            exit 0
+        if [ "$opt" == Quit ]; then
+            main_menu
         fi
         
         echo "Selected $opt to replace serial ID" | log
@@ -1141,6 +1133,20 @@ octo_deploy_update() {
     exit
 }
 
+instance_status() {
+    echo
+    echo "*******************************************"
+    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+    unset 'instances[0]'
+    echo "Instance:                    Status:"
+    for instance in "${instances[@]}"; do
+        status=$(systemctl status $instance | sed -n -e 's/Active: \([[:graph:]]*\) .*/\1/p')
+        echo "$instance                 $status"
+    done
+    echo "*******************************************"
+    main_menu
+}
+
 main_menu() {
     VERSION=0.1.6
     #reset
@@ -1158,7 +1164,7 @@ main_menu() {
     echo
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
-        options=("New instance" "Delete instance" "Add Camera" "USB port testing" "Sync Users" "Create Backup" "Restore Backup" "Update" "Quit")
+        options=("New instance" "Delete instance" "Add Camera" "Instance Status" "USB port testing" "Sync Users" "Create Backup" "Restore Backup" "Update" "Quit")
     else
         options=("Prepare system" "USB port testing" "Update" "Quit")
     fi
@@ -1179,6 +1185,10 @@ main_menu() {
             ;;
             "Add Camera")
                 add_camera
+                break
+            ;;
+            "Instance Status")
+                instance_status
                 break
             ;;
             "USB port testing")
