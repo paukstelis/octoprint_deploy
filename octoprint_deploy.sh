@@ -1138,10 +1138,11 @@ instance_status() {
     echo "*******************************************"
     readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     unset 'instances[0]'
-    echo "Instance:                    Status:"
+    echo "Instance - Status:"
+    echo "------------------"
     for instance in "${instances[@]}"; do
         status=$(systemctl status $instance | sed -n -e 's/Active: \([[:graph:]]*\) .*/\1/p')
-        echo "$instance                    $status"
+        echo "$instance - $status"
     done
     echo "*******************************************"
     main_menu

@@ -2,7 +2,7 @@ Updated October 24, 2022.
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
-These files provide a bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer). No need for lots of file editing or complicated Docker compose scripts!
+These files provide a bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (mjpg-streamer or ustreamer). No need for lots of file editing or complicated Docker compose scripts! A background video on how it works from my ERRF2022 talk can be found here: https://www.youtube.com/watch?v=q0iCNl8-kJI&t=15378s
 
 # How to use
 * OctoPi
