@@ -1153,8 +1153,9 @@ share_uploads() {
         unset 'options[-1]'
         unset 'options[-1]'
         for instance in "${options[@]}"; do
-            $OCTOEXEC --basedir /home/$user/.$instance config set folder.upload "$opt"
+            $OCTOEXEC --basedir /home/$user/.$instance config set folder.uploads "$opt"
         done
+        break
     done
     echo "Instances must be restarted for changes to take effect."
     main_menu
