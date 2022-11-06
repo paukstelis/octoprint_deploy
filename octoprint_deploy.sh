@@ -986,7 +986,7 @@ remove_everything() {
 }
 utility_menu() {
     PS3='Select an option: '
-    options+=("Instance Status" "USB Port Testing" "Sync Users" "Quit")
+    options=("Instance Status" "USB Port Testing" "Sync Users" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
