@@ -985,6 +985,8 @@ remove_everything() {
     fi
 }
 utility_menu() {
+    echo
+    echo
     PS3='Select an option: '
     options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Quit")
     select opt in "${options[@]}"
@@ -1016,6 +1018,8 @@ utility_menu() {
 }
 
 backup_menu() {
+    echo
+    echo
     PS3='Select an option: '
     options=("Create Backup" "Restore Backup" "Quit")
     select opt in "${options[@]}"
@@ -1039,6 +1043,8 @@ backup_menu() {
 }
 
 create_menu() {
+    echo
+    echo
     PS3='Select instance number to backup: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
@@ -1069,6 +1075,7 @@ restart_all() {
 }
 
 sync_users() {
+    echo
     echo
     echo "This will sync all the users from one instance to all the other instances."
     PS3='Select instance that contains current user list: '
@@ -1170,6 +1177,8 @@ back_up() {
 }
 
 restore_menu() {
+    echo
+    echo
     PS3='Select backup to restore: '
     readarray -t options < <(ls /home/$user/*.tar.gz)
     options+=("Quit")
