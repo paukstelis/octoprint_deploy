@@ -58,8 +58,9 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
-* Add detection for ch34x driver. This is used by Weedo printers and must be compiled.
-* Utility sub-menu
+* Add detection for ch34x driver. This is used by Weedo printers and must be compiled separately.
+* Utility sub-menu for less used options.
+* Share Uploads option which will set the same upload directory for all instances.
 * Filter out `generic` instance from lists where it does not need to be.
 * Added `Instance Status` option which will report the status of each instance (as seen been systemctl status).
 * Added `Sync Users` option. It will copy users.yaml file from selected instances to all other instances (including template) 

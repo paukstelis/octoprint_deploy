@@ -1017,7 +1017,7 @@ utility_menu() {
 
 backup_menu() {
     PS3='Select an option: '
-    options+=("Create Backup" "Restore Backup" "Quit")
+    options=("Create Backup" "Restore Backup" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
