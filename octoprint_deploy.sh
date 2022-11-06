@@ -469,7 +469,7 @@ detect_printer() {
     echo "Plug your printer in via USB now (detection time-out in 1 min)"
     counter=0
     while [[ -z "$UDEV" ]] && [[ $counter -lt 60 ]]; do
-        TEMPUSB=$(dmesg | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\).*/\2/p')
+        TEMPUSB=$(dmesg | sed -n -e 's/^.*\(cdc_acm\|ftdi_sio\|ch341\|cp210x\|ch34x\) \([0-9].*[0-9]\): \(tty.*\|FTD.*\|ch341-uart.*\|cp210x\|ch34x\).*/\2/p')
         UDEV=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
         counter=$(( $counter + 1 ))
         if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
@@ -587,7 +587,7 @@ prepare () {
     MOVE=0
     echo 'Beginning system preparation' | log
     PS3='Installation type: '
-    options=("OctoPi" "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
+    options=("OctoPi" "Ubuntu 20+, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -595,7 +595,7 @@ prepare () {
                 INSTALL=1
                 break
             ;;
-            "Ubuntu 18-22, Mint, Debian, Raspberry Pi OS")
+            "Ubuntu 20+, Mint, Debian, Raspberry Pi OS")
                 INSTALL=2
                 break
             ;;
@@ -984,6 +984,60 @@ remove_everything() {
         fi
     fi
 }
+utility_menu() {
+    PS3='Select an option: '
+    options+=("Instance Status" "USB Port Testing" "Sync Users" "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Instance Status")
+                instance_status
+                break
+            ;;
+            "USB Port Testing")
+                usb_testing
+                break
+                break
+            ;;
+            "Sync Users")
+                sync_users
+                break
+            ;;
+            "Share Uploads")
+                share_uploads
+                break
+            ;;
+            "Quit")
+                main_menu
+                break
+                ;;*) echo "invalid option $REPLY";;
+        esac
+    done
+}
+
+backup_menu() {
+    PS3='Select an option: '
+    options+=("Create Backup" "Restore Backup" "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Create Backup")
+                create_menu
+                break
+            ;;
+            "Restore Backup")
+                restore_menu
+                break
+                break
+            ;;
+            "Quit")
+                main_menu
+                break
+                ;;*) echo "invalid option $REPLY";;
+        esac
+    done
+}
+
 create_menu() {
     PS3='Select instance number to backup: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
@@ -1042,7 +1096,7 @@ sync_users() {
                     sudo -u $user cp $userfile /home/$user/.$instance/
                 fi
             done
-
+            
             if prompt_confirm "Restart all instances now for changes to take effect?"; then
                 restart_all
             fi
@@ -1050,6 +1104,55 @@ sync_users() {
         
         main_menu
     done
+}
+
+share_uploads() {
+    get_settings
+    echo "This option will make all your uploads go to a single instance."
+    echo "This will mean all gcode files be available for all your instances."
+    echo "Use this option only if you understand the implications."
+    echo "This can be adjusted later in the Folders settings of OctoPrint."
+    PS3='Select instance where uploads will be stored: '
+    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
+    options+=("Custom" "Quit")
+    unset 'options[0]'
+    select opt in "${options[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+            break
+        fi
+
+        if [ "$opt" == "Custom" ]; then
+            echo "Enter full path (should start /home/$user/):"
+            read ULPATH
+            if [ -d "$ULPATH" ]; then
+                #echo "This folder already exists. Are you sure you want to use it?"
+                if prompt_confirm "This folder already exists. Are you sure you want to use it?"; then
+                    opt = $ULPATH
+                else
+                    echo "Restart the option if you change your mind"
+                    main_menu
+                    break
+                fi
+            else
+                sudo -u $user mkdir $ULPATH
+                opt = $ULPATH
+            fi
+        else
+            opt = /home/$user/.$opt/uploads    
+        fi
+        echo $opt
+        echo
+        #Remove Quit and Custom from array, is there a cleaner way?
+        unset 'options[-1]'
+        unset 'options[-1]'
+        for instance in "${options[@]}"; do
+            $OCTOEXEC --basedir /home/$user/.$instance config set folder.upload "$opt"
+        done
+    done
+    echo "Instances must be restarted for changes to take effect."
+    
 }
 
 back_up() {
@@ -1149,7 +1252,7 @@ instance_status() {
 }
 
 main_menu() {
-    VERSION=0.1.7
+    VERSION=0.1.9
     #reset
     UDEV=''
     TEMPUSB=''
@@ -1165,7 +1268,7 @@ main_menu() {
     echo
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
-        options=("New instance" "Delete instance" "Add Camera" "Instance Status" "USB port testing" "Sync Users" "Create Backup" "Restore Backup" "Update" "Quit")
+        options=("New instance" "Delete instance" "Add Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
         options=("Prepare system" "USB port testing" "Update" "Quit")
     fi
@@ -1179,7 +1282,8 @@ main_menu() {
             ;;
             "New instance")
                 new_instance
-            break ;;
+                break
+            ;;
             "Delete instance")
                 remove_instance
                 break
@@ -1188,24 +1292,12 @@ main_menu() {
                 add_camera
                 break
             ;;
-            "Instance Status")
-                instance_status
+            "Utilities")
+                utility_menu
                 break
             ;;
-            "USB port testing")
-                usb_testing
-                break
-            ;;
-            "Sync Users")
-                sync_users
-                break
-            ;;
-            "Create Backup")
-                create_menu
-                break
-            ;;
-            "Restore Backup")
-                restore_menu
+            "Backup Menu")
+                backup_menu
                 break
             ;;
             "Update")

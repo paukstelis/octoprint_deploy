@@ -58,6 +58,8 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Add detection for ch34x driver. This is used by Weedo printers and must be compiled.
+* Utility sub-menu
 * Filter out `generic` instance from lists where it does not need to be.
 * Added `Instance Status` option which will report the status of each instance (as seen been systemctl status).
 * Added `Sync Users` option. It will copy users.yaml file from selected instances to all other instances (including template) 
@@ -66,8 +68,6 @@ These files provide a bash script for quickly deploying multiple octoprint insta
 * 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by the USB port but it does not have a serial number.
 * Fail if sudouser is root.
 * Add MIT license
-* Write /etc/octoprint_deploy if missing (older version system preparation)
-* Add option for plugin installation during system preparation.
 # TODO
 * Multiple cameras for an instance (see multi-camera branch)
 
