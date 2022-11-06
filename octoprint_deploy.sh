@@ -986,7 +986,7 @@ remove_everything() {
 }
 utility_menu() {
     PS3='Select an option: '
-    options=("Instance Status" "USB Port Testing" "Sync Users" "Quit")
+    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -1069,6 +1069,8 @@ restart_all() {
 }
 
 sync_users() {
+    echo
+    echo "This will sync all the users from one instance to all the other instances."
     PS3='Select instance that contains current user list: '
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
