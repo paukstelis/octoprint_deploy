@@ -1110,6 +1110,8 @@ sync_users() {
 
 share_uploads() {
     get_settings
+    echo
+    echo
     echo "This option will make all your uploads go to a single instance."
     echo "This will mean all gcode files be available for all your instances."
     echo "Use this option only if you understand the implications."
@@ -1131,7 +1133,7 @@ share_uploads() {
             if [ -d "$ULPATH" ]; then
                 #echo "This folder already exists. Are you sure you want to use it?"
                 if prompt_confirm "This folder already exists. Are you sure you want to use it?"; then
-                    opt = $ULPATH
+                    opt=$ULPATH
                 else
                     echo "Restart the option if you change your mind"
                     main_menu
@@ -1139,10 +1141,11 @@ share_uploads() {
                 fi
             else
                 sudo -u $user mkdir $ULPATH
-                opt = $ULPATH
+                opt=$ULPATH
             fi
+        
         else
-            opt = /home/$user/.$opt/uploads    
+            opt=/home/$user/.$opt/uploads    
         fi
         echo $opt
         echo
@@ -1154,7 +1157,7 @@ share_uploads() {
         done
     done
     echo "Instances must be restarted for changes to take effect."
-    
+    main_menu
 }
 
 back_up() {
