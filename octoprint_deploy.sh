@@ -408,9 +408,13 @@ add_camera() {
         fi
         
     else
+        echo
+        echo
         echo "Setting up a Pi camera service for /dev/video0"
-        echo "Please note that doing this with USB cameras may lead to issues."
+        echo "Please note that mixing this setup with USB cameras may lead to issues."
         echo "Don't expect extensive support for trying to fix these issues."
+        echo
+        echo
     fi
 
     echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
@@ -425,7 +429,7 @@ add_camera() {
         CAMPORT=$((CAMPORT+1))
         echo Selected port is: $CAMPORT | log
     fi
-    echo "Settings can be modified after initial setup in /etc/systemd/system/cam_$INSTANCE"
+    echo "Settings can be modified after initial setup in /etc/systemd/system/cam_$INSTANCE.service"
     echo
     while true; do
         echo "Camera Resolution [default: 640x480]:"
@@ -453,7 +457,7 @@ add_camera() {
         write_camera
         #Pi Cam setup, replace cam_INSTANCE with /dev/video0
         if [ -n "$PI" ]; then
-            sed -i "s/cam_$INSTANCE/video0/" /etc/systemd/system/cam_$INSTANCE.service
+            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"camera0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
         systemctl start cam_$INSTANCE.service
         systemctl enable cam_$INSTANCE.service
