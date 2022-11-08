@@ -364,7 +364,7 @@ write_camera() {
 }
 
 add_camera() {
-    
+    PI=$1
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
@@ -386,36 +386,33 @@ add_camera() {
         done
     fi
     
-    dmesg -C
-    echo "Plug your camera in via USB now (detection time-out in 1 min)"
-    counter=0
-    while [[ -z "$CAM" ]] && [[ $counter -lt 60 ]]; do
-        CAM=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
-        TEMPUSBCAM=$(dmesg | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
-        counter=$(( $counter + 1 ))
-        if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]; then
-            break
+    if [ -z "$PI" ]; then
+        detect_camera
+        
+        #Failed state. Nothing detected
+        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
+            echo
+            echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
+            echo
+            return
         fi
-        sleep 1
-    done
-    dmesg -C
-    #Failed state. Nothing detected
-    if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
-        echo
-        echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
-        echo
-        return
-    fi
-    
-    if [ -z "$CAM" ]; then
-        echo "Camera Serial Number not detected" | log
-        echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM.\033[0m" | log
-        echo "The camera will have to stay plugged into this location." | log
-        USBCAM=$TEMPUSBCAM
+        
+        if [ -z "$CAM" ]; then
+            echo "Camera Serial Number not detected" | log
+            echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM.\033[0m" | log
+            echo "The camera will have to stay plugged into this location." | log
+            USBCAM=$TEMPUSBCAM
+        else
+            echo -e "Camera detected with serial number: \033[0;34m $CAM \033[0m" | log
+            check_sn "$CAM"
+        fi
+        
     else
-        echo -e "Camera detected with serial number: \033[0;34m $CAM \033[0m" | log
-        check_sn "$CAM"
+        echo "Setting up a Pi camera service for /dev/video0"
+        echo "Please note that doing this with USB cameras may lead to issues."
+        echo "Don't expect extensive support for trying to fix these issues."
     fi
+
     echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
     read CAMPORT
     if [ -z "$CAMPORT" ]; then
@@ -454,6 +451,10 @@ add_camera() {
     #Need to check if this is a one-off install
     if [ -n "$camopt" ]; then
         write_camera
+        #Pi Cam setup, replace cam_INSTANCE with /dev/video0
+        if [ -n "$PI" ]; then
+            sed -i "s/cam_$INSTANCE/video0/" /etc/systemd/system/cam_$INSTANCE.service
+        fi
         systemctl start cam_$INSTANCE.service
         systemctl enable cam_$INSTANCE.service
         udevadm control --reload-rules
@@ -473,6 +474,22 @@ detect_printer() {
         UDEV=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
         counter=$(( $counter + 1 ))
         if [[ -n "$TEMPUSB" ]] && [[ -z "$UDEV" ]]; then
+            break
+        fi
+        sleep 1
+    done
+    dmesg -C
+}
+
+detect_camera() {
+    dmesg -C
+    echo "Plug your camera in via USB now (detection time-out in 1 min)"
+    counter=0
+    while [[ -z "$CAM" ]] && [[ $counter -lt 60 ]]; do
+        CAM=$(dmesg | sed -n -e 's/^.*SerialNumber: //p')
+        TEMPUSBCAM=$(dmesg | sed -n -e 's|^.*input:.*/\(.*\)/input/input.*|\1|p')
+        counter=$(( $counter + 1 ))
+        if [[ -n "$TEMPUSBCAM" ]] && [[ -z "$CAM" ]]; then
             break
         fi
         sleep 1
@@ -1133,7 +1150,7 @@ share_uploads() {
             main_menu
             break
         fi
-
+        
         if [ "$opt" == "Custom" ]; then
             echo "Enter full path (should start /home/$user/):"
             read ULPATH
@@ -1150,9 +1167,9 @@ share_uploads() {
                 sudo -u $user mkdir $ULPATH
                 opt=$ULPATH
             fi
-        
+            
         else
-            opt=/home/$user/.$opt/uploads    
+            opt=/home/$user/.$opt/uploads
         fi
         echo $opt
         echo
@@ -1370,5 +1387,9 @@ fi
 
 if [ "$1" == replace ]; then
     replace_id
+fi
+
+if [ "$1" == picam ]; then
+    add_camera true
 fi
 main_menu

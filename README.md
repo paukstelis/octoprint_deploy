@@ -26,10 +26,10 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * To add more printers at a later date, just run the script again!
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
-  * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux)
+  * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux or chroot based systems like Chrome+crouton)
   * Basic guide video here: https://youtu.be/1YINWQ5fNn0
   * All commands assume you are operating out of your home directory.
-  * Install Ubuntu 18-22.X, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, Fedora35+, or ArchLinux on your system (make sure your user is admin for sudo).
+  * Install Ubuntu 20+, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, Fedora35+, or ArchLinux on your system (make sure your user is admin for sudo).
   * Install git if it isn't already: `sudo apt install git` or `sudo dnf install git` or `sudo pacman -S git`.
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
