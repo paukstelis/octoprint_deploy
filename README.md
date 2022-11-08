@@ -24,7 +24,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed).
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
   * To add more printers at a later date, just run the script again!
-  * Want to use a Pi camera? Run the script as `sudo octoprint_deploy/octoprint_deploy.sh picam` and follow the instructions (VERY EXPERIMENTAL).
+  * Want to use a Pi camera? After you have made your instance(s), run the script with `sudo octoprint_deploy/octoprint_deploy.sh picam` and follow the instructions (VERY EXPERIMENTAL).
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
   * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux or chroot based systems like Chrome+crouton)
