@@ -461,6 +461,7 @@ add_camera() {
         fi
         systemctl start cam_$INSTANCE.service
         systemctl enable cam_$INSTANCE.service
+        systemctl daemon-reload
         udevadm control --reload-rules
         udevadm trigger
         main_menu
