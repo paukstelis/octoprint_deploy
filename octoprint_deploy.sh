@@ -351,6 +351,7 @@ write_camera() {
     echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
     #Either Serial number or USB port
+    
     #Serial Number
     if [ -n "$CAM" ]; then
         echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
@@ -388,7 +389,9 @@ add_camera() {
     
     if [ -z "$PI" ]; then
         detect_camera
-        
+        if [ -n "$NOSERIAL" ]; then
+            unset $CAM
+        fi
         #Failed state. Nothing detected
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
             echo
@@ -416,7 +419,7 @@ add_camera() {
         echo
         echo
     fi
-
+    
     echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
     read CAMPORT
     if [ -z "$CAMPORT" ]; then
@@ -1396,5 +1399,9 @@ fi
 
 if [ "$1" == picam ]; then
     add_camera true
+fi
+
+if [ "$1" == noserial ]; then
+    NOSERIAL=1
 fi
 main_menu
