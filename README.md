@@ -59,6 +59,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Add 'noserial' command line option. Currently for cameras only, this will unset the serial number in cases where cameras are known to share a serial number.
 * Add detection for ch34x driver. This is used by Weedo printers and must be compiled separately.
 * Utility sub-menu for less used options.
 * Share Uploads option which will set the same upload directory for all instances.

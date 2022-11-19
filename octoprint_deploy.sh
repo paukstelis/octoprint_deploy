@@ -390,7 +390,7 @@ add_camera() {
     if [ -z "$PI" ]; then
         detect_camera
         if [ -n "$NOSERIAL" ]; then
-            unset $CAM
+            unset CAM
         fi
         #Failed state. Nothing detected
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
