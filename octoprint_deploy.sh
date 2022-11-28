@@ -389,7 +389,7 @@ add_camera() {
     
     if [ -z "$PI" ]; then
         detect_camera
-        if [ -n "$NOSERIAL" ]; then
+        if [ -n "$NOSERIAL" ] && [ -n "$CAM" ]; then
             unset CAM
         fi
         #Failed state. Nothing detected
@@ -1075,7 +1075,7 @@ create_menu() {
     options+=("Quit")
     select opt in "${options[@]}"
     do
-        if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+        if [ "$opt" == Quit ]; then
             main_menu
         fi
         
@@ -1196,6 +1196,9 @@ share_uploads() {
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
+    if [ "$INSTANCE" == generic ]; then
+        INSTANCE="octoprint"
+    fi
     d=$(date '+%Y-%m-%d')
     sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
     echo "Tarred and gzipped backup created in /home/$user"
