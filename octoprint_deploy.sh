@@ -1217,7 +1217,7 @@ restore_menu() {
         fi
         
         echo "Selected $opt to restore" | log
-        tar -xvf $opt
+        tar --same-owner -xvfp $opt
         main_menu
     done
 }
