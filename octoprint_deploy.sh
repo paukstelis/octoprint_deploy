@@ -263,6 +263,39 @@ new_instance () {
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
         
+        if [ "$HAPROXY" == true ]; then
+            HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
+            #find frontend line, do insert
+            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
+            echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
+            echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
+            if [ $HAversion -gt 1 ]; then
+                /bin/sh "cat >> /etc/haproxy/haproxy.cfg" << PROX
+                        http-request replace-path /$INSTANCE/(.*) /\1
+                        acl needs_scheme req.hdr_cnt(X-Scheme) eq 0
+                        http-request add-header X-Scheme https if needs_scheme { ssl_fc }
+                        http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }
+                        http-request add-header X-Script-Name /$INSTANCE
+                        server octoprint1 127.0.0.1:$PORT
+                        option forwardfor
+                PROX
+            else
+                echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
+                echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
+                echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
+            fi
+            
+            echo "#$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+            
+            #restart haproxy
+            sudo systemctl restart haproxy.service
+            
+        fi
+        
         if [[ -n $CAM || -n $USBCAM ]]; then
             write_camera
         fi
@@ -281,36 +314,6 @@ new_instance () {
             systemctl enable cam_$INSTANCE.service
         fi
         
-        if [ "$HAPROXY" == true ]; then
-            HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
-            #find frontend line, do insert
-            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
-            echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
-            echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
-            if [ $HAversion -gt 1 ]; then
-                echo "       http-request replace-path /$INSTANCE/(.*) /\1" >> /etc/haproxy/haproxy.cfg
-                echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
-                echo "       http-request add-header X-Scheme https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
-                echo "       http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
-                echo "       http-request add-header X-Script-Name /$INSTANCE" >> /etc/haproxy/haproxy.cfg
-                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
-                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
-            else
-                echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
-                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
-                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
-                echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
-                echo "       reqadd X-Scheme:\ https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
-                echo "       reqadd X-Scheme:\ http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
-                echo "       reqadd X-Script-Name:\ /$INSTANCE" >> /etc/haproxy/haproxy.cfg
-            fi
-            
-            echo "#$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
-            
-            #restart haproxy
-            sudo systemctl restart haproxy.service
-            
-        fi
     fi
     main_menu
     
@@ -348,7 +351,12 @@ write_camera() {
     #config.yaml modifications
     echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
     echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-    echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    if [ -z "$CAMHAPROXY" ]; then
+        echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    else
+        echo "    stream: /cam_$INSTANCE/?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    fi
+    
     $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
     #Either Serial number or USB port
     
@@ -362,6 +370,21 @@ write_camera() {
         echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\", SUBSYSTEMS==\"usb\", ATTR{index}==\"0\", DRIVERS==\"uvcvideo\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
     fi
     
+    if [ -n $CAMHAPROXY ]; then
+        HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
+        #find frontend line, do insert
+        sed -i "/option forwardfor except 127.0.0.1/a\        use_backend cam_$INSTANCE if { path_beg /cam_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
+        echo "#cam_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
+        echo "backend cam_$INSTANCE" >> /etc/haproxy/haproxy.cfg
+        if [ $HAversion -gt 1 ]; then
+            echo "       reqrep ^([^\ :]*)\ /cam_$INSTANCE/(.*)    \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            echo "       server webcam1 127.0.0.1:$CAMPORT"
+        else
+            echo "       reqrep ^([^\ :]*)\ /cam_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
+        fi
+        echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+    fi
 }
 
 add_camera() {
@@ -385,6 +408,12 @@ add_camera() {
             OCTOUSER=$user
             break
         done
+    fi
+    #for now just set a flag that we are going to write cameras behind haproxy
+    if [ "$HAPROXY" == true ]; then
+        if prompt_confirm "Add cameras behind haproxy?"; then
+            CAMHAPROXY=1
+        fi
     fi
     
     if [ -z "$PI" ]; then
@@ -549,6 +578,8 @@ remove_instance() {
             if [ -f /etc/haproxy/haproxy.cfg ]; then
                 sed -i "/use_backend $opt/d" /etc/haproxy/haproxy.cfg
                 sed -i "/#$opt start/,/#$opt stop/d" /etc/haproxy/haproxy.cfg
+                sed -i "/use_backend cam_$opt/d" /etc/haproxy/haproxy.cfg
+                sed -i "/#cam_$opt start/,/#cam_$opt stop/d" /etc/haproxy/haproxy.cfg
                 systemctl restart haproxy.service
             fi
         fi
@@ -986,6 +1017,8 @@ remove_everything() {
             if [ -f /etc/haproxy/haproxy.cfg ]; then
                 sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
                 sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
+                sed -i "/use_backend cam_$instance/d" /etc/haproxy/haproxy.cfg
+                sed -i "/#cam_$instance start/,/#cam_$instance stop/d" /etc/haproxy/haproxy.cfg
             fi
         done
         echo "Removing system stuff"
@@ -1000,6 +1033,8 @@ remove_everything() {
         echo "Removing template"
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
+        rm -rf /home/$user/ustreamer
+        rm -rf /home/$user/mjpg-streamer
         systemctl restart haproxy.service
         systemctl daemon-reload
         
@@ -1303,6 +1338,7 @@ main_menu() {
     TEMPUSBCAM=''
     INSTANCE=''
     INSTALL=''
+    CAMHAPROXY=''
     echo
     echo
     echo "*************************"
