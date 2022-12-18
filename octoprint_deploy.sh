@@ -736,16 +736,19 @@ prepare () {
             #install packages
             #All DEB based
             #Python 3.11 currently not compatible with OP, redefine for Fedora
-            PYVERSION='python3'
             if [ $INSTALL -eq 2 ]; then
                 apt-get update > /dev/null
                 deb_packages
             fi
             #Fedora35/CentOS
             if [ $INSTALL -eq 3 ]; then
-                dnf -y install gcc python3.10-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy openssh openssh-server libffi-devel
+                dnf -y install gcc python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy openssh openssh-server libffi-devel
                 systemctl enable sshd.service
-                PYVERSION='python3.10'
+                PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
+                if [ $PYV -eq 11 ]; then
+                    dnf -y install python3.10-devel
+                    alias python3='/usr/bin/python3.10'
+                fi
             fi
             
             #ArchLinux
@@ -757,7 +760,7 @@ prepare () {
             systemctl enable ssh.service
             echo "Installing OctoPrint virtual environment in /home/$user/OctoPrint"
             #make venv
-            sudo -u $user $PYVERSION -m venv /home/$user/OctoPrint
+            sudo -u $user python3 -m venv /home/$user/OctoPrint
             #update pip
             sudo -u $user /home/$user/OctoPrint/bin/pip install --upgrade pip
             #pre-install wheel
