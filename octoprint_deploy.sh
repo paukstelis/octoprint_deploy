@@ -270,15 +270,13 @@ new_instance () {
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             if [ $HAversion -gt 1 ]; then
-                /bin/sh "cat >> /etc/haproxy/haproxy.cfg" << PROX
-                        http-request replace-path /$INSTANCE/(.*) /\1
-                        acl needs_scheme req.hdr_cnt(X-Scheme) eq 0
-                        http-request add-header X-Scheme https if needs_scheme { ssl_fc }
-                        http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }
-                        http-request add-header X-Script-Name /$INSTANCE
-                        server octoprint1 127.0.0.1:$PORT
-                        option forwardfor
-                PROX
+                echo "       http-request replace-path /$INSTANCE/(.*) /\1" >> /etc/haproxy/haproxy.cfg
+                echo "       acl needs_scheme req.hdr_cnt(X-Scheme) eq 0" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request add-header X-Scheme https if needs_scheme { ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request add-header X-Scheme http if needs_scheme !{ ssl_fc }" >> /etc/haproxy/haproxy.cfg
+                echo "       http-request add-header X-Script-Name /$INSTANCE" >> /etc/haproxy/haproxy.cfg
+                echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
+                echo "       option forwardfor" >> /etc/haproxy/haproxy.cfg
             else
                 echo "       reqrep ^([^\ :]*)\ /$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
                 echo "       server octoprint1 127.0.0.1:$PORT" >> /etc/haproxy/haproxy.cfg
@@ -411,7 +409,7 @@ add_camera() {
     fi
     #for now just set a flag that we are going to write cameras behind haproxy
     if [ "$HAPROXY" == true ]; then
-        if prompt_confirm "Add cameras behind haproxy?"; then
+        if prompt_confirm "Add cameras to haproxy?"; then
             CAMHAPROXY=1
         fi
     fi
