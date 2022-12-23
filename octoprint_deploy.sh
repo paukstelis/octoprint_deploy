@@ -376,7 +376,7 @@ write_camera() {
         echo "backend cam_$INSTANCE" >> /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
             echo "       reqrep ^([^\ :]*)\ /cam_$INSTANCE/(.*)    \1\ /\2" >> /etc/haproxy/haproxy.cfg
-            echo "       server webcam1 127.0.0.1:$CAMPORT"
+            echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         else
             echo "       reqrep ^([^\ :]*)\ /cam_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
             echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
