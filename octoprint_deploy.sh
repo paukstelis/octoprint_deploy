@@ -387,6 +387,7 @@ write_camera() {
 
 add_camera() {
     PI=$1
+    get_settings
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
