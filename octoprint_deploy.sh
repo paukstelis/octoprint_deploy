@@ -7,7 +7,13 @@ if (( $EUID != 0 )); then
 fi
 
 #this is a weak check, but will catch most cases
-if [ $SUDO_USER ]; then user=$SUDO_USER; fi
+if [ $SUDO_USER ]; then
+    user=$SUDO_USER
+else
+    echo "You should not run this script as root. Use sudo as a normal user"
+    exit   
+fi
+
 if [ "$user" == root ]; then
     echo "You should not run this script as root. Use sudo as a normal user"
     exit
