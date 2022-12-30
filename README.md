@@ -28,6 +28,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
   * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux or chroot based systems like Chrome+crouton)
+  * SELinux (Fedora) casues issues, particularly with camera services. Use at your own risk (or desiable SELinux).
   * Basic guide video here: https://youtu.be/1YINWQ5fNn0
   * All commands assume you are operating out of your home directory.
   * Install Ubuntu 20+, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, Fedora35+, or ArchLinux on your system (make sure your user is admin for sudo).
@@ -59,20 +60,12 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* If haproxy is used, cameras stream can be placed behind it.
 * Allow making backups of generic instance.
 * Add 'noserial' command line option. Currently for cameras only, this will unset the serial number in cases where cameras are known to share a serial number.
 * Add detection for ch34x driver. This is used by Weedo printers and must be compiled separately.
 * Utility sub-menu for less used options.
 * Share Uploads option which will set the same upload directory for all instances.
-* Filter out `generic` instance from lists where it does not need to be.
-* Added `Instance Status` option which will report the status of each instance (as seen been systemctl status).
-* Added `Sync Users` option. It will copy users.yaml file from selected instances to all other instances (including template) 
-* Starting with 0.1.4, added `Update` in the menu which will update octoprint_deploy via git (then exit)
-* Rename printers_udev.sh to udev_rules.sh. Allows writing udev rules for both printers and cameras without full deployment.
-* 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by the USB port but it does not have a serial number.
-* Fail if sudouser is root.
-* Add MIT license
-# TODO
-* Multiple cameras for an instance (see multi-camera branch)
+
 
 
