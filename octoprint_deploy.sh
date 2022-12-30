@@ -388,6 +388,7 @@ write_camera() {
             echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         fi
         echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+        systemctl restart haproxy
     fi
 }
 
