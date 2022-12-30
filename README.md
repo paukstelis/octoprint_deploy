@@ -28,6 +28,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
   * __You do not need to install OctoPrint using any Wiki instructions, snap, etc. The script will do it for you.__
   * octoprint_deploy uses systemd services, so avoid distros that do not use systemd by default (MX Linux or chroot based systems like Chrome+crouton)
+  * SELinux (Fedora) casues issues, particularly with camera services. Use at your own risk (or desiable SELinux).
   * Basic guide video here: https://youtu.be/1YINWQ5fNn0
   * All commands assume you are operating out of your home directory.
   * Install Ubuntu 20+, Mint 20.3+, Debian, DietPi, RPiOS, Armbian, Fedora35+, or ArchLinux on your system (make sure your user is admin for sudo).
@@ -35,7 +36,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
   * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and start a template instance.
-      * You will be asked if you want to use haproxy. This will make your instances available on port 80 (e.g. http://localhost/instancename/).
+      * You will be asked if you want to use haproxy. This will make your instances available on port 80 e.g. http://localhost/instancename/. PLEASE NOTE that the trailing slash is required!
       * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
       * You will be prompted if you want to setup the admin user and do the first run wizard via the commandline. If you do this now you can start making new instances as soon as the system preparation is complete.
       * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
@@ -59,20 +60,13 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Multi-camera support (experimental). Clean-up of haproxy.cfg on instance removal still needs work.
+* If haproxy is used, cameras stream can be placed behind it. PLEASE NOTE: if cameras are used with haproxy a relative stream path is used. This means that your stream will not show up in the Control tab unless you access with the haproxy path (http://host/instancename/) (remember, trailing slash is required!)
 * Allow making backups of generic instance.
 * Add 'noserial' command line option. Currently for cameras only, this will unset the serial number in cases where cameras are known to share a serial number.
 * Add detection for ch34x driver. This is used by Weedo printers and must be compiled separately.
 * Utility sub-menu for less used options.
 * Share Uploads option which will set the same upload directory for all instances.
-* Filter out `generic` instance from lists where it does not need to be.
-* Added `Instance Status` option which will report the status of each instance (as seen been systemctl status).
-* Added `Sync Users` option. It will copy users.yaml file from selected instances to all other instances (including template) 
-* Starting with 0.1.4, added `Update` in the menu which will update octoprint_deploy via git (then exit)
-* Rename printers_udev.sh to udev_rules.sh. Allows writing udev rules for both printers and cameras without full deployment.
-* 0.1.3, printer and camera detection now done with dmesg instead of journalctl. This allows faster timeouts when a device is detected by the USB port but it does not have a serial number.
-* Fail if sudouser is root.
-* Add MIT license
-# TODO
-* Multiple cameras for an instance (see multi-camera branch)
+
 
 
