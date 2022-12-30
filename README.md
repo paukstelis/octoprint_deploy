@@ -36,7 +36,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
   * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and start a template instance.
-      * You will be asked if you want to use haproxy. This will make your instances available on port 80 (e.g. http://localhost/instancename/).
+      * You will be asked if you want to use haproxy. This will make your instances available on port 80 e.g. http://localhost/instancename/. PLEASE NOTE that the trailing slash is required!
       * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
       * You will be prompted if you want to setup the admin user and do the first run wizard via the commandline. If you do this now you can start making new instances as soon as the system preparation is complete.
       * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
