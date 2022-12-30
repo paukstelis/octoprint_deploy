@@ -61,7 +61,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
 * Multi-camera support (experimental). Clean-up of haproxy.cfg on instance removal still needs work.
-* If haproxy is used, cameras stream can be placed behind it.
+* If haproxy is used, cameras stream can be placed behind it. PLEASE NOTE: if cameras are used with haproxy a relative stream path is used. This means that your stream will not show up in the Control tab unless you access with the haproxy path (http://host/instancename/) (remember, trailing slash is required!)
 * Allow making backups of generic instance.
 * Add 'noserial' command line option. Currently for cameras only, this will unset the serial number in cases where cameras are known to share a serial number.
 * Add detection for ch34x driver. This is used by Weedo printers and must be compiled separately.
