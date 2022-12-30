@@ -11,7 +11,7 @@ if [ $SUDO_USER ]; then
     user=$SUDO_USER
 else
     echo "You should not run this script as root. Use sudo as a normal user"
-    exit   
+    exit
 fi
 
 if [ "$user" == root ]; then
@@ -334,66 +334,68 @@ write_camera() {
     if [ "$STREAMER" == mjpg-streamer ]; then
         cat $SCRIPTDIR/octocam_mjpg.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam_$INSTANCE/" \
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" \
         -e "s/RESOLUTION/$RESOLUTION/" \
         -e "s/FRAMERATE/$FRAMERATE/" \
-        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
     fi
     
     #ustreamer
     if [ "$STREAMER" == ustreamer ]; then
         cat $SCRIPTDIR/octocam_ustream.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam_$INSTANCE/" \
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" \
         -e "s/RESOLUTION/$RESOLUTION/" \
         -e "s/FRAMERATE/$FRAMERATE/" \
-        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam_$INSTANCE.service
+        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
     fi
     
-    mv $SCRIPTDIR/cam_$INSTANCE.service /etc/systemd/system/
+    mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
     echo $CAMPORT >> /etc/camera_ports
-    #config.yaml modifications
-    echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-    echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-    if [ -z "$CAMHAPROXY" ]; then
-        echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-    else
-        echo "    stream: /cam_$INSTANCE/?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+    #config.yaml modifications - only if INUM not set
+    if [ -z "$INUM" ]; then
+        echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+        echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+        if [ -z "$CAMHAPROXY" ]; then
+            echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+        else
+            echo "    stream: /cam_$INSTANCE/?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+        fi
+        $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
     fi
     
-    $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
     #Either Serial number or USB port
-    
     #Serial Number
     if [ -n "$CAM" ]; then
-        echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+        echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
     fi
     
     #USB port camera
     if [ -n "$USBCAM" ]; then
-        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\", SUBSYSTEMS==\"usb\", ATTR{index}==\"0\", DRIVERS==\"uvcvideo\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\", SUBSYSTEMS==\"usb\", ATTR{index}==\"0\", DRIVERS==\"uvcvideo\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
     fi
     
     if [ -n $CAMHAPROXY ]; then
         HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
         #find frontend line, do insert
-        sed -i "/option forwardfor except 127.0.0.1/a\        use_backend cam_$INSTANCE if { path_beg /cam_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
-        echo "#cam_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
-        echo "backend cam_$INSTANCE" >> /etc/haproxy/haproxy.cfg
+        sed -i "/option forwardfor except 127.0.0.1/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
+        echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
+        echo "backend cam${INUM}_$INSTANCE" >> /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
-            echo "       http-request replace-path /cam_$INSTANCE/(.*)   /\1" >> /etc/haproxy/haproxy.cfg
+            echo "       http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1" >> /etc/haproxy/haproxy.cfg
             echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         else
-            echo "       reqrep ^([^\ :]*)\ /cam_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            echo "       reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
             echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         fi
-        echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+        echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
         systemctl restart haproxy
     fi
 }
 
 add_camera() {
     PI=$1
+    INUM=''
     get_settings
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
@@ -402,7 +404,6 @@ add_camera() {
         readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
         options+=("Quit")
         unset 'options[0]'
-        #Not yet check to see if instance already has a camera
         select camopt in "${options[@]}"
         do
             if [ "$camopt" == Quit ]; then
@@ -412,6 +413,21 @@ add_camera() {
             INSTANCE=$camopt
             OCTOCONFIG="/home/$user/"
             OCTOUSER=$user
+            if grep -q "cam_$INSTANCE" /etc/udev/rules.d/99-octoprint.rules; then
+                echo "It appears this instance already has at least one camera."
+                if prompt_confirm "Do you want to add an additional camera for this instance?"; then
+                    echo "Enter a number for this camera."
+                    echo "Ex. entering 2 will setup a service called cam2_$INSTANCE"
+                    echo
+                    read INUM
+                    if [ -z "$INUM" ]; then
+                        echo "No value given, setting as 2"
+                        INUM='2'
+                    fi
+                else
+                    main_menu
+                fi
+            fi
             break
         done
     fi
@@ -437,11 +453,11 @@ add_camera() {
         
         if [ -z "$CAM" ]; then
             echo "Camera Serial Number not detected" | log
-            echo -e "Camera will be setup with physical USB address of \033[0;34m $TEMPUSBCAM.\033[0m" | log
+            echo -e "Camera will be setup with physical USB address of \033[0;32m $TEMPUSBCAM.\033[0m" | log
             echo "The camera will have to stay plugged into this location." | log
             USBCAM=$TEMPUSBCAM
         else
-            echo -e "Camera detected with serial number: \033[0;34m $CAM \033[0m" | log
+            echo -e "Camera detected with serial number: \033[0;32m $CAM \033[0m" | log
             check_sn "$CAM"
         fi
         
@@ -467,7 +483,7 @@ add_camera() {
         CAMPORT=$((CAMPORT+1))
         echo Selected port is: $CAMPORT | log
     fi
-    echo "Settings can be modified after initial setup in /etc/systemd/system/cam_$INSTANCE.service"
+    echo "Settings can be modified after initial setup in /etc/systemd/system/cam${INUM}_$INSTANCE.service"
     echo
     while true; do
         echo "Camera Resolution [default: 640x480]:"
@@ -495,10 +511,10 @@ add_camera() {
         write_camera
         #Pi Cam setup, replace cam_INSTANCE with /dev/video0
         if [ -n "$PI" ]; then
-            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"camera0\", SYMLINK+=\"cam_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"camera0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
-        systemctl start cam_$INSTANCE.service
-        systemctl enable cam_$INSTANCE.service
+        systemctl start cam${INUM}_$INSTANCE.service
+        systemctl enable cam${INUM}_$INSTANCE.service
         systemctl daemon-reload
         udevadm control --reload-rules
         udevadm trigger
@@ -571,8 +587,8 @@ remove_instance() {
             if [ -f /etc/systemd/system/cam_$opt.service ]; then
                 systemctl stop cam_$opt.service
                 systemctl disable cam_$opt.service
-                rm /etc/systemd/system/cam_$opt.service
-                sed -i "/cam_$opt/d" /etc/udev/rules.d/99-octoprint.rules
+                rm /etc/systemd/system/cam*_$opt.service
+                sed -i "/cam.*_$opt/d" /etc/udev/rules.d/99-octoprint.rules
             fi
             #remove udev entry
             sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
