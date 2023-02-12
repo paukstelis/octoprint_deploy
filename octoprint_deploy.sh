@@ -874,6 +874,7 @@ prepare () {
                         break
                     ;;
                     "None")
+                        VID=3
                         break
                     ;;
                     *) echo "invalid option $REPLY";;
