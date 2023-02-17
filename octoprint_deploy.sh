@@ -1478,7 +1478,7 @@ SEDREPLACE="#$instance start\n\
         acl is_$instance url_beg /$instance\n\
         http-request redirect scheme http drop-query append-slash  if is_$instance ! { path_beg /$instance/ }\n\
         use_backend $instance if { path_beg /$instance/ }\n\
-#$INSTANCE stop"
+#$instance stop"
         sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
     done
     echo 'haproxynew: true' >> /etc/octoprint_deploy
