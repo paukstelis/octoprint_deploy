@@ -389,17 +389,25 @@ write_camera() {
     if [ -n "$CAMHAPROXY" ]; then
         HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
         #find frontend line, do insert
-        sed -i "/option forwardfor except 127.0.0.1/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
-        echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
-        echo "backend cam${INUM}_$INSTANCE" >> /etc/haproxy/haproxy.cfg
+        sed -i "/use_backend $INSTANCE if { path_beg /$INSTANCE/ }/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
+        #echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
+        #echo "backend cam${INUM}_$INSTANCE" >> /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
-            echo "       http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1" >> /etc/haproxy/haproxy.cfg
-            echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
+EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+        http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1 \n\
+        server webcam1 127.0.0.1:$CAMPORT"
+
+            #echo "       http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1" >> /etc/haproxy/haproxy.cfg
+            #echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         else
-            echo "       reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
-            echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
+EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+        reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
+        server webcam1 127.0.0.1:$CAMPORT"
+            #echo "       reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
+            #echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         fi
-        echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+        #echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+        sed -i "/#cam_$INSTANCE/a $EXTRACAM" /etc/haproxy/haproxy.cfg
         systemctl restart haproxy
     fi
 }
@@ -1375,7 +1383,7 @@ instance_status() {
 }
 
 main_menu() {
-    VERSION=0.2.0
+    VERSION=0.2.2
     #reset
     UDEV=''
     TEMPUSB=''
@@ -1466,7 +1474,7 @@ fi
 
 get_settings
 
-#02/17/23 - This will upgrade haproxy so it will no longer require the backslash
+#02/17/23 - This will upgrade haproxy so it will no longer require the trailling slash
 if [ "$HAPROXYNEW" == false ] && [ "$HAPROXY" == true ]; then
     #Update haproxy entries
     echo "Detected older version of haproxy entries. Updating those now."

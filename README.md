@@ -1,4 +1,4 @@
-Updated December 30, 2022.  
+Updated February 17, 2023.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
@@ -21,7 +21,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
       * Do not plug your printer in by USB until you are asked to do so.
       * If your printer does not have a serial number (all Creality printers), it will detect and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use.
-  * haproxy entries are updated so you can connect via http://octopi.local/instancename/ (trailing slash is needed).
+  * haproxy entries are updated so you can connect via http://octopi.local/instancename
   * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
   * To add more printers at a later date, just run the script again!
   * Want to use a Pi camera? After you have made your instance(s), run the script with `sudo octoprint_deploy/octoprint_deploy.sh picam` and follow the instructions (VERY EXPERIMENTAL).
@@ -36,7 +36,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * run the command `git clone https://github.com/paukstelis/octoprint_deploy.git`.
   * run the command `sudo octoprint_deploy/octoprint_deploy.sh`.
   * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and start a template instance.
-      * You will be asked if you want to use haproxy. This will make your instances available on port 80 e.g. http://hostname.local/instancename/. PLEASE NOTE that the trailing slash is required!
+      * You will be asked if you want to use haproxy. This will make your instances available on port 80 e.g. http://hostname.local/instancename/
       * You will be asked which streamer you would like to install (mjpg-streamer or ustreamer).
       * You will be prompted if you want to setup the admin user and do the first run wizard via the commandline. If you do this now you can start making new instances as soon as the system preparation is complete.
       * You will be prompted if you want to install recommended plugins and cloud plugins. This can be useful if you want to configure plugins in your template instance, before adding new instances.
@@ -60,6 +60,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Haproxy fixed! No more trailing slash required! Running new octoprint_deploy on an older installation automatically update these entries.
 * Multi-camera support (experimental). Clean-up of haproxy.cfg on instance removal still needs work.
 * If haproxy is used, cameras stream can be placed behind it. PLEASE NOTE: if cameras are used with haproxy a relative stream path is used. This means that your stream will not show up in the Control tab unless you access with the haproxy path (http://host/instancename/) (remember, trailing slash is required!)
 * Allow making backups of generic instance.
