@@ -1482,7 +1482,7 @@ SEDREPLACE="#$instance start\n\
         sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
     done
     echo 'haproxynew: true' >> /etc/octoprint_deploy
-
+    systemctl restart haproxy
 fi
 
 
