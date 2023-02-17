@@ -36,6 +36,10 @@ get_settings() {
         #echo $STREAMER
         HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
         #echo $HAPROXY
+        HAPROXYNEW=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxynew: \(\.*\)/\1/p')
+        if [ -z "$HAPROXYNEW" ]; then
+            HAPROXYNEW="false"
+        fi
     fi
 }
 
@@ -272,7 +276,14 @@ new_instance () {
         if [ "$HAPROXY" == true ]; then
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             #find frontend line, do insert
-            sed -i "/option forwardfor except 127.0.0.1/a\        use_backend $INSTANCE if { path_beg /$INSTANCE/ }" /etc/haproxy/haproxy.cfg
+            #Don't know how to do the formatting correctly here. This works, however.
+SEDREPLACE="#$INSTANCE start\n\
+        acl is_$INSTANCE url_beg /$INSTANCE\n\
+        http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
+        use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
+#$INSTANCE stop"
+        
+            sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
             if [ $HAversion -gt 1 ]; then
@@ -841,6 +852,8 @@ prepare () {
             echo
             if prompt_confirm "Use haproxy?"; then
                 echo 'haproxy: true' >> /etc/octoprint_deploy
+                #Check if using improved haproxy rules
+                echo 'haproxynew: true' >> /etc/octoprint_deploy
                 systemctl stop haproxy
                 #get haproxy version
                 HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
@@ -874,7 +887,6 @@ prepare () {
                         break
                     ;;
                     "None")
-                        VID=3
                         break
                     ;;
                     *) echo "invalid option $REPLY";;
@@ -1451,6 +1463,28 @@ if [ ! -f /etc/octoprint_deploy ] && [ -f /etc/octoprint_instances ]; then
     done
     
 fi
+
+get_settings
+
+#02/17/23 - This will upgrade haproxy so it will no longer require the backslash
+if [ "$HAPROXYNEW" == false ] && [ "$HAPROXY" == true ]; then
+    #Update haproxy entries
+    echo "Detected older version of haproxy entries. Updating those now."
+    readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+    unset 'instances[0]'
+    for instance in "${instances[@]}"; do
+        sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
+SEDREPLACE="#$instance start\n\
+        acl is_$instance url_beg /$instance\n\
+        http-request redirect scheme http drop-query append-slash  if is_$instance ! { path_beg /$instance/ }\n\
+        use_backend $instance if { path_beg /$instance/ }\n\
+#$INSTANCE stop"
+        sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
+    done
+    echo 'haproxynew: true' >> /etc/octoprint_deploy
+
+fi
+
 
 #command line arguments
 if [ "$1" == remove ]; then
