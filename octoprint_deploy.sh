@@ -404,7 +404,7 @@ EXTRACAM="backend cam${INUM}_$INSTANCE\n\
         if [ -z "$INUM" ]; then
             echo "#cam_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
         fi
-        sed -i "/#cam_$INSTANCE/a $EXTRACAM" /etc/haproxy/haproxy.cfg
+        sed -i "/#cam_$INSTANCE/a\ $EXTRACAM" /etc/haproxy/haproxy.cfg
         if [ -z "$INUM" ]; then
             echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
         fi
