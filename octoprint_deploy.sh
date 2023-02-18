@@ -389,25 +389,25 @@ write_camera() {
     if [ -n "$CAMHAPROXY" ]; then
         HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
         #find frontend line, do insert
-        sed -i "/use_backend $INSTANCE if { path_beg /$INSTANCE/ }/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
-        #echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
-        #echo "backend cam${INUM}_$INSTANCE" >> /etc/haproxy/haproxy.cfg
+        sed -i "/use_backend $INSTANCE if/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
         http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1 \n\
         server webcam1 127.0.0.1:$CAMPORT"
-
-            #echo "       http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1" >> /etc/haproxy/haproxy.cfg
-            #echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         else
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
         reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
         server webcam1 127.0.0.1:$CAMPORT"
-            #echo "       reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2" >> /etc/haproxy/haproxy.cfg
-            #echo "       server webcam1 127.0.0.1:$CAMPORT" >> /etc/haproxy/haproxy.cfg
         fi
-        #echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+
+        #Need to set this up for first camera
+        if [ -z "$INUM" ]; then
+            echo "#cam_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
+        fi
         sed -i "/#cam_$INSTANCE/a $EXTRACAM" /etc/haproxy/haproxy.cfg
+        if [ -z "$INUM" ]; then
+            echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+        fi
         systemctl restart haproxy
     fi
 }
