@@ -392,7 +392,7 @@ write_camera() {
         sed -i "/use_backend $INSTANCE if/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-        http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1 \n\
+        http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1\n\
         server webcam1 127.0.0.1:$CAMPORT"
         else
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
@@ -1052,6 +1052,27 @@ check_sn() {
     fi
 }
 
+remove_camera() {
+
+}
+
+remove_camera_menu() {
+    get_settings
+    #must choose where to find which cameras have been installed
+    #probably safest to go with service files
+    readarray -t cameras < <(basename /etc/systemd/system/cam* | sed -n -e 's/^\(.*\).service/\1/p')
+    cameras+=("Quit")
+    select camera in "${camera[@]}"
+    do
+        if [ "$camera" == Quit ]; then
+            main_menu
+        fi
+        
+        echo "Removing udev and service files for $camera" | log
+        remove_camera $camera
+        main_menu
+    done
+}
 remove_everything() {
     get_settings
     if prompt_confirm "Remove everything?"; then
