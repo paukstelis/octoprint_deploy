@@ -391,17 +391,17 @@ write_camera() {
         #find frontend line, do insert
         sed -i "/use_backend $INSTANCE if/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
-            EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-            http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1\n\
-            server webcam1 127.0.0.1:$CAMPORT"
+EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+    http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1\n\
+    server webcam1 127.0.0.1:$CAMPORT"
         else
-            EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-            reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
-            server webcam1 127.0.0.1:$CAMPORT"
+EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+    reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
+    server webcam1 127.0.0.1:$CAMPORT"
         fi
         
         echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
-        sed -i "/#cam${INUM}_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
+        sed -i "\|#cam${INUM}_$INSTANCE start|a $EXTRACAM" /etc/haproxy/haproxy.cfg
         echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
         
         systemctl restart haproxy
