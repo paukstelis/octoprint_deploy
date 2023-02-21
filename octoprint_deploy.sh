@@ -1068,8 +1068,10 @@ remove_camera_menu() {
     get_settings
     #must choose where to find which cameras have been installed
     #probably safest to go with service files
+    PS3='Select camera number to remove: '
     readarray -d '\n' cameras < <(find /etc/systemd/system/ -maxdepth 1 -name "cam*.service" -type f -printf '%f\n' | sed -n -e 's/^\(.*\).service/\1/p')
     cameras+=("Quit")
+    
     select camera in "${camera[@]}"
     do
         if [ "$camera" == Quit ]; then
