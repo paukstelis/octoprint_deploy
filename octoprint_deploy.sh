@@ -1069,10 +1069,10 @@ remove_camera_menu() {
     #must choose where to find which cameras have been installed
     #probably safest to go with service files
     PS3='Select camera number to remove: '
-    readarray -d '\n' cameras < <(find /etc/systemd/system/ -maxdepth 1 -name "cam*.service" -type f -printf '%f\n' | sed -n -e 's/^\(.*\).service/\1/p')
+    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     cameras+=("Quit")
     
-    select camera in "${camera[@]}"
+    select camera in "${cameras[@]}"
     do
         if [ "$camera" == Quit ]; then
             main_menu
@@ -1083,11 +1083,13 @@ remove_camera_menu() {
         main_menu
     done
 }
+
 remove_everything() {
     get_settings
     if prompt_confirm "Remove everything?"; then
         readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-        readarray -t cameras < <(basename /etc/systemd/system/cam* | sed -n -e 's/^\(.*\).service/\1/p')
+        unset 'instances[0]'
+        readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
         for instance in "${instances[@]}"; do
             remove_instance $instance
         done
@@ -1405,7 +1407,7 @@ instance_status() {
 }
 
 main_menu() {
-    VERSION=0.2.2
+    VERSION=0.2.3
     #reset
     UDEV=''
     TEMPUSB=''

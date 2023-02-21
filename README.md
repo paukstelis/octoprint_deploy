@@ -1,4 +1,4 @@
-Updated February 17, 2023.  
+Updated February 21, 2023.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
@@ -60,14 +60,13 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Allow removal of individual camera services. Improvements to instance and camera removal.
 * Haproxy fixed! No more trailing slash required! Running new octoprint_deploy on an older installation automatically update these entries.
 * Multi-camera support (experimental). Clean-up of haproxy.cfg on instance removal still needs work.
 * If haproxy is used, cameras stream can be placed behind it. PLEASE NOTE: if cameras are used with haproxy a relative stream path is used. This means that your stream will not show up in the Control tab unless you access with the haproxy path (http://host/instancename/) (remember, trailing slash is required!)
 * Allow making backups of generic instance.
 * Add 'noserial' command line option. Currently for cameras only, this will unset the serial number in cases where cameras are known to share a serial number.
-* Add detection for ch34x driver. This is used by Weedo printers and must be compiled separately.
-* Utility sub-menu for less used options.
-* Share Uploads option which will set the same upload directory for all instances.
+
 
 
 
