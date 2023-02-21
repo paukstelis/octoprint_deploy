@@ -277,12 +277,12 @@ new_instance () {
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             #find frontend line, do insert
             #Don't know how to do the formatting correctly here. This works, however.
-SEDREPLACE="#$INSTANCE start\n\
-        acl is_$INSTANCE url_beg /$INSTANCE\n\
-        http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
-        use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
-#$INSTANCE stop"
-        
+            SEDREPLACE="#$INSTANCE start\n\
+            acl is_$INSTANCE url_beg /$INSTANCE\n\
+            http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
+            use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
+            #$INSTANCE stop"
+            
             sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
@@ -391,23 +391,19 @@ write_camera() {
         #find frontend line, do insert
         sed -i "/use_backend $INSTANCE if/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
-EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-        http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1\n\
-        server webcam1 127.0.0.1:$CAMPORT"
+            EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+            http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1\n\
+            server webcam1 127.0.0.1:$CAMPORT"
         else
-EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-        reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
-        server webcam1 127.0.0.1:$CAMPORT"
+            EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+            reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
+            server webcam1 127.0.0.1:$CAMPORT"
         fi
-
-        #Need to set this up for first camera
-        if [ -z "$INUM" ]; then
-            echo "#cam_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
-        fi
-        sed -i "/#cam_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
-        if [ -z "$INUM" ]; then
-            echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
-        fi
+        
+        echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
+        sed -i "/#cam${INUM}_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
+        echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
+        
         systemctl restart haproxy
     fi
 }
@@ -575,58 +571,7 @@ detect_camera() {
     dmesg -C
 }
 
-remove_instance() {
-    echo
-    echo
-    if [ $SUDO_USER ]; then user=$SUDO_USER; fi
-    if [ -f "/etc/octoprint_instances" ]; then
-        
-        PS3='Select instance number to remove: '
-        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
-        options+=("Quit")
-        unset 'options[0]'
-        select opt in "${options[@]}"
-        do
-            if [ "$opt" == Quit ]; then
-                main_menu
-            fi
-            echo "Selected instance to remove: $opt" | log
-            break
-        done
-        
-        if prompt_confirm "Do you want to remove everything associated with this instance?"
-        then
-            #disable and remove service file
-            if [ -f /etc/systemd/system/$opt.service ]; then
-                systemctl stop $opt.service
-                systemctl disable $opt.service
-                rm /etc/systemd/system/$opt.service
-            fi
-            
-            if [ -f /etc/systemd/system/cam_$opt.service ]; then
-                systemctl stop cam_$opt.service
-                systemctl disable cam_$opt.service
-                rm /etc/systemd/system/cam*_$opt.service
-                sed -i "/cam.*_$opt/d" /etc/udev/rules.d/99-octoprint.rules
-            fi
-            #remove udev entry
-            sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
-            #remove files
-            rm -rf /home/$user/.$opt
-            #remove from octoprint_instances
-            sed -i "/$opt/d" /etc/octoprint_instances
-            #remove haproxy entry
-            if [ -f /etc/haproxy/haproxy.cfg ]; then
-                sed -i "/use_backend $opt/d" /etc/haproxy/haproxy.cfg
-                sed -i "/#$opt start/,/#$opt stop/d" /etc/haproxy/haproxy.cfg
-                sed -i "/use_backend cam_$opt/d" /etc/haproxy/haproxy.cfg
-                sed -i "/#cam_$opt start/,/#cam_$opt stop/d" /etc/haproxy/haproxy.cfg
-                systemctl restart haproxy.service
-            fi
-        fi
-    fi
-    main_menu
-}
+
 
 usb_testing() {
     echo
@@ -1051,16 +996,79 @@ check_sn() {
         fi
     fi
 }
+remove_instance() {
+    opt=$1
+    #disable and remove service file
+    if [ -f /etc/systemd/system/$opt.service ]; then
+        systemctl stop $opt.service
+        systemctl disable $opt.service
+        rm /etc/systemd/system/$opt.service
+    fi
+    
+    #Get all cameras associated with this instance
+    readarray -d '\n' cameras < <(find /etc/systemd/system/ -maxdepth 1 -name "cam*_$opt.service" -type f -printf '%f\n' | sed -n -e 's/^\(.*\).service/\1/p')
+    for camera in "${cameras[@]}"; do
+        remove_camera $camera
+    done
 
+    #remove udev entry
+    sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
+    #remove files
+    rm -rf /home/$user/.$opt
+    #remove from octoprint_instances
+    sed -i "/$opt/d" /etc/octoprint_instances
+    #remove haproxy entry
+    if [ "$HAPROXY" == true ]; then
+        sed -i "/use_backend $opt/d" /etc/haproxy/haproxy.cfg
+        sed -i "/#$opt start/,/#$opt stop/d" /etc/haproxy/haproxy.cfg
+        systemctl restart haproxy.service
+    fi
+    
+}
+
+remove_instance_menu() {
+    echo
+    echo
+    get_settings
+    if [ $SUDO_USER ]; then user=$SUDO_USER; fi
+    if [ -f "/etc/octoprint_instances" ]; then
+        
+        PS3='Select instance number to remove: '
+        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
+        options+=("Quit")
+        unset 'options[0]'
+        select opt in "${options[@]}"
+        do
+            if [ "$opt" == Quit ]; then
+                main_menu
+            fi
+            echo "Selected instance to remove: $opt" | log
+            break
+        done
+        
+        if prompt_confirm "Do you want to remove everything associated with this instance?"; then
+            remove_instance $opt
+        fi
+    fi
+    main
+}
 remove_camera() {
-
+    systemctl stop $1.service
+    systemctl disable $1.service
+    rm /etc/systemd/system/$1.service
+    sed -i "/$1/d" /etc/udev/rules.d/99-octoprint.rules
+    if [ "$HAPROXY" == true ]; then
+        sed -i "/use_backend $1/d" /etc/haproxy/haproxy.cfg
+        sed -i "/#$1 start/,/#$1 stop/d" /etc/haproxy/haproxy.cfg
+        systemctl restart haproxy
+    fi
 }
 
 remove_camera_menu() {
     get_settings
     #must choose where to find which cameras have been installed
     #probably safest to go with service files
-    readarray -t cameras < <(basename /etc/systemd/system/cam* | sed -n -e 's/^\(.*\).service/\1/p')
+    readarray -d '\n' cameras < <(find /etc/systemd/system/ -maxdepth 1 -name "cam*.service" -type f -printf '%f\n' | sed -n -e 's/^\(.*\).service/\1/p')
     cameras+=("Quit")
     select camera in "${camera[@]}"
     do
@@ -1068,7 +1076,7 @@ remove_camera_menu() {
             main_menu
         fi
         
-        echo "Removing udev and service files for $camera" | log
+        echo "Removing udev, service files, and haproxy entry for $camera" | log
         remove_camera $camera
         main_menu
     done
@@ -1077,24 +1085,15 @@ remove_everything() {
     get_settings
     if prompt_confirm "Remove everything?"; then
         readarray -t instances < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+        readarray -t cameras < <(basename /etc/systemd/system/cam* | sed -n -e 's/^\(.*\).service/\1/p')
         for instance in "${instances[@]}"; do
-            echo "Trying to remove instance $instance"
-            systemctl stop $instance
-            systemctl disable $instance
-            rm /etc/systemd/system/$instance.service
-            echo "Trying to remove camera for $instance"
-            systemctl stop cam_$instance
-            systemctl disable cam_$instance
-            rm /etc/systemd/system/cam_$instance.service
-            echo "Removing instance..."
-            rm -rf /home/$user/.$instance
-            if [ -f /etc/haproxy/haproxy.cfg ]; then
-                sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
-                sed -i "/#$instance start/,/#$instance stop/d" /etc/haproxy/haproxy.cfg
-                sed -i "/use_backend cam_$instance/d" /etc/haproxy/haproxy.cfg
-                sed -i "/#cam_$instance start/,/#cam_$instance stop/d" /etc/haproxy/haproxy.cfg
-            fi
+            remove_instance $instance
         done
+        
+        for camera in "${cameras[@]}"; do
+            remove_camera $camera
+        done
+        
         echo "Removing system stuff"
         rm /etc/systemd/system/octoprint_default.service
         rm /etc/octoprint_streamer
@@ -1421,7 +1420,7 @@ main_menu() {
     echo
     PS3='Select operation: '
     if [ -f "/etc/octoprint_instances" ]; then
-        options=("New instance" "Delete instance" "Add Camera" "Utilities" "Backup Menu" "Update" "Quit")
+        options=("New instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
         options=("Prepare system" "USB port testing" "Update" "Quit")
     fi
@@ -1443,6 +1442,10 @@ main_menu() {
             ;;
             "Add Camera")
                 add_camera
+                break
+            ;;
+            "Delete Camera")
+                remove_camera_menu
                 break
             ;;
             "Utilities")
@@ -1503,11 +1506,11 @@ if [ "$HAPROXYNEW" == false ] && [ "$HAPROXY" == true ]; then
     unset 'instances[0]'
     for instance in "${instances[@]}"; do
         sed -i "/use_backend $instance/d" /etc/haproxy/haproxy.cfg
-SEDREPLACE="#$instance start\n\
+        SEDREPLACE="#$instance start\n\
         acl is_$instance url_beg /$instance\n\
         http-request redirect scheme http drop-query append-slash  if is_$instance ! { path_beg /$instance/ }\n\
         use_backend $instance if { path_beg /$instance/ }\n\
-#$instance stop"
+        #$instance stop"
         sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
     done
     echo 'haproxynew: true' >> /etc/octoprint_deploy
