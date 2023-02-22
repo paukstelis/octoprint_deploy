@@ -399,7 +399,7 @@ EXTRACAM="backend cam${INUM}_$INSTANCE\n\
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
     reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /|\2 \n\
     server webcam1 127.0.0.1:$CAMPORT"
-
+        fi
         
         echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
         sed -i "/#cam${INUM}_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
