@@ -279,9 +279,9 @@ new_instance () {
             #Don't know how to do the formatting correctly here. This works, however.
 
 SEDREPLACE="#$INSTANCE start\n\
-    acl is_$INSTANCE url_beg /$INSTANCE\n\
-    http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
-    use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
+        acl is_$INSTANCE url_beg /$INSTANCE\n\
+        http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
+        use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
 #$INSTANCE stop"
 
             sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
@@ -400,7 +400,7 @@ EXTRACAM="backend cam${INUM}_$INSTANCE\n\
     reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /|\2 \n\
     server webcam1 127.0.0.1:$CAMPORT"
         fi
-        
+
         echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
         sed -i "/#cam${INUM}_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
         #these are necessary because sed append seems to have issues with escaping for the /\1
