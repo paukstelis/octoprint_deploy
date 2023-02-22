@@ -1053,7 +1053,7 @@ remove_instance_menu() {
             remove_instance $opt
         fi
     fi
-    main
+    main_menu
 }
 remove_camera() {
     systemctl stop $1.service
