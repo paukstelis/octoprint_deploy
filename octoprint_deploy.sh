@@ -278,9 +278,9 @@ new_instance () {
             #find frontend line, do insert
             #Don't know how to do the formatting correctly here. This works, however.
 SEDREPLACE="#$INSTANCE start\n\
-        acl is_$INSTANCE url_beg /$INSTANCE\n\
-        http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
-        use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
+    acl is_$INSTANCE url_beg /$INSTANCE\n\
+    http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
+    use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
 #$INSTANCE stop"
         
             sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
@@ -392,11 +392,11 @@ write_camera() {
         sed -i "/use_backend $INSTANCE if/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-        http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /\1 \n\
+        http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /|\1 \n\
         server webcam1 127.0.0.1:$CAMPORT"
         else
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-        reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /\2 \n\
+        reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /|\2 \n\
         server webcam1 127.0.0.1:$CAMPORT"
         fi
 
@@ -404,7 +404,10 @@ EXTRACAM="backend cam${INUM}_$INSTANCE\n\
         if [ -z "$INUM" ]; then
             echo "#cam_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
         fi
-        sed -i "\|#cam${INUM}_$INSTANCE start|a $EXTRACAM" /etc/haproxy/haproxy.cfg
+        sed -i "/#cam${INUM}_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
+        #these are necessary because sed append seems to have issues with escaping for the /\1
+        sed -i 's/\/|1/\/\\1/' /etc/haproxy/haproxy.cfg
+        sed -i 's/\/|2/\/\\2/' /etc/haproxy/haproxy.cfg
         if [ -z "$INUM" ]; then
             echo "#cam_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
         fi
