@@ -490,18 +490,26 @@ add_camera() {
         echo
     fi
     
-    echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
-    read CAMPORT
-    if [ -z "$CAMPORT" ]; then
-        CAMPORT=$(tail -1 /etc/camera_ports)
+    while true; do
+        echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
+        read CAMPORT
+        if [ -z "$CAMPORT" ]; then
+            CAMPORT=$(tail -1 /etc/camera_ports)
         
         if [ -z "$CAMPORT" ]; then
             CAMPORT=8000
         fi
-        
         CAMPORT=$((CAMPORT+1))
-        echo Selected port is: $CAMPORT | log
+
+        if [[ $CAMPORT -gt 7000 ]]; then
+            break
+        else
+            echo "Camera Port must be greater than 7000"
+        fi
     fi
+
+    done
+
     echo "Settings can be modified after initial setup in /etc/systemd/system/cam${INUM}_$INSTANCE.service"
     echo
     while true; do
