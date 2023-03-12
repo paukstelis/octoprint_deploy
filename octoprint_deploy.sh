@@ -600,6 +600,7 @@ deb_packages() {
     -e python3.10-venv \
     -e virtualenv \
     -e python3-dev \
+    -e python3-setuptools \
     -e build-essential \
     -e python3-setuptools \
     -e libyaml-dev \
