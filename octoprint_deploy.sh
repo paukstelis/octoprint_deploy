@@ -406,6 +406,8 @@ EXTRACAM="backend cam${INUM}_$INSTANCE\n\
         #these are necessary because sed append seems to have issues with escaping for the /\1
         sed -i 's/\/|1/\/\\1/' /etc/haproxy/haproxy.cfg
         sed -i 's/\/|2/\/\\2/' /etc/haproxy/haproxy.cfg
+        #haproxy 1.x correction
+        sed -i 's/|/\\/g' /etc/haproxy/haproxy.cfg
         echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
         
         systemctl restart haproxy
