@@ -397,7 +397,7 @@ EXTRACAM="backend cam${INUM}_$INSTANCE\n\
     server webcam1 127.0.0.1:$CAMPORT"
         else
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-    reqrep ^([^\ :]*)\ /cam${INUM}_$INSTANCE/(.*) \1\ /|\2 \n\
+    reqrep ^([^\ :]*)|\ /cam${INUM}_$INSTANCE/(.*) |\1|\ /|\2 \n\
     server webcam1 127.0.0.1:$CAMPORT"
         fi
 
