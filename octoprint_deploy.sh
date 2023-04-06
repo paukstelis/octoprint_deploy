@@ -495,10 +495,12 @@ add_camera() {
         read CAMPORT
         if [ -z "$CAMPORT" ]; then
             CAMPORT=$(tail -1 /etc/camera_ports)
-        
+        fi
+
         if [ -z "$CAMPORT" ]; then
             CAMPORT=8000
         fi
+        
         CAMPORT=$((CAMPORT+1))
 
         if [ $CAMPORT -gt 7000 ]; then
