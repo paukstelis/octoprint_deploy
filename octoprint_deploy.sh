@@ -501,7 +501,7 @@ add_camera() {
         fi
         CAMPORT=$((CAMPORT+1))
 
-        if [[ $CAMPORT -gt 7000 ]]; then
+        if [ $CAMPORT -gt 7000 ]; then
             break
         else
             echo "Camera Port must be greater than 7000"
