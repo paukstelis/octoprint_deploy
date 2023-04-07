@@ -277,13 +277,13 @@ new_instance () {
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
             #find frontend line, do insert
             #Don't know how to do the formatting correctly here. This works, however.
-
-SEDREPLACE="#$INSTANCE start\n\
-        acl is_$INSTANCE url_beg /$INSTANCE\n\
-        http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
-        use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
-#$INSTANCE stop"
-
+            
+            SEDREPLACE="#$INSTANCE start\n\
+            acl is_$INSTANCE url_beg /$INSTANCE\n\
+            http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
+            use_backend $INSTANCE if { path_beg /$INSTANCE/ }\n\
+            #$INSTANCE stop"
+            
             sed -i "/option forwardfor except 127.0.0.1/a $SEDREPLACE" /etc/haproxy/haproxy.cfg
             echo "#$INSTANCE start" >> /etc/haproxy/haproxy.cfg
             echo "backend $INSTANCE" >> /etc/haproxy/haproxy.cfg
@@ -392,15 +392,15 @@ write_camera() {
         #find frontend line, do insert
         sed -i "/use_backend $INSTANCE if/a\        use_backend cam${INUM}_$INSTANCE if { path_beg /cam${INUM}_$INSTANCE/ }" /etc/haproxy/haproxy.cfg
         if [ $HAversion -gt 1 ]; then
-EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-    http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /|\1\n\
-    server webcam1 127.0.0.1:$CAMPORT"
+            EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+            http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /|\1\n\
+            server webcam1 127.0.0.1:$CAMPORT"
         else
 EXTRACAM="backend cam${INUM}_$INSTANCE\n\
     reqrep ^([^|\ :]*)|\ /cam${INUM}_$INSTANCE/(.*) |\1|\ /|\2 \n\
     server webcam1 127.0.0.1:$CAMPORT"
         fi
-
+        
         echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
         sed -i "/#cam${INUM}_$INSTANCE start/a $EXTRACAM" /etc/haproxy/haproxy.cfg
         #these are necessary because sed append seems to have issues with escaping for the /\1
@@ -492,18 +492,28 @@ add_camera() {
         echo
     fi
     
-    echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
-    read CAMPORT
-    if [ -z "$CAMPORT" ]; then
-        CAMPORT=$(tail -1 /etc/camera_ports)
+    while true; do
+        echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
+        read CAMPORT
+        if [ -z "$CAMPORT" ]; then
+            CAMPORT=$(tail -1 /etc/camera_ports)
+        fi
         
         if [ -z "$CAMPORT" ]; then
             CAMPORT=8000
         fi
         
         CAMPORT=$((CAMPORT+1))
-        echo Selected port is: $CAMPORT | log
-    fi
+        
+        if [ $CAMPORT -gt 7000 ]; then
+            break
+        else
+            echo "Camera Port must be greater than 7000"
+        fi
+        
+        
+    done
+    
     echo "Settings can be modified after initial setup in /etc/systemd/system/cam${INUM}_$INSTANCE.service"
     echo
     while true; do
@@ -1017,7 +1027,7 @@ remove_instance() {
     for camera in "${cameras[@]}"; do
         remove_camera $camera
     done
-
+    
     #remove udev entry
     sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
     #remove files
