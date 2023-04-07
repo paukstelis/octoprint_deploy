@@ -63,6 +63,11 @@ log () {
     fi | tee -a "$logfile"
 }
 
+#https://gist.github.com/wellsie/56a468a1d53527fec827
+has-space () {
+    [[ "$1" != "${1%[[:space:]]*}" ]] && return 0 || return 1
+}
+
 new_instance () {
     
     echo "$(date) starting instance installation" | log
@@ -87,12 +92,20 @@ new_instance () {
         DAEMONPATH=$BUDEFAULT
     fi
     
-    echo "Enter the name for new printer/instance (no spaces):"
-    read INSTANCE
-    if [ -z "$INSTANCE" ]; then
-        echo "No instance given. Exiting" | log
-        main_menu
-    fi
+    while true; do
+        echo "Enter the name for new printer/instance (no spaces):"
+        read INSTANCE
+        if [ -z "$INSTANCE" ]; then
+            echo "No instance given. Exiting" | log
+            main_menu
+        fi
+        
+        if ! has-space $INSTANCE; then
+            break
+        else
+            echo "Instance names must not have spaces"
+        fi
+    done
     
     if test -f "/etc/systemd/system/$INSTANCE.service"; then
         echo "Already have an entry for $INSTANCE. Exiting." | log
@@ -396,9 +409,9 @@ write_camera() {
             http-request replace-path /cam${INUM}_$INSTANCE/(.*)   /|\1\n\
             server webcam1 127.0.0.1:$CAMPORT"
         else
-EXTRACAM="backend cam${INUM}_$INSTANCE\n\
-    reqrep ^([^|\ :]*)|\ /cam${INUM}_$INSTANCE/(.*) |\1|\ /|\2 \n\
-    server webcam1 127.0.0.1:$CAMPORT"
+            EXTRACAM="backend cam${INUM}_$INSTANCE\n\
+            reqrep ^([^|\ :]*)|\ /cam${INUM}_$INSTANCE/(.*) |\1|\ /|\2 \n\
+            server webcam1 127.0.0.1:$CAMPORT"
         fi
         
         echo "#cam${INUM}_$INSTANCE start" >> /etc/haproxy/haproxy.cfg
@@ -949,21 +962,39 @@ firstrun() {
     echo
     echo
     if prompt_confirm "Do you want to setup your admin user now?"; then
+        while true; do
         echo 'Enter admin user name (no spaces): '
         read OCTOADMIN
         if [ -z "$OCTOADMIN" ]; then
             echo -e "No admin user given! Defaulting to: \033[0;31moctoadmin\033[0m"
             OCTOADMIN=octoadmin
         fi
+        if ! has-space $OCTOADMIN; then
+            break
+        else
+            echo "Admin user name must not have spaces."
+        fi
+        done
         echo "Admin user: $OCTOADMIN"
+
+        while true; do
         echo 'Enter admin user password (no spaces): '
         read OCTOPASS
         if [ -z "$OCTOPASS" ]; then
             echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
             OCTOPASS=fooselrulz
         fi
+
+        if ! has-space $OCTOPASS; then
+            break
+        else
+            echo "Admin password cannot contain spaces"
+        fi
+
+        done
         echo "Admin password: $OCTOPASS"
         $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
+
     fi
     if [ -n "$OCTOADMIN" ]; then
         echo
