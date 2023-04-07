@@ -100,7 +100,7 @@ new_instance () {
             main_menu
         fi
         
-        if ! has-space $INSTANCE; then
+        if ! has-space "$INSTANCE"; then
             break
         else
             echo "Instance names must not have spaces"
@@ -969,7 +969,7 @@ firstrun() {
             echo -e "No admin user given! Defaulting to: \033[0;31moctoadmin\033[0m"
             OCTOADMIN=octoadmin
         fi
-        if ! has-space $OCTOADMIN; then
+        if ! has-space "$OCTOADMIN"; then
             break
         else
             echo "Admin user name must not have spaces."
@@ -985,7 +985,7 @@ firstrun() {
             OCTOPASS=fooselrulz
         fi
 
-        if ! has-space $OCTOPASS; then
+        if ! has-space "$OCTOPASS"; then
             break
         else
             echo "Admin password cannot contain spaces"
