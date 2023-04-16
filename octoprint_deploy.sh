@@ -108,7 +108,7 @@ new_instance () {
         echo Selected port is: $PORT | log
         OCTOUSER=$user
         OCTOPATH=$DAEMONPATH
-        OCTOCONFIG="/home/$user/"
+        OCTOCONFIG="/home/$user"
         BFOLD="/home/$user/.octoprint"
         echo "Your OctoPrint instance will be installed at /home/$user/.$INSTANCE"
         echo
@@ -158,7 +158,7 @@ new_instance () {
         echo "Octoprint Config Path (where the hidden instance directory will be) [/home/$user/]:"
         read OCTOCONFIG
         if [ -z "$OCTOCONFIG" ]; then
-            OCTOCONFIG="/home/$user/"
+            OCTOCONFIG="/home/$user"
         fi
         
         #octoprint_base is the generic .octoprint folder that contains all configuration, upload, etc.

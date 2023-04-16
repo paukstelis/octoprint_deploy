@@ -60,6 +60,7 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Check for spaces in instance name, admin user, and password
 * Force camera port to be greater than 7000
 * Allow removal of individual camera services. Improvements to instance and camera removal.
 * Haproxy fixed! No more trailing slash required! Running new octoprint_deploy on an older installation automatically update these entries.
