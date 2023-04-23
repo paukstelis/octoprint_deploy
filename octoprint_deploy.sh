@@ -905,7 +905,7 @@ prepare () {
                 restorecon -R -v /home/$user/OctoPrint/bin
                 if [ $VID -eq 1 ]; then
                     semanage fcontext -a -t bin_t "/home/$user/mjpg-streamer/.*"
-                    chcon -Rv -u more sysystem_u -t bin_t "/home/$user/mjpg-streamer/"
+                    chcon -Rv -u system_u -t bin_t "/home/$user/mjpg-streamer/"
                     restorecon -R -v /home/$user/mjpg-streamer
                 fi
                 if [ $VID -eq 2 ]; then
