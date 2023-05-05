@@ -1435,7 +1435,7 @@ replace_id() {
 }
 
 octo_deploy_update() {
-    sudo -u $user git -C octoprint_deploy pull
+    sudo -u $user git -C $SCRIPTDIR pull
     exit
 }
 
