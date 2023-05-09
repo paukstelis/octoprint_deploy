@@ -815,6 +815,18 @@ prepare () {
             sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
+
+            #NEW! Do check to verify that OctoPrint binary is installed and is working
+            if [ -f /home/$user/OctoPrint/bin/octoprint ]; then
+                echo "OctoPrint has been installed successfully"
+            else
+                echo "WARNING! WARNING! WARNING!"
+                echo "OctoPrint has not been installed correctly."
+                echo "Please answer Y to remove everything and try running prepare system again."
+                remove_everything
+                exit
+            fi
+
             #start server and run in background
             echo 'Creating generic OctoPrint template service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
