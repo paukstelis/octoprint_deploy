@@ -285,6 +285,7 @@ new_instance () {
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set webcam.ffmpeg /usr/bin/ffmpeg
         
         if [ "$HAPROXY" == true ]; then
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
@@ -815,6 +816,18 @@ prepare () {
             sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
+
+            #NEW! Do check to verify that OctoPrint binary is installed
+            if [ -f "/home/$user/OctoPrint/bin/octoprint" ]; then
+                echo "OctoPrint apppears to have been installed successfully"
+            else
+                echo "WARNING! WARNING! WARNING!"
+                echo "OctoPrint has not been installed correctly."
+                echo "Please answer Y to remove everything and try running prepare system again."
+                remove_everything
+                exit
+            fi
+
             #start server and run in background
             echo 'Creating generic OctoPrint template service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
@@ -930,9 +943,9 @@ prepare () {
             fi
             echo
             echo
-            if prompt_confirm "Would you like to install cloud service plugins now?"; then
-                plugin_menu_cloud
-            fi
+            #if prompt_confirm "Would you like to install cloud service plugins now?"; then
+            #    plugin_menu_cloud
+            #fi
             #this restart seems necessary in some cases
             systemctl restart octoprint_default.service
         fi

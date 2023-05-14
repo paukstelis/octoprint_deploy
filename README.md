@@ -1,4 +1,4 @@
-Updated April 15, 2023.  
+Updated May 14, 2023.  
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy
@@ -60,6 +60,8 @@ These files provide a bash script for quickly deploying multiple octoprint insta
   * Change udev rules for an instance with `sudo octoprint_deploy/octoprint_deploy.sh replace`
   * Always a good idea to update octoprint_deploy from time-to-time with `git -C octoprint_deploy pull`
 # Recent Changes
+* Remove cloud plugin setup for template. This causes more issues than it helps. Cloud plugins should typically be installed manually and configured for each instance.
+* Verify that OctoPrint gets installed in virtual environment. Opens remove_everything prompt of executable does not exist.
 * Remove path double slashes that seemed to prevented deletion of timelapse videos.
 * Check for spaces in instance name, admin user, and password
 * Force camera port to be greater than 7000
