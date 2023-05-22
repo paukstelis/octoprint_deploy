@@ -511,13 +511,12 @@ add_camera() {
         read CAMPORT
         if [ -z "$CAMPORT" ]; then
             CAMPORT=$(tail -1 /etc/camera_ports)
+            
+            if [ -z "$CAMPORT" ]; then
+                CAMPORT=8000
+            fi
+            CAMPORT=$((CAMPORT+1))
         fi
-        
-        if [ -z "$CAMPORT" ]; then
-            CAMPORT=8000
-        fi
-        
-        CAMPORT=$((CAMPORT+1))
         
         if [ $CAMPORT -gt 7000 ]; then
             break
@@ -816,7 +815,7 @@ prepare () {
             sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
             #install oprint
             sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
-
+            
             #NEW! Do check to verify that OctoPrint binary is installed
             if [ -f "/home/$user/OctoPrint/bin/octoprint" ]; then
                 echo "OctoPrint apppears to have been installed successfully"
@@ -827,7 +826,7 @@ prepare () {
                 remove_everything
                 exit
             fi
-
+            
             #start server and run in background
             echo 'Creating generic OctoPrint template service...'
             cat $SCRIPTDIR/octoprint_generic.service | \
@@ -976,38 +975,38 @@ firstrun() {
     echo
     if prompt_confirm "Do you want to setup your admin user now?"; then
         while true; do
-        echo 'Enter admin user name (no spaces): '
-        read OCTOADMIN
-        if [ -z "$OCTOADMIN" ]; then
-            echo -e "No admin user given! Defaulting to: \033[0;31moctoadmin\033[0m"
-            OCTOADMIN=octoadmin
-        fi
-        if ! has-space "$OCTOADMIN"; then
-            break
-        else
-            echo "Admin user name must not have spaces."
-        fi
+            echo 'Enter admin user name (no spaces): '
+            read OCTOADMIN
+            if [ -z "$OCTOADMIN" ]; then
+                echo -e "No admin user given! Defaulting to: \033[0;31moctoadmin\033[0m"
+                OCTOADMIN=octoadmin
+            fi
+            if ! has-space "$OCTOADMIN"; then
+                break
+            else
+                echo "Admin user name must not have spaces."
+            fi
         done
         echo "Admin user: $OCTOADMIN"
-
+        
         while true; do
-        echo 'Enter admin user password (no spaces): '
-        read OCTOPASS
-        if [ -z "$OCTOPASS" ]; then
-            echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
-            OCTOPASS=fooselrulz
-        fi
-
-        if ! has-space "$OCTOPASS"; then
-            break
-        else
-            echo "Admin password cannot contain spaces"
-        fi
-
+            echo 'Enter admin user password (no spaces): '
+            read OCTOPASS
+            if [ -z "$OCTOPASS" ]; then
+                echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
+                OCTOPASS=fooselrulz
+            fi
+            
+            if ! has-space "$OCTOPASS"; then
+                break
+            else
+                echo "Admin password cannot contain spaces"
+            fi
+            
         done
         echo "Admin password: $OCTOPASS"
         $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
-
+        
     fi
     if [ -n "$OCTOADMIN" ]; then
         echo
