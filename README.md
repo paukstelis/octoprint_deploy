@@ -22,7 +22,6 @@ These files provide a bash script for quickly deploying multiple octoprint insta
       * If your printer does not have a serial number (all Creality printers), it will detect and use the physical USB address for udev entries.
   * Continue until you have added all the printers you want to use.
   * haproxy entries are updated so you can connect via http://octopi.local/instancename
-  * Please note, haproxy entries are NOT used for webcams once you use this system. Connect to them via hostname:port.
   * To add more printers at a later date, just run the script again!
   * Want to use a Pi camera? After you have made your instance(s), run the script with `sudo octoprint_deploy/octoprint_deploy.sh picam` and follow the instructions (VERY EXPERIMENTAL).
 * General Linux (Ubuntu/Mint/RPiOS/Debian/Fedora/Arch/etc.)
