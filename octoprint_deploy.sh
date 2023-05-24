@@ -1471,7 +1471,7 @@ instance_status() {
 }
 
 main_menu() {
-    VERSION=0.2.4
+    VERSION=0.2.5
     #reset
     UDEV=''
     TEMPUSB=''
