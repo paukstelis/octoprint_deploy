@@ -380,12 +380,12 @@ write_camera() {
     echo $CAMPORT >> /etc/camera_ports
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
-        echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-        echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+        $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config plugins.classicwebcam.snapshot "http://localhost:$CAMPORT?action=snapshot"
+        
         if [ -z "$CAMHAPROXY" ]; then
-            echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+            $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config plugins.classicwebcam.stream "http://$(hostname).local:$CAMPORT?action=stream"    
         else
-            echo "    stream: /cam_$INSTANCE/?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+            $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config plugins.classicwebcam.stream "/cam_$INSTANCE/?action=stream"
         fi
         $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
     fi
