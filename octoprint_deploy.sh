@@ -23,55 +23,18 @@ fi
 ARCH=$(arch)
 ARCH=${ARCH:0:3}
 
-get_settings() {
-    #Get octoprint_deploy settings, all of which are written on system prepare
-    if [ -f /etc/octoprint_deploy ]; then
-        TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \(\.*\)/\1/p')
-        if [ "$TYPE" == linux ]; then
-            OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
-        else
-            OCTOEXEC="sudo -u $user /home/$user/oprint/bin/octoprint"
-        fi
-        STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \(\.*\)/\1/p')
-        #echo $STREAMER
-        HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
-        #echo $HAPROXY
-        HAPROXYNEW=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxynew: \(\.*\)/\1/p')
-        if [ -z "$HAPROXYNEW" ]; then
-            HAPROXYNEW="false"
-        fi
-    fi
-}
 
-# from stackoverflow.com/questions/3231804
-prompt_confirm() {
-    while true; do
-        read -r -n 1 -p "${1:-Continue?} [y/n]: " REPLY
-        case $REPLY in
-            [yY]) echo ; return 0 ;;
-            [nN]) echo ; return 1 ;;
-            *) printf " \033[31m %s \n\033[0m" "invalid input"
-        esac
-    done
-}
-# from unix.stackexchange.com/questions/391293
-log () {
-    if [ -z "$1" ]; then
-        cat
-    else
-        printf '%s\n' "$@"
-    fi | tee -a "$logfile"
-}
 
-#https://gist.github.com/wellsie/56a468a1d53527fec827
-has-space () {
-    [[ "$1" != "${1%[[:space:]]*}" ]] && return 0 || return 1
-}
 
 # initiate logging
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
 source $SCRIPTDIR/plugins.sh
+source $SCRIPTDIR/prepare.sh
+source $SCRIPTDIR/instance.sh
+source $SCRIPTDIR/util.sh
+source $SCRIPTDIR/menu.sh
+
 # gather info and write /etc/octoprint_deploy if missing
 if [ ! -f /etc/octoprint_deploy ] && [ -f /etc/octoprint_instances ]; then
     echo "/etc/octoprint_deploy is missing. You may have prepared the system with an older vesion."

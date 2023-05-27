@@ -6,22 +6,6 @@ new_instance() {
     
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     SCRIPTDIR=$(dirname $(readlink -f $0))
-    PIDEFAULT="/home/$user/oprint/bin/octoprint"
-    BUDEFAULT="/home/$user/OctoPrint/bin/octoprint"
-    if [ -z "$TYPE" ]; then
-        echo "No installation type found. Have you run system prepare?"
-        main_menu
-    fi
-    
-    if [ "$TYPE" == octopi ]; then
-        INSTALL=1
-        DAEMONPATH=$PIDEFAULT
-    fi
-    
-    if [ "$TYPE" == linux ]; then
-        INSTALL=2
-        DAEMONPATH=$BUDEFAULT
-    fi
     
     while true; do
         echo "Enter the name for new printer/instance (no spaces):"
@@ -37,19 +21,43 @@ new_instance() {
             echo "Instance names must not have spaces"
         fi
     done
-    
+
+
+
     if test -f "/etc/systemd/system/$INSTANCE.service"; then
         echo "Already have an entry for $INSTANCE. Exiting." | log
         main_menu
     fi
-    
-    if prompt_confirm "Use all default values?"; then
+
+    #Choose if should use an instance as template here
+    echo "Using a template instance allows you to copy created users, plugin settings,"
+    echo "and gcode files from one instance to your new instance."
+    if prompt_confirm "Use existing instance as a template?"; then
+        PS3='Select template instance: '
+        get_instances true
+        select opt in "${INSTANCE_ARR[@]}"
+        do
+            if [ "$opt" == Quit ]; then
+                main_menu
+            fi
+
+            TEMPLATE=$opt
+            echo "Using $opt as template."
+        done
+
+    else
+        TEMPLATE=None
+    fi
+
+    if prompt_confirm "Ready to begin instance creation?"; then
+        #CHANGE
         PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
         if [ -z "$PORT" ]; then
             PORT=5000
         fi
         PORT=$((PORT+1))
         echo Selected port is: $PORT | log
+        #CHANGE
         OCTOUSER=$user
         OCTOPATH=$DAEMONPATH
         OCTOCONFIG="/home/$user"
@@ -57,67 +65,6 @@ new_instance() {
         echo "Your OctoPrint instance will be installed at /home/$user/.$INSTANCE"
         echo
         echo
-    else
-        echo "Port on which this instance will run (ENTER will increment from last value in /etc/octoprint_instances):"
-        read PORT
-        if [ -z "$PORT" ]; then
-            PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
-            
-            if [ -z "$PORT" ]; then
-                PORT=5000
-            fi
-            
-            PORT=$((PORT+1))
-            echo Selected port is: $PORT | log
-            
-        fi
-        
-        if [ -f /etc/octoprint_instances ]; then
-            if grep -q $PORT /etc/octoprint_instances; then
-                echo "Port may be in use! Check /etc/octoprint_instances and select a different port. Exiting." | log
-                main_menu
-            fi
-        fi
-        
-        #collect user, basedir path, daemon path
-        echo "Octoprint Daemon User [$user]:"
-        read OCTOUSER
-        if [ -z "$OCTOUSER" ]; then
-            OCTOUSER=$user
-        fi
-        
-        echo "Octoprint Executable Daemon Path [$DAEMONPATH]:"
-        read OCTOPATH
-        if [ -z "$OCTOPATH" ]; then
-            OCTOPATH=$DAEMONPATH
-        fi
-        
-        if [ -f "$OCTOPATH" ]; then
-            echo "Executable path is valid" | log
-        else
-            echo "Exectuable path is not valid! Aborting" | log
-            main_menu
-        fi
-        
-        echo "Octoprint Config Path (where the hidden instance directory will be) [/home/$user/]:"
-        read OCTOCONFIG
-        if [ -z "$OCTOCONFIG" ]; then
-            OCTOCONFIG="/home/$user"
-        fi
-        
-        #octoprint_base is the generic .octoprint folder that contains all configuration, upload, etc.
-        echo "Octoprint instance template path [/home/$user/.octoprint]:"
-        read BFOLD
-        if [ -z "$BFOLD" ]; then
-            BFOLD="/home/$user/.octoprint"
-        fi
-        
-        if [ -d "$BFOLD" ]; then
-            echo "Template path is valid" | log
-        else
-            echo "Template path is not valid! Aborting" | log
-            main_menu
-        fi
     fi
     
     #check to make sure first run is complete
@@ -309,8 +256,9 @@ remove_instance() {
         rm /etc/systemd/system/$opt.service
     fi
     
-    #Get all cameras associated with this instance
-    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    #Get all cameras associated with this instance.
+    #Is this right?
+    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*$opt.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     for camera in "${cameras[@]}"; do
         remove_camera $camera
     done

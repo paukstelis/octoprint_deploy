@@ -1,4 +1,4 @@
-#`/bin/bash
+#!/bin/bash
 #https://askubuntu.com/questions/39497
 deb_packages() {
     #All extra packages needed can be added here for deb based systems. Only available will be selected.
@@ -76,7 +76,7 @@ prepare () {
     if [ $INSTALL -eq 1 ] && [[ "$ARCH" != arm ]]; then
         echo
         echo
-        echo "WARNING! You 192.168.0.187have selected OctoPi, but are not using an ARM processor."
+        echo "WARNING! You have selected OctoPi, but are not using an ARM processor."
         echo "If you are using another linux distribution, select it from the list."
         echo "Unless you really know what you are doing, select N now."
         echo
@@ -431,4 +431,4 @@ firstrun() {
         fi
     fi
     
-}`
+}

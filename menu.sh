@@ -19,7 +19,7 @@ main_menu() {
     if [ -f "/etc/octoprint_instances" ]; then
         options=("New instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
-        options=("Prepare system" "USB port testing" "Update" "Quit")
+        options=("Prepare system" "USB port Testing" "Update" "Quit")
     fi
     
     select opt in "${options[@]}"
@@ -53,6 +53,10 @@ main_menu() {
                 backup_menu
                 break
             ;;
+            "USB port Testing")
+                usb_testing
+                break
+            ;;
             "Update")
                 octo_deploy_update
                 break
@@ -64,6 +68,7 @@ main_menu() {
         esac
     done
 }
+
 remove_instance_menu() {
     echo
     echo
@@ -125,7 +130,6 @@ utility_menu() {
             ;;
             "USB Port Testing")
                 usb_testing
-                break
                 break
             ;;
             "Sync Users")
