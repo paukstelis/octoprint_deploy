@@ -1524,6 +1524,10 @@ main_menu() {
                 backup_menu
                 break
             ;;
+            "USB port testing")
+                usb_testing
+                break
+            ;;
             "Update")
                 octo_deploy_update
                 break
