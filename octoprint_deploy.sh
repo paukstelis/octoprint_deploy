@@ -932,7 +932,7 @@ prepare () {
 
 streamer_install() {
     PS3='Which video streamer you would like to install?: '
-    options=("mjpeg-streamer" "ustreamer" "None")
+    options=("mjpeg-streamer" "ustreamer (recommended)" "None")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -940,7 +940,7 @@ streamer_install() {
                 VID=1
                 break
             ;;
-            "ustreamer")
+            "ustreamer (recommended)")
                 VID=2
                 break
             ;;
@@ -961,7 +961,7 @@ streamer_install() {
         sudo -u $user mv mjpeg/mjpg-streamer-experimental /home/$user/mjpg-streamer
         sudo -u $user rm -rf mjpeg
 
-        if [ -f "/home/$user/mjpg-streamer/mjpg_streamer" ]l then
+        if [ -f "/home/$user/mjpg-streamer/mjpg_streamer" ]; then
             echo "mjpg_streamer installed successfully"
             echo 'streamer: mjpg-streamer' >> /etc/octoprint_deploy
         else
@@ -976,7 +976,7 @@ streamer_install() {
         sudo -u $user git clone --depth=1 https://github.com/pikvm/ustreamer
         sudo -u $user make -C ustreamer > /dev/null
 
-        if [ -f "/home/$user/ustreamer/ustreamer" ]l then
+        if [ -f "/home/$user/ustreamer/ustreamer" ]; then
             echo "ustreamer installed successfully"
             echo 'streamer: ustreamer' >> /etc/octoprint_deploy
         else
