@@ -945,6 +945,7 @@ streamer_install() {
                 break
             ;;
             "None")
+                VID=3
                 break
             ;;
             *) echo "invalid option $REPLY";;
