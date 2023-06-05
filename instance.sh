@@ -21,14 +21,14 @@ new_instance() {
             echo "Instance names must not have spaces"
         fi
     done
-
-
-
+    
+    
+    
     if test -f "/etc/systemd/system/$INSTANCE.service"; then
         echo "Already have an entry for $INSTANCE. Exiting." | log
         main_menu
     fi
-
+    
     #Choose if should use an instance as template here
     echo "Using a template instance allows you to copy created users, plugin settings,"
     echo "and gcode files from one instance to your new instance."
@@ -40,15 +40,15 @@ new_instance() {
             if [ "$opt" == Quit ]; then
                 main_menu
             fi
-
+            
             TEMPLATE=$opt
             echo "Using $opt as template."
         done
-
+        
     else
-        TEMPLATE=None
+        TEMPLATE=''
     fi
-
+    
     if prompt_confirm "Ready to begin instance creation?"; then
         #CHANGE
         PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
@@ -61,25 +61,28 @@ new_instance() {
         OCTOUSER=$user
         OCTOPATH=$DAEMONPATH
         OCTOCONFIG="/home/$user"
-        BFOLD="/home/$user/.octoprint"
+        
         echo "Your OctoPrint instance will be installed at /home/$user/.$INSTANCE"
         echo
         echo
     fi
     
-    #check to make sure first run is complete
-    if grep -q 'firstRun: true' $BFOLD/config.yaml; then
-        echo "WARNING!! You must setup the template profile and admin user before continuing" | log
-        main_menu
+    if [ -n $TEMPLATE ]; then
+        BFOLD="/home/$user/.$TEMPLATE"
+        #check to make sure first run is complete
+        if grep -q 'firstRun: true' $BFOLD/config.yaml; then
+            echo "WARNING!! You must setup the template profile and admin user before continuing" | log
+            main_menu
+        fi
     fi
     
-    if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
-    then
+    if prompt_confirm "Begin auto-detect printer serial number for udev entry?"; then
         detect_printer
     else
-        echo "OK. Restart when you are ready" | log; exit 0
+        echo "Instance has not been created. Restart and do detection when you are ready."
+        main_menu
     fi
-    
+
     #Failed state. Nothing detected
     if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
         echo
@@ -126,18 +129,6 @@ new_instance() {
         -e "s/NEWINSTANCE/$INSTANCE/" \
         -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
         
-        #If a default octoprint service exists, stop and disable it
-        if [ -f "/etc/systemd/system/octoprint_default.service" ]; then
-            systemctl stop octoprint_default.service
-            systemctl disable octoprint_default.service
-        fi
-        
-        #stop and disable default octoprint service (octopi)
-        if [ -f "/etc/systemd/system/octoprint.service" ]; then
-            systemctl stop octoprint.service
-            systemctl disable octoprint.service
-        fi
-        
         #Printer udev identifier technique - either Serial number or USB port
         #Serial Number
         if [ -n "$UDEV" ]; then
@@ -152,13 +143,15 @@ new_instance() {
         #Append instance name to list for removal tool
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
-        #copy all files to our new directory
-        cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
-        
+        if [ -n $TEMPLATE ]; then
+            #copy all files to our new directory
+            cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
+        fi
         #uniquify instances
         echo 'Uniquifying instance...'
         #Do config.yaml modifications here
-        cat $BFOLD/config.yaml | sed -e "s/INSTANCE/$INSTANCE/" > $OCTOCONFIG/.$INSTANCE/config.yaml
+        #TODO add restart/reboot etc.
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set appearance.name $INSTANCE
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
@@ -167,9 +160,6 @@ new_instance() {
         
         if [ "$HAPROXY" == true ]; then
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
-            #find frontend line, do insert
-            #Don't know how to do the formatting correctly here. This works, however.
-            
             SEDREPLACE="#$INSTANCE start\n\
             acl is_$INSTANCE url_beg /$INSTANCE\n\
             http-request redirect scheme http drop-query append-slash  if is_$INSTANCE ! { path_beg /$INSTANCE/ }\n\
