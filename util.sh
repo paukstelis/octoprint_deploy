@@ -28,20 +28,9 @@ has-space () {
 get_settings() {
     #Get octoprint_deploy settings, all of which are written on system prepare
     if [ -f /etc/octoprint_deploy ]; then
-        TYPE=$(cat /etc/octoprint_deploy | sed -n -e 's/^type: \(\.*\)/\1/p')
-        if [ "$TYPE" == linux ]; then
-            OCTOEXEC="sudo -u $user /home/$user/OctoPrint/bin/octoprint"
-        else
-            OCTOEXEC="sudo -u $user /home/$user/oprint/bin/octoprint"
-        fi
+        OCTOEXEC=$(cat /etc/octoprint_deploy | sed -n -e 's/^octoexec: \(\.*\)/\1/p')
         STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \(\.*\)/\1/p')
-        #echo $STREAMER
         HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
-        #echo $HAPROXY
-        HAPROXYNEW=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxynew: \(\.*\)/\1/p')
-        if [ -z "$HAPROXYNEW" ]; then
-            HAPROXYNEW="false"
-        fi
     fi
 }
 
@@ -51,6 +40,7 @@ octo_deploy_update() {
 }
 
 replace_id() {
+    #HAVE TO LOOK AT THIS AGAIN, something was broken in cut/paste
     echo "PLEASE NOTE, this will only work in replacing an existing serial number with another serial number"
     echo "or an existing USB port with another USB port. You cannot mix and match."
     PS3='Select instance to change serial ID: '
@@ -64,7 +54,21 @@ replace_id() {
         echo "Selected $opt to replace serial ID" | log
         #Serial number or KERNELS? Not doing any error checking yet
         KERN=$(grep octo_$opt /etc/udev/rules.d/99-octoprint.rules | sed -n -e 's/KERNELS==\"\([[:graph:]]*[[:digit:]]\)\".*/\1/p')
-        detect_printer# from stackoverflow.com/questions/3231804
+        detect_printer
+        # from stackoverflow.com/questions/3231804
+        if [ -z "$KERN" ]; then
+            sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\"\(.*\)\(\"octo_$opt\"\)/\1\"$UDEV\"\2\3/" /etc/udev/rules.d/99-octoprint.rules
+            echo "Serial number replaced with: $UDEV"
+        else
+            sed -i -e "s/\(KERNELS==\)\"$KERN\"\(.*\)\(\"octo_$opt\"\)/\1\"$USB\"\2\3/"  /etc/udev/rules.d/99-octoprint.rules
+            echo "USB port replaced with: $USB"
+        fi
+        udevadm control --reload-rules
+        udevadm trigger
+        exit 0
+    done
+}
+
 prompt_confirm() {
     while true; do
         read -r -n 1 -p "${1:-Continue?} [y/n]: " REPLY
@@ -89,18 +93,6 @@ has-space () {
     [[ "$1" != "${1%[[:space:]]*}" ]] && return 0 || return 1
 }
 
-        if [ -z "$KERN" ]; then
-            sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\"\(.*\)\(\"octo_$opt\"\)/\1\"$UDEV\"\2\3/" /etc/udev/rules.d/99-octoprint.rules
-            echo "Serial number replaced with: $UDEV"
-        else
-            sed -i -e "s/\(KERNELS==\)\"$KERN\"\(.*\)\(\"octo_$opt\"\)/\1\"$USB\"\2\3/"  /etc/udev/rules.d/99-octoprint.rules
-            echo "USB port replaced with: $USB"
-        fi
-        udevadm control --reload-rules
-        udevadm trigger
-        exit 0
-    done
-}
 
 back_up() {
     INSTANCE=$1
@@ -155,11 +147,7 @@ sync_users() {
         fi
         
         if prompt_confirm "Copy users from instance $opt to all other instances?"; then
-            if [ "$opt" == generic ]; then
-                userfile=/home/$user/.octoprint/users.yaml
-            else
-                userfile=/home/$user/.$opt/users.yaml
-            fi
+            userfile=/home/$user/.$opt/users.yaml
             #re-read to avoid the Quit
             get_instances false
             for instance in "${INSTANCE_ARR[@]}"; do
@@ -263,7 +251,7 @@ remove_everything() {
         done
         
         echo "Removing system stuff"
-        rm /etc/systemd/system/octoprint_default.service
+        rm /etc/systemd/system/octoprint.service
         rm /etc/octoprint_streamer
         rm /etc/octoprint_deploy
         rm /etc/octoprint_instances
@@ -289,7 +277,6 @@ remove_everything() {
 restart_all() {
     get_settings
     get_instances false
-    #unset 'instances[0]'
     for instance in "${INSTANCE_ARR[@]}"; do
         if [ "$instance" == template ]; then
             continue
