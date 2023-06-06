@@ -4,9 +4,10 @@ detect_installs() {
     #OctoPi will be the most common so do a search for that:
     if [ -f "/etc/octopi_version" ]; then
         echo "OctoPi installation detected."
-        echo "Adding existing instance to instance list."
+        echo "Adding standard OctoPi instance to instance list."
         echo "instance:octoprint port:5000" >> /etc/octoprint_instances
-        echo "octoexec:/home/$user/oprint/bin/octoprint" >> /etc/octoprint_deploy
+        echo "octoexec: /home/$user/oprint/bin/octoprint" >> /etc/octoprint_deploy
+        echo "haproxy: true" >> /etc/octoprint_deploy
         streamer_install
         main_menu
     fi
@@ -44,14 +45,14 @@ detect_installs() {
     arrlen=${#syspresent[@]}
     if [ -n "$arrlen" ]; then
         echo "Possible OctoPrint instances detected."
-        
+    else
+
     fi
 }
 
 
 #https://askubuntu.com/questions/39497
 deb_packages() {
-    apt update
     #All extra packages needed can be added here for deb based systems. Only available will be selected.
     apt-cache --generate pkgnames \
     | grep --line-regexp --fixed-strings \

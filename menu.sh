@@ -19,14 +19,14 @@ main_menu() {
     if [ -f "/etc/octoprint_instances" ]; then
         options=("New instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
-        options=("Prepare system" "USB port Testing" "Update" "Quit")
+        options=("Prepare system" "Update" "Quit")
     fi
     
     select opt in "${options[@]}"
     do
         case $opt in
             "Prepare system")
-                prepare
+                detect_installs
                 break
             ;;
             "New instance")
@@ -51,10 +51,6 @@ main_menu() {
             ;;
             "Backup Menu")
                 backup_menu
-                break
-            ;;
-            "USB port Testing")
-                usb_testing
                 break
             ;;
             "Update")
@@ -120,7 +116,7 @@ utility_menu() {
     echo
     echo
     PS3='Select an option: '
-    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Quit")
+    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Set Global Config" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -138,6 +134,10 @@ utility_menu() {
             ;;
             "Share Uploads")
                 share_uploads
+                break
+            ;;
+            "Set Global Config")
+                global_config
                 break
             ;;
             "Quit")

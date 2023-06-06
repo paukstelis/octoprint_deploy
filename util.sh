@@ -34,6 +34,22 @@ get_settings() {
     fi
 }
 
+global_config() {
+    echo "This utility allows you to modify OctoPrint settings for indivdiual or all instances."
+    echo "There is no error checking so it is critical to set the input parameters correctly."
+    echo "See the Wiki for more details."
+    echo "Enter the config and parameter"
+    read -p $GC
+    get_instances true
+    select opt in "${INSTANCE_ARR[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+    done
+
+}
+
 octo_deploy_update() {
     sudo -u $user git -C $SCRIPTDIR pull
     exit

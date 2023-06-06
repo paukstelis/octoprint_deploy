@@ -30,9 +30,9 @@ new_instance() {
     fi
     
     #Choose if should use an instance as template here
-    echo "Using a template instance allows you to copy created users, plugin settings,"
+    echo "Using a template instance allows you to copy, plugin settings,"
     echo "and gcode files from one instance to your new instance."
-    if prompt_confirm "Use existing instance as a template?"; then
+    if prompt_confirm "Use an existing instance as a template?"; then
         PS3='Select template instance: '
         get_instances true
         select opt in "${INSTANCE_ARR[@]}"
@@ -62,16 +62,16 @@ new_instance() {
         OCTOPATH=$DAEMONPATH
         OCTOCONFIG="/home/$user"
         
-        echo "Your OctoPrint instance will be installed at /home/$user/.$INSTANCE"
+        echo "Your new OctoPrint instance will be installed at /home/$user/.$INSTANCE"
         echo
         echo
     fi
     
-    if [ -n $TEMPLATE ]; then
+    if [ -n "$TEMPLATE" ]; then
         BFOLD="/home/$user/.$TEMPLATE"
         #check to make sure first run is complete
         if grep -q 'firstRun: true' $BFOLD/config.yaml; then
-            echo "WARNING!! You must setup the template profile and admin user before continuing" | log
+            echo "Template profile and admin user will have to be setup." | log
             main_menu
         fi
     fi
@@ -112,7 +112,7 @@ new_instance() {
     echo
     
     #USB cameras
-    if [[ -n $INSTALL ]]; then
+    if [ -n "$INSTALL" ]; then
         if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"
         then
             add_camera
@@ -143,7 +143,7 @@ new_instance() {
         #Append instance name to list for removal tool
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
-        if [ -n $TEMPLATE ]; then
+        if [ -n "$TEMPLATE" ]; then
             #copy all files to our new directory
             cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
         fi
@@ -152,6 +152,8 @@ new_instance() {
         #Do config.yaml modifications here
         #TODO add restart/reboot etc.
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set appearance.name $INSTANCE
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.serverRestartCommand "sudo systemctl restart $INSTANCE"
+        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.systemRestartCommand "sudo reboot"
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
         $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
