@@ -220,7 +220,7 @@ new_install() {
     
     #start server and run in background
     echo 'Creating OctoPrint service...'
-    cat $SCRIPTDIR/octoprint.service | \
+    cat $SCRIPTDIR/octoprint_generic.service | \
     sed -e "s/OCTOUSER/$user/" \
     -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
     -e "s#OCTOCONFIG#/home/$user/#" \
@@ -264,7 +264,7 @@ haproxy_install() {
     if prompt_confirm "Use haproxy?"; then
         echo 'haproxy: true' >> /etc/octoprint_deploy
         #Check if using improved haproxy rules
-        echo 'haproxynew: true' >> /etc/octoprint_deploy
+        #echo 'haproxynew: true' >> /etc/octoprint_deploy
         systemctl stop haproxy
         #get haproxy version
         HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
