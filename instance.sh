@@ -43,6 +43,7 @@ new_instance() {
             
             TEMPLATE=$opt
             echo "Using $opt as template."
+            break
         done
         
     else
