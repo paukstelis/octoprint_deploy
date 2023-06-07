@@ -42,12 +42,7 @@ detect_installs() {
     echo "Looking for existing OctoPrint systemd files....."
     #get any service files that have bin/octoprint
     readarray -t syspresent < <(fgrep -l bin/octoprint /etc/systemd/system/*.service)
-    arrlen=${#syspresent[@]}
-    if [ -n "$arrlen" ]; then
-        echo "Possible OctoPrint instances detected."
-    else
-
-    fi
+    prepare
 }
 
 
@@ -168,7 +163,7 @@ old_install() {
 }
 
 new_install() {
-    
+    OCTOEXEC=/home/$user/OctoPrint/bin/octoprint
     echo "Adding systemctl and reboot to sudo"
     echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
     echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
@@ -398,7 +393,7 @@ firstrun() {
             
         done
         echo "Admin password: $OCTOPASS"
-        $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
+        sudo -u $user $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
     fi
     
     if [ -n "$OCTOADMIN" ]; then
@@ -409,30 +404,30 @@ firstrun() {
         echo
         echo
         if prompt_confirm "Do first run wizards now?"; then
-            $OCTOEXEC config set server.firstRun false --bool | log
-            $OCTOEXEC config set server.seenWizards.backup null | log
-            $OCTOEXEC config set server.seenWizards.corewizard 4 --int | log
+            sudo -u $user $OCTOEXEC config set server.firstRun false --bool | log
+            sudo -u $user $OCTOEXEC config set server.seenWizards.backup null | log
+            sudo -u $user $OCTOEXEC config set server.seenWizards.corewizard 4 --int | log
             
             if prompt_confirm "Enable online connectivity check?"; then
-                $OCTOEXEC config set server.onlineCheck.enabled true --bool
+                sudo -u $user $OCTOEXEC config set server.onlineCheck.enabled true --bool
             else
-                $OCTOEXEC config set server.onlineCheck.enabled false --bool
+                sudo -u $user $OCTOEXEC config set server.onlineCheck.enabled false --bool
             fi
             
             if prompt_confirm "Enable plugin blacklisting?"; then
-                $OCTOEXEC config set server.pluginBlacklist.enabled true --bool
+                sudo -u $user $OCTOEXEC config set server.pluginBlacklist.enabled true --bool
             else
-                $OCTOEXEC config set server.pluginBlacklist.enabled false --bool
+                sudo -u $user $OCTOEXEC config set server.pluginBlacklist.enabled false --bool
             fi
             
             if prompt_confirm "Enable anonymous usage tracking?"; then
-                $OCTOEXEC config set plugins.tracking.enabled true --bool
+                sudo -u $user $OCTOEXEC config set plugins.tracking.enabled true --bool
             else
-                $OCTOEXEC config set plugins.tracking.enabled false --bool
+                sudo -u $user $OCTOEXEC config set plugins.tracking.enabled false --bool
             fi
             
             if prompt_confirm "Use default printer (can be changed later)?"; then
-                $OCTOEXEC config set printerProfiles.default _default
+                sudo -u $user $OCTOEXEC config set printerProfiles.default _default
             fi
         fi
     fi
