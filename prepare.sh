@@ -14,7 +14,7 @@ detect_installs() {
     
     echo "Searching home directory for existing OctoPrint venv/binary....."
     octopresent=$(find /home/$user/ -type f -executable -print | grep "bin/octoprint")
-    if [ -n $octopresent ]; then
+    if [ -n "$octopresent" ]; then
         echo "OctoPrint binary found at $octopresent"
         PS3='Select option number: '
         options=("Use existing binary" "Install most recent OctoPrint" "More information")
