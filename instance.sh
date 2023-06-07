@@ -60,12 +60,14 @@ new_instance() {
         echo Selected port is: $PORT | log
         #CHANGE
         OCTOUSER=$user
-        OCTOPATH=$DAEMONPATH
+        OCTOPATH=$OCTOEXEC
         OCTOCONFIG="/home/$user"
         
         echo "Your new OctoPrint instance will be installed at /home/$user/.$INSTANCE"
         echo
         echo
+    else
+        main_menu
     fi
     
     if [ -n "$TEMPLATE" ]; then
@@ -152,14 +154,14 @@ new_instance() {
         echo 'Uniquifying instance...'
         #Do config.yaml modifications here
         #TODO add restart/reboot etc.
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set appearance.name $INSTANCE
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.serverRestartCommand "sudo systemctl restart $INSTANCE"
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.systemRestartCommand "sudo reboot"
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
-        $DAEMONPATH --basedir $OCTOCONFIG/.$INSTANCE config set webcam.ffmpeg /usr/bin/ffmpeg
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set appearance.name $INSTANCE
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.serverRestartCommand "sudo systemctl restart $INSTANCE"
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.systemRestartCommand "sudo reboot"
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
+        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set webcam.ffmpeg /usr/bin/ffmpeg
         
         if [ "$HAPROXY" == true ]; then
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
