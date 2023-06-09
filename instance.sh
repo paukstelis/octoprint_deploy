@@ -1,5 +1,5 @@
 #!/bin/bash
-source prepare.sh
+source $SCRIPTDIR/prepare..sh
 
 new_instance() {
     #It is possible to not create an instance after preparing,so check if this is the first
@@ -8,11 +8,11 @@ new_instance() {
     else
         firstrun=true
     fi
-
+    
     #We can also pass this directly, from prepare.sh
     firstrun=$1
     TEMPLATE=''
-
+    
     get_settings
     
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
@@ -96,24 +96,21 @@ new_instance() {
         echo "Instance has not been created. Restart and do detection when you are ready."
         main_menu
     fi
-
+    
     #Detection phase
     printer_udev false
- 
-    #USB cameras
-    if [ -n "$INSTALL" ]; then
-        if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"
-        then
-            add_camera
-        fi
-    fi
-    echo
     
-    if prompt_confirm "Ready to write all changes. Do you want to proceed?"
-    then
-
+    #USB cameras
+    #if [ -n "$INSTALL" ]; then
+    #    if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"; then
+    #        add_camera
+    #    fi
+    #fi
+    
+    if prompt_confirm "Ready to write all changes. Do you want to proceed?"; then
+        
         sudo -u $user mkdir $OCTOCONFIG/.$INSTANCE
-
+        
         cat $SCRIPTDIR/octoprint_generic.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
         -e "s#OCTOPATH#$OCTOPATH#" \
@@ -199,11 +196,12 @@ new_instance() {
             systemctl start cam_$INSTANCE.service
             systemctl enable cam_$INSTANCE.service
         fi
-
+    fi
+    
     if [ $firstrun == "true" ]; then
         firstrun_install
     fi
-
+    
     main_menu
     
 }
