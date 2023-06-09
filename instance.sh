@@ -1,5 +1,5 @@
 #!/bin/bash
-source $SCRIPTDIR/prepare..sh
+source $SCRIPTDIR/prepare.sh
 
 new_instance() {
     #It is possible to not create an instance after preparing,so check if this is the first
