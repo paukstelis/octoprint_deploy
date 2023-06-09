@@ -18,8 +18,8 @@ main_menu() {
     echo "*************************"
     echo
     PS3='Select operation: '
-    if [ -f "/etc/octoprint_instances" ]; then
-        options=("New instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
+    if [ -f "/etc/octoprint_deploy" ]; then
+        options=("Add instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
         options=("Prepare system" "Update" "Quit")
     fi
@@ -31,7 +31,7 @@ main_menu() {
                 detect_installs
                 break
             ;;
-            "New instance")
+            "Add instance")
                 new_instance
                 break
             ;;

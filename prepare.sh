@@ -1,4 +1,5 @@
 #!/bin/bash
+source $SCRIPTDIR/instance.sh
 
 detect_installs() {
     #OctoPi will be the most common so do a search for that:
@@ -7,6 +8,7 @@ detect_installs() {
         echo "Adding standard OctoPi instance to instance list."
         echo "instance:octoprint port:5000" >> /etc/octoprint_instances
         echo "octoexec: /home/$user/oprint/bin/octoprint" >> /etc/octoprint_deploy
+        echo "octopip: /home/$user/oprint/bin/pip" >> /etc/octoprint_deploy
         echo "haproxy: true" >> /etc/octoprint_deploy
         streamer_install
         main_menu
@@ -204,7 +206,7 @@ new_install() {
     #install oprint
     sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
     
-    #NEW! Do check to verify that OctoPrint binary is installed
+    #Check to verify that OctoPrint binary is installed
     if [ -f "/home/$user/OctoPrint/bin/octoprint" ]; then
         echo "OctoPrint apppears to have been installed successfully"
     else
@@ -218,28 +220,36 @@ new_install() {
     haproxy_install
     streamer_install
     
+    #These will retreived as settings
+    echo "octoexec: /home/$user/OctoPrint/bin/octoprint" >> /etc/octoprint_deploy
+    echo "octopip: /home/$user/OctoPrint/bin/pip" >> /etc/octoprint_deploy
+
+    #Create first instance
+    echo "It is time to create your first OctoPrint instance!!!"
+    new_instance true
+    BASE=/home/$user/.$INSTANCE
     #start server and run in background
-    echo 'Creating OctoPrint service...'
-    cat $SCRIPTDIR/octoprint_generic.service | \
-    sed -e "s/OCTOUSER/$user/" \
-    -e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
-    -e "s#OCTOCONFIG#/home/$user/#" \
-    -e "s/NEWINSTANCE/octoprint/" \
-    -e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint.service
-    echo 'Updating config.yaml'
+    #echo 'Creating OctoPrint service...'
+    #cat $SCRIPTDIR/octoprint_generic.service | \
+    #sed -e "s/OCTOUSER/$user/" \
+    #-e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
+    #-e "s#OCTOCONFIG#/home/$user/#" \
+    #-e "s/NEWINSTANCE/octoprint/" \
+    #-e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint.service
+    #echo 'Updating config.yaml'
     #sudo -u $user mkdir /home/$user/.octoprint
     #sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
-    echo "octoexec: /home/$user/OctoPrint/bin/octoprint" >> /etc/octoprint_deploy
+    
     
     #Prompt for admin user and firstrun stuff
-    firstrun
+    #firstrun - now called in instance.sh
     
     #echo 'type: linux' >> /etc/octoprint_deploy
-    echo 'Starting instance on port 5000'
-    echo 'instance:octoprint port:5000' >> /etc/octoprint_instances
+    #echo 'Starting instance on port 5000'
+    #echo 'instance:octoprint port:5000' >> /etc/octoprint_instances
     #echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
-    systemctl start octoprint.service
-    systemctl enable octoprint.service
+    #systemctl start octoprint.service
+    #systemctl enable octoprint.service
     echo
     echo
     if prompt_confirm "Would you like to install recommended plugins now?"; then
@@ -247,8 +257,8 @@ new_install() {
     fi
     echo
     echo
-    systemctl restart octoprint.service
-    echo 'instance:octoprint port:5000' > /etc/octoprint_instances
+    #systemctl restart octoprint.service
+    #echo 'instance:octoprint port:5000' > /etc/octoprint_instances
     
 }
 
@@ -354,7 +364,7 @@ streamer_install() {
     
 }
 
-firstrun() {
+firstrun_install() {
     echo
     echo
     echo 'The first instance can be configured at this time.'
@@ -393,7 +403,7 @@ firstrun() {
             
         done
         echo "Admin password: $OCTOPASS"
-        sudo -u $user $OCTOEXEC user add $OCTOADMIN --password $OCTOPASS --admin | log
+        sudo -u $user $OCTOEXEC --basedir $BASE user add $OCTOADMIN --password $OCTOPASS --admin | log
     fi
     
     if [ -n "$OCTOADMIN" ]; then
@@ -404,30 +414,30 @@ firstrun() {
         echo
         echo
         if prompt_confirm "Do first run wizards now?"; then
-            sudo -u $user $OCTOEXEC config set server.firstRun false --bool | log
-            sudo -u $user $OCTOEXEC config set server.seenWizards.backup null | log
-            sudo -u $user $OCTOEXEC config set server.seenWizards.corewizard 4 --int | log
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.firstRun false --bool | log
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.backup null | log
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.corewizard 4 --int | log
             
             if prompt_confirm "Enable online connectivity check?"; then
-                sudo -u $user $OCTOEXEC config set server.onlineCheck.enabled true --bool
+                sudo -u $user $OCTOEXEC --basedir $BASE config set server.onlineCheck.enabled true --bool
             else
-                sudo -u $user $OCTOEXEC config set server.onlineCheck.enabled false --bool
+                sudo -u $user $OCTOEXEC --basedir $BASE config set server.onlineCheck.enabled false --bool
             fi
             
             if prompt_confirm "Enable plugin blacklisting?"; then
-                sudo -u $user $OCTOEXEC config set server.pluginBlacklist.enabled true --bool
+                sudo -u $user $OCTOEXEC --basedir $BASE config set server.pluginBlacklist.enabled true --bool
             else
-                sudo -u $user $OCTOEXEC config set server.pluginBlacklist.enabled false --bool
+                sudo -u $user $OCTOEXEC --basedir $BASE config set server.pluginBlacklist.enabled false --bool
             fi
             
             if prompt_confirm "Enable anonymous usage tracking?"; then
-                sudo -u $user $OCTOEXEC config set plugins.tracking.enabled true --bool
+                sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.enabled true --bool
             else
-                sudo -u $user $OCTOEXEC config set plugins.tracking.enabled false --bool
+                sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.enabled false --bool
             fi
             
             if prompt_confirm "Use default printer (can be changed later)?"; then
-                sudo -u $user $OCTOEXEC config set printerProfiles.default _default
+                sudo -u $user $OCTOEXEC --basedir $BASE config set printerProfiles.default _default
             fi
         fi
     fi

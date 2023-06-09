@@ -1,7 +1,18 @@
 #!/bin/bash
+source prepare.sh
+
 new_instance() {
-    
-    echo "$(date) starting instance installation" | log
+    #It is possible to not create an instance after preparing,so check if this is the first
+    if [ -f /etc/octoprint_instances ]; then
+        firstrun=false
+    else
+        firstrun=true
+    fi
+
+    #We can also pass this directly, from prepare.sh
+    firstrun=$1
+    TEMPLATE=''
+
     get_settings
     
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
@@ -11,8 +22,8 @@ new_instance() {
         echo "Enter the name for new printer/instance (no spaces):"
         read INSTANCE
         if [ -z "$INSTANCE" ]; then
-            echo "No instance given. Exiting" | log
-            main_menu
+            echo "Please provide an instance name"
+            continue
         fi
         
         if ! has-space "$INSTANCE"; then
@@ -22,39 +33,39 @@ new_instance() {
         fi
     done
     
-    
-    
-    if test -f "/etc/systemd/system/$INSTANCE.service"; then
-        echo "Already have an entry for $INSTANCE. Exiting." | log
-        main_menu
-    fi
-    
-    #Choose if should use an instance as template here
-    echo "Using a template instance allows you to copy, plugin settings,"
-    echo "and gcode files from one instance to your new instance."
-    if prompt_confirm "Use an existing instance as a template?"; then
-        PS3='Select template instance: '
-        get_instances true
-        select opt in "${INSTANCE_ARR[@]}"
-        do
-            if [ "$opt" == Quit ]; then
-                main_menu
-            fi
-            
-            TEMPLATE=$opt
-            echo "Using $opt as template."
-            break
-        done
+    if [ $firstrun != "true" ]; then
+        if test -f "/etc/systemd/system/$INSTANCE.service"; then
+            echo "Already have an entry for $INSTANCE. Exiting." | log
+            main_menu
+        fi
         
-    else
-        TEMPLATE=''
+        #Choose if should use an instance as template here
+        echo "Using a template instance allows you to copy, plugin settings,"
+        echo "and gcode files from one instance to your new instance."
+        if prompt_confirm "Use an existing instance as a template?"; then
+            PS3='Select template instance: '
+            get_instances true
+            select opt in "${INSTANCE_ARR[@]}"
+            do
+                if [ "$opt" == Quit ]; then
+                    main_menu
+                fi
+                
+                TEMPLATE=$opt
+                echo "Using $opt as template."
+                break
+            done
+            
+        else
+            TEMPLATE=''
+        fi
     fi
     
     if prompt_confirm "Ready to begin instance creation?"; then
         #CHANGE
         PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
         if [ -z "$PORT" ]; then
-            PORT=5000
+            PORT=4999
         fi
         PORT=$((PORT+1))
         echo Selected port is: $PORT | log
@@ -86,34 +97,9 @@ new_instance() {
         main_menu
     fi
 
-    #Failed state. Nothing detected
-    if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
-        echo
-        echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable (power only?) and try again."
-        echo
-        echo
-        main_menu
-    fi
-    
-    #No serial number
-    if [ -z "$UDEV" ]; then
-        echo "Printer Serial Number not detected"
-        if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
-            echo
-            USB=$TEMPUSB
-            echo -e "Your printer will be setup at the following usb address: $USB" | log
-            echo
-        else
-            main_menu
-        fi
-    else
-        echo -e "Serial number detected as: $UDEV" | log
-        check_sn "$UDEV"
-        echo
-    fi
-    
-    echo
-    
+    #Detection phase
+    printer_udev false
+ 
     #USB cameras
     if [ -n "$INSTALL" ]; then
         if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"
@@ -125,6 +111,9 @@ new_instance() {
     
     if prompt_confirm "Ready to write all changes. Do you want to proceed?"
     then
+
+        sudo -u $user mkdir $OCTOCONFIG/.$INSTANCE
+
         cat $SCRIPTDIR/octoprint_generic.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
         -e "s#OCTOPATH#$OCTOPATH#" \
@@ -132,16 +121,8 @@ new_instance() {
         -e "s/NEWINSTANCE/$INSTANCE/" \
         -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
         
-        #Printer udev identifier technique - either Serial number or USB port
-        #Serial Number
-        if [ -n "$UDEV" ]; then
-            echo SUBSYSTEM==\"tty\", ATTRS{serial}==\"$UDEV\", SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-        fi
-        
-        #USB port
-        if [ -n "$USB" ]; then
-            echo KERNELS==\"$USB\",SUBSYSTEM==\"tty\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-        fi
+        #write phase
+        printer_udev true
         
         #Append instance name to list for removal tool
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
@@ -150,6 +131,7 @@ new_instance() {
             #copy all files to our new directory
             cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
         fi
+        
         #uniquify instances
         echo 'Uniquifying instance...'
         #Do config.yaml modifications here
@@ -216,8 +198,11 @@ new_instance() {
             systemctl start cam_$INSTANCE.service
             systemctl enable cam_$INSTANCE.service
         fi
-        
+
+    if [ $firstrun == "true" ]; then
+        firstrun_install
     fi
+    
     main_menu
     
 }
@@ -240,7 +225,46 @@ detect_printer() {
     dmesg -C
 }
 
-
+printer_udev() {
+    write=$1
+    if [ "$write" == true ]; then
+        #Printer udev identifier technique - either Serial number or USB port
+        #Serial Number
+        if [ -n "$UDEV" ]; then
+            echo SUBSYSTEM==\"tty\", ATTRS{serial}==\"$UDEV\", SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+        fi
+        
+        #USB port
+        if [ -n "$USB" ]; then
+            echo KERNELS==\"$USB\",SUBSYSTEM==\"tty\",SYMLINK+=\"octo_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+        fi
+    else
+        #No serial number
+        if [ -z "$UDEV" ]; then
+            echo "Printer Serial Number not detected"
+            if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
+                echo
+                USB=$TEMPUSB
+                echo -e "Your printer will be setup at the following usb address: $USB" | log
+                echo
+            else
+                main_menu
+            fi
+        else
+            echo -e "Serial number detected as: $UDEV" | log
+            check_sn "$UDEV"
+            echo
+        fi
+        #Failed state. Nothing detected
+        if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
+            echo
+            echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable (power only?) and try again."
+            echo
+            echo
+            main_menu
+        fi
+    fi
+}
 
 remove_instance() {
     opt=$1

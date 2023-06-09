@@ -29,6 +29,7 @@ get_settings() {
     #Get octoprint_deploy settings, all of which are written on system prepare
     if [ -f /etc/octoprint_deploy ]; then
         OCTOEXEC=$(cat /etc/octoprint_deploy | sed -n -e 's/^octoexec: \(\.*\)/\1/p')
+        OCTOPIP=$(cat /etc/octoprint_deploy | sed -n -e 's/^octopip: \(\.*\)/\1/p')
         STREAMER=$(cat /etc/octoprint_deploy | sed -n -e 's/^streamer: \(\.*\)/\1/p')
         HAPROXY=$(cat /etc/octoprint_deploy | sed -n -e 's/^haproxy: \(\.*\)/\1/p')
     fi
