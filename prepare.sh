@@ -1,5 +1,5 @@
 #!/bin/bash
-source $SCRIPTDIR/instance.sh
+#source $SCRIPTDIR/instance.sh
 
 detect_installs() {
     #OctoPi will be the most common so do a search for that:

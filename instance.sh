@@ -1,5 +1,4 @@
 #!/bin/bash
-#source $SCRIPTDIR/prepare.sh
 
 new_instance() {
     #It is possible to not create an instance after preparing,so check if this is the first
@@ -200,6 +199,7 @@ new_instance() {
     
     if [ $firstrun == "true" ]; then
         firstrun_install
+        break
     fi
     
     main_menu

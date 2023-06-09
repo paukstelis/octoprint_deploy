@@ -31,6 +31,7 @@ source $SCRIPTDIR/prepare.sh
 source $SCRIPTDIR/instance.sh
 source $SCRIPTDIR/util.sh
 source $SCRIPTDIR/menu.sh
+source $SCRIPTDIR/cameras.sh
 
 
 get_settings
