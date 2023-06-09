@@ -130,8 +130,6 @@ new_instance() {
         
         #uniquify instances
         echo 'Uniquifying instance...'
-        #Do config.yaml modifications here
-        #TODO add restart/reboot etc.
         BASE=$OCTOCONFIG/.$INSTANCE
         sudo -u $user $OCTOEXEC --basedir $BASE config set appearance.name $INSTANCE
         sudo -u $user $OCTOEXEC --basedir $BASE config set server.commands.serverRestartCommand "sudo systemctl restart $INSTANCE"
@@ -199,10 +197,9 @@ new_instance() {
     
     if [ $firstrun == "true" ]; then
         firstrun_install
-        break
+    else
+        main_menu
     fi
-    
-    main_menu
     
 }
 

@@ -1,5 +1,4 @@
 #!/bin/bash
-#source $SCRIPTDIR/instance.sh
 
 detect_installs() {
     #OctoPi will be the most common so do a search for that:
@@ -47,7 +46,6 @@ detect_installs() {
     prepare
 }
 
-
 #https://askubuntu.com/questions/39497
 deb_packages() {
     #All extra packages needed can be added here for deb based systems. Only available will be selected.
@@ -78,18 +76,31 @@ deb_packages() {
     -e ssh\
     -e libffi-dev\
     -e haproxy\
-    | xargs apt-get install -y | log
+    | xargs apt-get install -y
     
     #pacakges to REMOVE go here
     apt-cache --generate pkgnames \
     | grep --line-regexp --fixed-strings \
     -e brltty \
-    | xargs apt-get remove -y | log
+    | xargs apt-get remove -y
     
 }
 
 dnf_packages() {
-    dnf -y install gcc python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy openssh openssh-server libffi-devel
+    #untested
+    dnf list all \
+    | grep --line-regexp --fixed-strings \
+    -e gcc\
+    -e python3-devel\
+    -e cmake\
+    -e libjpeg-turbo-devel\
+    -e libbsd-devel\
+    -e libevent-devel\
+    -e haproxy\
+    -e openssh\
+    -e openssh-server\
+    -e libffi-devel\
+    | xarg dnf install -y 
     
 }
 
@@ -147,12 +158,7 @@ prepare () {
         else
             old_install
         fi
-        
-        touch /etc/octoprint_instances
-        echo 'Adding camera port records'
         touch /etc/camera_ports
-        echo "System preparation complete!"
-        
     fi
     main_menu
 }
@@ -227,38 +233,11 @@ new_install() {
     #Create first instance
     echo "It is time to create your first OctoPrint instance!!!"
     new_instance true
-    
-    #start server and run in background
-    #echo 'Creating OctoPrint service...'
-    #cat $SCRIPTDIR/octoprint_generic.service | \
-    #sed -e "s/OCTOUSER/$user/" \
-    #-e "s#OCTOPATH#/home/$user/OctoPrint/bin/octoprint#" \
-    #-e "s#OCTOCONFIG#/home/$user/#" \
-    #-e "s/NEWINSTANCE/octoprint/" \
-    #-e "s/NEWPORT/5000/" > /etc/systemd/system/octoprint.service
-    #echo 'Updating config.yaml'
-    #sudo -u $user mkdir /home/$user/.octoprint
-    #sudo -u $user cp -p $SCRIPTDIR/config.basic /home/$user/.octoprint/config.yaml
-    
-    
-    #Prompt for admin user and firstrun stuff
-    #firstrun - now called in instance.sh
-    
-    #echo 'type: linux' >> /etc/octoprint_deploy
-    #echo 'Starting instance on port 5000'
-    #echo 'instance:octoprint port:5000' >> /etc/octoprint_instances
-    #echo -e "\033[0;31mConnect to your template instance and setup the admin user if you have not done so already.\033[0m"
-    #systemctl start octoprint.service
-    #systemctl enable octoprint.service
     echo
     echo
     if prompt_confirm "Would you like to install recommended plugins now?"; then
         plugin_menu
     fi
-    echo
-    echo
-    #systemctl restart octoprint.service
-    #echo 'instance:octoprint port:5000' > /etc/octoprint_instances
     
 }
 

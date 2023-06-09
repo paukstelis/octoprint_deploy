@@ -8,6 +8,7 @@ install_plugin() {
 plugin_menu() {
     echo
     echo
+    get_settings
     PS3='Select recommended plugins to install: '
     readarray -t plugins < <(cat $SCRIPTDIR/plugins_list | sed -n -e 's/^plugin:\(.*\) path:.*/\1/p')
     plugins+=("All")

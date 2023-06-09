@@ -1,7 +1,6 @@
 #!/bin/bash
 source $SCRIPTDIR/prepare.sh
 
-
 main_menu() {
     VERSION=0.2.4
     #reset

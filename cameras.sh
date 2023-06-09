@@ -163,6 +163,7 @@ add_camera() {
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
             echo
             echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
+            echo "Try again at a later time."
             echo
             return
         fi
