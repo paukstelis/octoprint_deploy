@@ -124,8 +124,8 @@ new_instance() {
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
         if [ -n "$TEMPLATE" ]; then
-            #copy all files to our new directory
-            cp -rp $BFOLD $OCTOCONFIG/.$INSTANCE
+            echo "Copying template files...."
+            cp -rp $BFOLD/* $OCTOCONFIG/.$INSTANCE
         fi
         
         #uniquify instances
