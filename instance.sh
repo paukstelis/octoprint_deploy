@@ -100,11 +100,11 @@ new_instance() {
     printer_udev false
     
     #USB cameras
-    #if [ -n "$INSTALL" ]; then
-    #    if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"; then
-    #        add_camera
-    #    fi
-    #fi
+    if [ "$firstrun" != "true" ]; then
+        if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"; then
+            add_camera
+        fi
+    fi
     
     if prompt_confirm "Ready to write all changes. Do you want to proceed?"; then
         
@@ -138,6 +138,8 @@ new_instance() {
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.errortracking.unique_id $(uuidgen)
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.unique_id $(uuidgen)
         sudo -u $user $OCTOEXEC --basedir $BASE config set serial.port /dev/octo_$INSTANCE
+        sudo -u $user $OCTOEXEC --basedir $BASE config append serial.additionalPorts "/dev/octo_$INSTANCE"
+        sudo -u $user $OCTOEXEC --basedir $BASE config set feature.modelSizeDetection false --bool
         sudo -u $user $OCTOEXEC --basedir $BASE config set webcam.ffmpeg /usr/bin/ffmpeg
         
         if [ "$HAPROXY" == true ]; then

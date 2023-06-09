@@ -277,7 +277,7 @@ haproxy_install() {
 
 streamer_install() {
     PS3='Which video streamer you would like to install?: '
-    options=("mjpeg-streamer" "ustreamer" "None")
+    options=("mjpeg-streamer" "ustreamer (recommended)" "None")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -285,7 +285,7 @@ streamer_install() {
                 VID=1
                 break
             ;;
-            "ustreamer")
+            "ustreamer (recommended)")
                 VID=2
                 break
             ;;
@@ -388,7 +388,8 @@ firstrun_install() {
     if [ -n "$OCTOADMIN" ]; then
         echo
         echo
-        echo "The script can complete the first run wizards now. For more information on these, see the OctoPrint website."
+        echo "The script can complete the first run wizards now."
+        echo "For more information on these, see the OctoPrint website."
         echo "It is standard to accept these, as no identifying information is exposed through their usage."
         echo
         echo
@@ -420,5 +421,8 @@ firstrun_install() {
             fi
         fi
     fi
+
+    echo "Restarting instance....."
+    systemctl restart $INSTANCE
 }
 
