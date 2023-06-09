@@ -227,7 +227,7 @@ new_install() {
     #Create first instance
     echo "It is time to create your first OctoPrint instance!!!"
     new_instance true
-    BASE=/home/$user/.$INSTANCE
+    
     #start server and run in background
     #echo 'Creating OctoPrint service...'
     #cat $SCRIPTDIR/octoprint_generic.service | \

@@ -136,14 +136,15 @@ new_instance() {
         echo 'Uniquifying instance...'
         #Do config.yaml modifications here
         #TODO add restart/reboot etc.
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set appearance.name $INSTANCE
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.serverRestartCommand "sudo systemctl restart $INSTANCE"
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set server.commands.systemRestartCommand "sudo reboot"
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set plugins.discovery.upnpUuid $(uuidgen)
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set plugins.errortracking.unique_id $(uuidgen)
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set plugins.tracking.unique_id $(uuidgen)
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set serial.port /dev/octo_$INSTANCE
-        sudo -u $user $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config set webcam.ffmpeg /usr/bin/ffmpeg
+        BASE=$OCTOCONFIG/.$INSTANCE
+        sudo -u $user $OCTOEXEC --basedir $BASE config set appearance.name $INSTANCE
+        sudo -u $user $OCTOEXEC --basedir $BASE config set server.commands.serverRestartCommand "sudo systemctl restart $INSTANCE"
+        sudo -u $user $OCTOEXEC --basedir $BASE config set server.commands.systemRestartCommand "sudo reboot"
+        sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.discovery.upnpUuid $(uuidgen)
+        sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.errortracking.unique_id $(uuidgen)
+        sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.unique_id $(uuidgen)
+        sudo -u $user $OCTOEXEC --basedir $BASE config set serial.port /dev/octo_$INSTANCE
+        sudo -u $user $OCTOEXEC --basedir $BASE config set webcam.ffmpeg /usr/bin/ffmpeg
         
         if [ "$HAPROXY" == true ]; then
             HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
@@ -202,7 +203,7 @@ new_instance() {
     if [ $firstrun == "true" ]; then
         firstrun_install
     fi
-    
+
     main_menu
     
 }
