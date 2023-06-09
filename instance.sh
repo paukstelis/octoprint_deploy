@@ -32,7 +32,7 @@ new_instance() {
         fi
     done
     
-    if [ $firstrun != "true" ]; then
+    if [ "$firstrun" != "true" ]; then
         if test -f "/etc/systemd/system/$INSTANCE.service"; then
             echo "Already have an entry for $INSTANCE. Exiting." | log
             main_menu
@@ -197,7 +197,7 @@ new_instance() {
         main_menu
     fi
     
-    if [ $firstrun == "true" ]; then
+    if [ "$firstrun" == "true" ]; then
         firstrun_install
     else
         main_menu
