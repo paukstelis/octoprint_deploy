@@ -193,6 +193,8 @@ new_instance() {
             systemctl start cam_$INSTANCE.service
             systemctl enable cam_$INSTANCE.service
         fi
+    else
+        main_menu
     fi
     
     if [ $firstrun == "true" ]; then
