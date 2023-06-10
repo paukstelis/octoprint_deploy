@@ -96,20 +96,6 @@ prompt_confirm() {
         esac
     done
 }
-# from unix.stackexchange.com/questions/391293
-log () {
-    if [ -z "$1" ]; then
-        cat
-    else
-        printf '%s\n' "$@"
-    fi | tee -a "$logfile"
-}
-
-#https://gist.github.com/wellsie/56a468a1d53527fec827
-has-space () {
-    [[ "$1" != "${1%[[:space:]]*}" ]] && return 0 || return 1
-}
-
 
 back_up() {
     INSTANCE=$1

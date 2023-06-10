@@ -78,14 +78,19 @@ write_camera() {
     
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
-        echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
-        echo "    snapshot: http://$(hostname).local:$CAMPORT?action=snapshot" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+        $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.snapshot "http://localhost:$CAMPORT?action=snapshot"
+        
         if [ -z "$CAMHAPROXY" ]; then
-            echo "    stream: http://$(hostname).local:$CAMPORT?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+            $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.stream "http://$(hostname).local:$CAMPORT?action=stream"
         else
-            echo "    stream: /cam_$INSTANCE/?action=stream" >> $OCTOCONFIG/.$INSTANCE/config.yaml
+            $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.stream "/cam_$INSTANCE/?action=stream"
         fi
-        $OCTOEXEC --basedir $OCTOCONFIG/.$INSTANCE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
+
+        $OCTOEXEC --basedir $BASE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
+        
+        if prompt_confirm "Instance must be restarted for settings to take effect. Restart now?"; then
+            systemctl restart $INSTANCE
+        fi
     fi
     
     #Either Serial number or USB port
@@ -129,22 +134,22 @@ write_camera() {
 add_camera() {
     PI=$1
     INUM=''
+    CAMHAPROX=''
     get_settings
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
         PS3='Select instance number to add camera to: '
-        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-        options+=("Quit")
-        unset 'options[0]'
-        select camopt in "${options[@]}"
+        get_instances true
+        select camopt in "${INSTANCE_ARR[@]}"
         do
             if [ "$camopt" == Quit ]; then
                 main_menu
             fi
-            echo "Selected instance for camera: $camopt" | log
+            echo "Selected instance for camera: $camopt"
             INSTANCE=$camopt
             OCTOCONFIG="/home/$user/"
+            BASE="/home/$user/.$INSTANCE"
             OCTOUSER=$user
             if grep -q "cam_$INSTANCE" /etc/udev/rules.d/99-octoprint.rules; then
                 echo "It appears this instance already has at least one camera."
@@ -184,13 +189,13 @@ add_camera() {
             
             return
         fi
-        
+        #only BYID
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -n "$BYIDCAM"]; then
             echo "Camera was only detected by /dev/v4l/by-id entry."
             echo "This will be used as the camera device identifier"
         fi
-        
-        if [ -z "$CAM" ]; then
+        #only USB address
+        if [ -z "$CAM" ] && [ -n "$TEMPUSBCAM" ]; then
             echo "Camera Serial Number not detected" | log
             echo -e "Camera will be setup with physical USB address of \033[0;32m $TEMPUSBCAM.\033[0m" | log
             echo "The camera will have to stay plugged into this location." | log
