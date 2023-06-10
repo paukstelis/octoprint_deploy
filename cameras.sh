@@ -17,6 +17,21 @@ detect_camera() {
     dmesg -C
 }
 
+#Choose camera from /dev/v4l/by-id
+byid_camera_detect() {
+    echo "UNPLUG THE CAMERA NOW"
+    if prompt_confirm "Is the camera you are trying to detect unplugged from USB?"; then
+        #get existing list
+        readarray -t c1 < <(ls -1 /dev/v4l/by-id/*index0)
+        echo "PLUG THE CAMERA IN NOW"
+        if prompt_confirm "Is the camera you are trying to detect now plugged in?"; then
+            readarray -t c2 < <(ls -1 /dev/v4l/by-id/*index0)
+            #https://stackoverflow.com/questions/2312762
+            BYIDCAM=(`echo ${c2[@]} ${c1[@]} | tr ' ' '\n' | sort | uniq -u `)
+            echo $BYIDCAM
+        fi
+    fi
+}
 
 remove_camera() {
     systemctl stop $1.service
@@ -247,3 +262,8 @@ add_camera() {
         main_menu
     fi
 }
+
+if [ "$1" == byid ]; then
+    source ./util.sh
+    byid_camera_detect
+fi

@@ -61,4 +61,9 @@ if [ "$1" == noserial ]; then
     NOSERIAL=1
 fi
 
+if [ "$1" == udev ]; then
+    detect_printer
+    printer_udev false
+    printer_udev true
+fi
 main_menu
