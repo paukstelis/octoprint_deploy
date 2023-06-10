@@ -138,7 +138,7 @@ new_instance() {
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.errortracking.unique_id $(uuidgen)
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.unique_id $(uuidgen)
         sudo -u $user $OCTOEXEC --basedir $BASE config set serial.port /dev/octo_$INSTANCE
-        sudo -u $user $OCTOEXEC --basedir $BASE config append serial.additionalPorts "/dev/octo_$INSTANCE"
+        sudo -u $user $OCTOEXEC --basedir $BASE config append_value serial.additionalPorts "/dev/octo_$INSTANCE"
         sudo -u $user $OCTOEXEC --basedir $BASE config set feature.modelSizeDetection false --bool
         sudo -u $user $OCTOEXEC --basedir $BASE config set webcam.ffmpeg /usr/bin/ffmpeg
         
@@ -191,7 +191,7 @@ new_instance() {
         #Start and enable system processes
         systemctl start $INSTANCE.service
         systemctl enable $INSTANCE.service
-        if [[ -n $CAM || -n $USBCAM ]]; then
+        if [[ -n $CAM || -n $USBCAM || -n $BYIDCAM ]]; then
             systemctl start cam_$INSTANCE.service
             systemctl enable cam_$INSTANCE.service
         fi

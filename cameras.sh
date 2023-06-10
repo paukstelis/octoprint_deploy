@@ -189,7 +189,7 @@ add_camera() {
             
             return
         fi
-        #only BYID
+        #only BYIDCAM
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -n "$BYIDCAM"]; then
             echo "Camera was only detected by /dev/v4l/by-id entry."
             echo "This will be used as the camera device identifier"
