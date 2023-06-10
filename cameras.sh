@@ -2,6 +2,12 @@
 
 
 detect_camera() {
+    echo
+    echo
+    echo "Verify the camera is currently unplugged from USB....."
+    if prompt_confirm "Is the camera you are trying to detect unplugged from USB?"; then
+        readarray -t c1 < <(ls -1 /dev/v4l/by-id/*index0)
+    fi
     dmesg -C
     echo "Plug your camera in via USB now (detection time-out in 1 min)"
     counter=0
@@ -14,23 +20,12 @@ detect_camera() {
         fi
         sleep 1
     done
+    readarray -t c2 < <(ls -1 /dev/v4l/by-id/*index0)
+    #https://stackoverflow.com/questions/2312762
+    #TODO: what if there is more than one element?
+    BYIDCAM=(`echo ${c2[@]} ${c1[@]} | tr ' ' '\n' | sort | uniq -u `)
+    echo $BYIDCAM
     dmesg -C
-}
-
-#Choose camera from /dev/v4l/by-id
-byid_camera_detect() {
-    echo "UNPLUG THE CAMERA NOW"
-    if prompt_confirm "Is the camera you are trying to detect unplugged from USB?"; then
-        #get existing list
-        readarray -t c1 < <(ls -1 /dev/v4l/by-id/*index0)
-        echo "PLUG THE CAMERA IN NOW"
-        if prompt_confirm "Is the camera you are trying to detect now plugged in?"; then
-            readarray -t c2 < <(ls -1 /dev/v4l/by-id/*index0)
-            #https://stackoverflow.com/questions/2312762
-            BYIDCAM=(`echo ${c2[@]} ${c1[@]} | tr ' ' '\n' | sort | uniq -u `)
-            echo $BYIDCAM
-        fi
-    fi
 }
 
 remove_camera() {
@@ -52,11 +47,17 @@ write_camera() {
         STREAMER="mjpg-streamer"
     fi
     
+    if [ -n "$BYIDCAM" ] && [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
+        CAMDEVICE=$BYIDCAM
+    else
+        CAMDEVICE=cam${INUM}_$INSTANCE
+    fi
+    
     #mjpg-streamer
     if [ "$STREAMER" == mjpg-streamer ]; then
         cat $SCRIPTDIR/octocam_mjpg.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" \
+        -e "s/OCTOCAM/$CAMDEVICE/" \
         -e "s/RESOLUTION/$RESOLUTION/" \
         -e "s/FRAMERATE/$FRAMERATE/" \
         -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
@@ -66,7 +67,7 @@ write_camera() {
     if [ "$STREAMER" == ustreamer ]; then
         cat $SCRIPTDIR/octocam_ustream.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" \
+        -e "s/OCTOCAM/$CAMDEVICE/" \
         -e "s/RESOLUTION/$RESOLUTION/" \
         -e "s/FRAMERATE/$FRAMERATE/" \
         -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
@@ -74,6 +75,7 @@ write_camera() {
     
     mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
     echo $CAMPORT >> /etc/camera_ports
+    
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
         echo "webcam:" >> $OCTOCONFIG/.$INSTANCE/config.yaml
@@ -175,12 +177,17 @@ add_camera() {
             unset CAM
         fi
         #Failed state. Nothing detected
-        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] ; then
+        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -z "$BYIDCAM"]; then
             echo
             echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
-            echo "Try again at a later time."
-            echo
+            echo "Try again or try a different camera."
+            
             return
+        fi
+        
+        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -n "$BYIDCAM"]; then
+            echo "Camera was only detected by /dev/v4l/by-id entry."
+            echo "This will be used as the camera device identifier"
         fi
         
         if [ -z "$CAM" ]; then
@@ -220,8 +227,6 @@ add_camera() {
         else
             echo "Camera Port must be greater than 7000"
         fi
-        
-        
     done
     
     echo "Settings can be modified after initial setup in /etc/systemd/system/cam${INUM}_$INSTANCE.service"
@@ -239,6 +244,7 @@ add_camera() {
         fi
         echo "Invalid resolution"
     done
+    
     echo "Selected camera resolution: $RESOLUTION" | log
     echo "Camera Framerate (use 0 for ustreamer hardware) [default: 5]:"
     read FRAMERATE
@@ -254,6 +260,7 @@ add_camera() {
         if [ -n "$PI" ]; then
             echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"camera0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
+        
         systemctl start cam${INUM}_$INSTANCE.service
         systemctl enable cam${INUM}_$INSTANCE.service
         systemctl daemon-reload
@@ -262,8 +269,3 @@ add_camera() {
         main_menu
     fi
 }
-
-if [ "$1" == byid ]; then
-    source ./util.sh
-    byid_camera_detect
-fi
