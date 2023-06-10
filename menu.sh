@@ -75,10 +75,8 @@ remove_instance_menu() {
     if [ -f "/etc/octoprint_instances" ]; then
         
         PS3='Select instance number to remove: '
-        readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) port:.*/\1/p')
-        options+=("Quit")
-        unset 'options[0]'
-        select opt in "${options[@]}"
+        get_instances true
+        select opt in "${INSTANCE_ARR[@]}"
         do
             if [ "$opt" == Quit ]; then
                 main_menu
