@@ -98,7 +98,7 @@ dnf_packages() {
     haproxy \
     openssh \
     openssh-server \
-    libffi-devel \ 
+    libffi-devel
     
 }
 
@@ -184,6 +184,13 @@ new_install() {
     
     #Fedora35/CentOS
     if [ $INSTALL -eq 3 ]; then
+        echo "Fedora and variants have SELinux enabled by default."
+        echo "This causes a fair bit of trouble for running OctoPrint."
+        echo "You have the option of disabling this now."
+        if prompt_confirm "${green}Disable SELinux?${white}"; then
+            sed -i s/^SELINUX=.*$/SELINUX=disabled/ /etc/selinux/config
+            echo "${magenta}You will need to reboot after creating an instance${white}"
+        fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
         if [ $PYV -eq 11 ]; then
