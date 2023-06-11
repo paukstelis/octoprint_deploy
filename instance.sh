@@ -34,7 +34,7 @@ new_instance() {
     
     if [ "$firstrun" != "true" ]; then
         if test -f "/etc/systemd/system/$INSTANCE.service"; then
-            echo "Already have an entry for $INSTANCE. Exiting." | log
+            echo "Already have an entry for $INSTANCE. Exiting."
             main_menu
         fi
         
@@ -88,7 +88,7 @@ new_instance() {
         BFOLD="/home/$user/.$TEMPLATE"
         #check to make sure first run is complete
         if grep -q 'firstRun: true' $BFOLD/config.yaml; then
-            echo "Template profile and admin user will have to be setup." | log
+            echo "Template profile and admin user will have to be setup."
             main_menu
         fi
     fi
@@ -249,13 +249,13 @@ printer_udev() {
             if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
                 echo
                 USB=$TEMPUSB
-                echo -e "Your printer will be setup at the following usb address: $USB" | log
+                echo -e "Your printer will be setup at the following usb address: $USB"
                 echo
             else
                 main_menu
             fi
         else
-            echo -e "Serial number detected as: ${cyan}$UDEV${white}" | log
+            echo -e "Serial number detected as: ${cyan}$UDEV${white}"
             check_sn "$UDEV"
             echo
         fi

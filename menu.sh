@@ -86,7 +86,7 @@ remove_instance_menu() {
             if [ "$opt" == Quit ]; then
                 main_menu
             fi
-            echo "Selected instance to remove: $opt" | log
+            echo "Selected instance to remove: $opt"
             break
         done
         
@@ -111,7 +111,7 @@ remove_camera_menu() {
             main_menu
         fi
         
-        echo "Removing udev, service files, and haproxy entry for $camera" | log
+        echo "Removing udev, service files, and haproxy entry for $camera"
         remove_camera $camera
         main_menu
     done
@@ -190,7 +190,7 @@ create_menu() {
             main_menu
         fi
         
-        echo "Selected instance to backup: $opt" | log
+        echo "Selected instance to backup: $opt"
         back_up $opt
         main_menu
     done
@@ -208,7 +208,7 @@ restore_menu() {
             main_menu
         fi
         
-        echo "Selected $opt to restore" | log
+        echo "Selected $opt to restore"
         tar --same-owner -pxvf $opt
         main_menu
     done

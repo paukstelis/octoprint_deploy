@@ -18,11 +18,7 @@ if [ "$user" == root ]; then
     echo "You should not run this script as root. Use sudo as a normal user"
     exit
 fi
-
-#Get abbreviated architecture
-ARCH=$(arch)
-ARCH=${ARCH:0:3}
-
+s
 # initiate logging
 logfile='octoprint_deploy.log'
 SCRIPTDIR=$(dirname $(readlink -f $0))
