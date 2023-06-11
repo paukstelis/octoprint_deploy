@@ -88,19 +88,17 @@ deb_packages() {
 
 dnf_packages() {
     #untested
-    dnf list all \
-    | grep --line-regexp --fixed-strings \
-    -e gcc\
-    -e python3-devel\
-    -e cmake\
-    -e libjpeg-turbo-devel\
-    -e libbsd-devel\
-    -e libevent-devel\
-    -e haproxy\
-    -e openssh\
-    -e openssh-server\
-    -e libffi-devel\
-    | xarg dnf install -y 
+    dnf install -y \
+    gcc \
+    python3-devel \
+    cmake \
+    libjpeg-turbo-devel \
+    libbsd-devel \
+    libevent-devel \
+    haproxy \
+    openssh \
+    openssh-server \
+    libffi-devel \ 
     
 }
 
