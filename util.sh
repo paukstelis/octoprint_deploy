@@ -213,7 +213,7 @@ instance_status() {
     echo
     echo "${cyan}*******************************************${white}"
     get_instances false
-    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2> /dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     #combine instances and cameras
     INSTANCE_ARR+=(${cameras[@]})
     echo "Service - Status:"
