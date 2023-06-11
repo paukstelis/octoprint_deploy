@@ -18,7 +18,7 @@ new_instance() {
     SCRIPTDIR=$(dirname $(readlink -f $0))
     
     while true; do
-        echo "Enter the name for new printer/instance (no spaces):"
+        echo "${green}Enter the name for new printer/instance (no spaces):${white}"
         read INSTANCE
         if [ -z "$INSTANCE" ]; then
             echo "Please provide an instance name"
@@ -77,7 +77,7 @@ new_instance() {
         OCTOPATH=$OCTOEXEC
         OCTOCONFIG="/home/$user"
         
-        echo "Your new OctoPrint instance will be installed at /home/$user/.$INSTANCE"
+        echo "Your new OctoPrint instance will be installed at ${cyan}/home/$user/.$INSTANCE${white}"
         echo
         echo
     else
@@ -96,7 +96,7 @@ new_instance() {
     if prompt_confirm "Begin auto-detect printer serial number for udev entry?"; then
         detect_printer
     else
-        echo "Instance has not been created. Restart and do detection when you are ready."
+        echo "${magenta}Instance has not been created. Restart and do detection when you are ready.${white}"
         main_menu
     fi
     

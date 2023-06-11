@@ -146,7 +146,7 @@ add_camera() {
             if [ "$camopt" == Quit ]; then
                 main_menu
             fi
-            echo "Selected instance for camera: $camopt"
+            echo "Selected instance for camera: ${cyan}$camopt${white}"
             INSTANCE=$camopt
             OCTOCONFIG="/home/$user/"
             BASE="/home/$user/.$INSTANCE"
@@ -184,24 +184,24 @@ add_camera() {
         #Failed state. Nothing detected
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -z "$BYIDCAM"]; then
             echo
-            echo -e "\033[0;31mNo camera was detected during the detection period.\033[0m"
+            echo "${red}No camera was detected during the detection period.${white}"
             echo "Try again or try a different camera."
             
             return
         fi
         #only BYIDCAM
         if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -n "$BYIDCAM"]; then
-            echo "Camera was only detected by /dev/v4l/by-id entry."
+            echo "Camera was only detected as ${cyan}/dev/v4l/by-id${white} entry."
             echo "This will be used as the camera device identifier"
         fi
         #only USB address
         if [ -z "$CAM" ] && [ -n "$TEMPUSBCAM" ]; then
-            echo "Camera Serial Number not detected" | log
-            echo -e "Camera will be setup with physical USB address of \033[0;32m $TEMPUSBCAM.\033[0m" | log
-            echo "The camera will have to stay plugged into this location." | log
+            echo "${red}Camera Serial Number not detected${white}"
+            echo -e "Camera will be setup with physical USB address of ${cyan}$TEMPUSBCAM.${white}"
+            echo "The camera will have to stay plugged into this location."
             USBCAM=$TEMPUSBCAM
         else
-            echo -e "Camera detected with serial number: \033[0;32m $CAM \033[0m" | log
+            echo -e "Camera detected with serial number: ${cyan}$CAM ${white}"
             check_sn "$CAM"
         fi
         

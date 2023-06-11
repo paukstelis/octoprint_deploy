@@ -214,9 +214,9 @@ new_install() {
     
     #Check to verify that OctoPrint binary is installed
     if [ -f "/home/$user/OctoPrint/bin/octoprint" ]; then
-        echo "OctoPrint apppears to have been installed successfully"
+        echo "${cyan}OctoPrint apppears to have been installed successfully${white}"
     else
-        echo "WARNING! WARNING! WARNING!"
+        echo "${red}WARNING! WARNING! WARNING!${white}"
         echo "OctoPrint has not been installed correctly."
         echo "Please answer Y to remove everything and try running prepare system again."
         remove_everything
@@ -231,7 +231,7 @@ new_install() {
     echo "octopip: /home/$user/OctoPrint/bin/pip" >> /etc/octoprint_deploy
 
     #Create first instance
-    echo "It is time to create your first OctoPrint instance!!!"
+    echo "${cyan}It is time to create your first OctoPrint instance!!!${white}"
     new_instance true
     echo
     echo
@@ -310,7 +310,7 @@ streamer_install() {
         if [ -f "/home/$user/mjpg-streamer/mjpg_streamer" ]; then
             echo "Streamer installed successfully"
         else
-            echo "WARNING! WARNING! WARNING!"
+            echo "${red}WARNING! WARNING! WARNING!${white}"
             echo "Streamer has not been installed correctly."
             if prompt_confirm "Try installation again?"; then
                 streamer_install
@@ -327,7 +327,7 @@ streamer_install() {
         if [ -f "/home/$user/ustreamer/ustreamer" ]; then
             echo "Streamer installed successfully"
         else
-            echo "WARNING! WARNING! WARNING!"
+            echo "${red}WARNING! WARNING! WARNING!${white}"
             echo "Streamer has not been installed correctly."
             if prompt_confirm "Try installation again?"; then
                 streamer_install
@@ -364,13 +364,13 @@ firstrun_install() {
                 echo "Admin user name must not have spaces."
             fi
         done
-        echo "Admin user: $OCTOADMIN"
+        echo "Admin user: ${cyan}$OCTOADMIN${white}"
         
         while true; do
             echo 'Enter admin user password (no spaces): '
             read OCTOPASS
             if [ -z "$OCTOPASS" ]; then
-                echo -e "No password given! Defaulting to: \033[0;31mfooselrulz\033[0m. Please CHANGE this."
+                echo -e "No password given! Defaulting to: ${cyan}fooselrulz${white}. Please CHANGE this."
                 OCTOPASS=fooselrulz
             fi
             
@@ -390,35 +390,17 @@ firstrun_install() {
         echo
         echo "The script can complete the first run wizards now."
         echo "For more information on these, see the OctoPrint website."
-        echo "It is standard to accept these, as no identifying information is exposed through their usage."
+        echo "It is standard to accept this, as no identifying information is exposed through their usage."
         echo
         echo
-        if prompt_confirm "Do first run wizards now?"; then
-            sudo -u $user $OCTOEXEC --basedir $BASE config set server.firstRun false --bool | log
-            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.backup null | log
-            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.corewizard 4 --int | log
-            
-            if prompt_confirm "Enable online connectivity check?"; then
-                sudo -u $user $OCTOEXEC --basedir $BASE config set server.onlineCheck.enabled true --bool
-            else
-                sudo -u $user $OCTOEXEC --basedir $BASE config set server.onlineCheck.enabled false --bool
-            fi
-            
-            if prompt_confirm "Enable plugin blacklisting?"; then
-                sudo -u $user $OCTOEXEC --basedir $BASE config set server.pluginBlacklist.enabled true --bool
-            else
-                sudo -u $user $OCTOEXEC --basedir $BASE config set server.pluginBlacklist.enabled false --bool
-            fi
-            
-            if prompt_confirm "Enable anonymous usage tracking?"; then
-                sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.enabled true --bool
-            else
-                sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.enabled false --bool
-            fi
-            
-            if prompt_confirm "Use default printer (can be changed later)?"; then
-                sudo -u $user $OCTOEXEC --basedir $BASE config set printerProfiles.default _default
-            fi
+        if prompt_confirm "Complete first run wizards now?"; then
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.firstRun false --bool 
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.backup null 
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.corewizard 4 --int 
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.onlineCheck.enabled true --bool
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.pluginBlacklist.enabled true --bool
+            sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.enabled true --bool
+            sudo -u $user $OCTOEXEC --basedir $BASE config set printerProfiles.default _default
         fi
     fi
 

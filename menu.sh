@@ -1,5 +1,10 @@
 #!/bin/bash
 source $SCRIPTDIR/prepare.sh
+white=$(echo -en "\e[39m")
+green=$(echo -en "\e[92m")
+magenta=$(echo -en "\e[35m")
+cyan=$(echo -en "\e[96m")
+yellow=$(echo -en "\e[93m") 
 
 main_menu() {
     VERSION=0.2.4
@@ -13,9 +18,9 @@ main_menu() {
     CAMHAPROXY=''
     echo
     echo
-    echo "*************************"
-    echo "octoprint_deploy $VERSION"
-    echo "*************************"
+    echo "${cyan}*************************${white}"
+    echo "${green}octoprint_deploy${white} $VERSION"
+    echo "${cyan}*************************${white}"
     echo
     PS3='Select operation: '
     if [ -f "/etc/octoprint_deploy" ]; then

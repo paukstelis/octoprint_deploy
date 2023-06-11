@@ -3,7 +3,7 @@
 # from stackoverflow.com/questions/3231804
 prompt_confirm() {
     while true; do
-        read -r -n 1 -p "${1:-Continue?} [y/n]: " REPLY
+        read -r -n 1 -p "${green}${1:-Continue?}${white} ${yellow}[y/n]${white}: " REPLY
         case $REPLY in
             [yY]) echo ; return 0 ;;
             [nN]) echo ; return 1 ;;
@@ -36,7 +36,7 @@ get_settings() {
 }
 
 global_config() {
-    echo "This utility allows you to modify OctoPrint settings for indivdiual or all instances."
+    echo "This utility allows you to modify OctoPrint settings for indivdual or all instances."
     echo "There is no error checking so it is critical to set the input parameters correctly."
     echo "See the Wiki for more details."
     echo "Enter the config and parameter"
@@ -83,17 +83,6 @@ replace_id() {
         udevadm control --reload-rules
         udevadm trigger
         exit 0
-    done
-}
-
-prompt_confirm() {
-    while true; do
-        read -r -n 1 -p "${1:-Continue?} [y/n]: " REPLY
-        case $REPLY in
-            [yY]) echo ; return 0 ;;
-            [nN]) echo ; return 1 ;;
-            *) printf " \033[31m %s \n\033[0m" "invalid input"
-        esac
     done
 }
 
