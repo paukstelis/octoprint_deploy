@@ -1,5 +1,5 @@
 #!/bin/bash
-source $SCRIPTDIR/prepare.sh
+#source $SCRIPTDIR/prepare.sh
 white=$(echo -en "\e[39m")
 green=$(echo -en "\e[92m")
 magenta=$(echo -en "\e[35m")
@@ -22,7 +22,7 @@ main_menu() {
     echo "${green}octoprint_deploy${white} $VERSION"
     echo "${cyan}*************************${white}"
     echo
-    PS3='Select operation: '
+    PS3="${green}Select operation: ${white}"
     if [ -f "/etc/octoprint_deploy" ]; then
         options=("Add instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
@@ -79,7 +79,7 @@ remove_instance_menu() {
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     if [ -f "/etc/octoprint_instances" ]; then
         
-        PS3='Select instance number to remove: '
+        PS3="${green}Select instance number to remove: ${white}"
         get_instances true
         select opt in "${INSTANCE_ARR[@]}"
         do
@@ -101,7 +101,7 @@ remove_camera_menu() {
     get_settings
     #must choose where to find which cameras have been installed
     #probably safest to go with service files
-    PS3='Select camera number to remove: '
+    PS3="${green}Select camera number to remove: ${white}"
     readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     cameras+=("Quit")
     
@@ -120,7 +120,7 @@ remove_camera_menu() {
 utility_menu() {
     echo
     echo
-    PS3='Select an option: '
+    PS3="${green}Select an option: ${white}"
     options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Set Global Config" "Quit")
     select opt in "${options[@]}"
     do
@@ -156,7 +156,7 @@ utility_menu() {
 backup_menu() {
     echo
     echo
-    PS3='Select an option: '
+    PS3="${green}Select an option: ${white}"
     options=("Create Backup" "Restore Backup" "Quit")
     select opt in "${options[@]}"
     do
@@ -181,7 +181,7 @@ backup_menu() {
 create_menu() {
     echo
     echo
-    PS3='Select instance number to backup: '
+    PS3="${green}Select instance number to backup: ${white}"
     readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     options+=("Quit")
     select opt in "${options[@]}"
@@ -199,7 +199,7 @@ create_menu() {
 restore_menu() {
     echo
     echo
-    PS3='Select backup to restore: '
+    PS3="${green}Select backup to restore: ${white}"
     readarray -t options < <(ls /home/$user/*.tar.gz)
     options+=("Quit")
     select opt in "${options[@]}"

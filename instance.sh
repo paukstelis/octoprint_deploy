@@ -255,14 +255,15 @@ printer_udev() {
                 main_menu
             fi
         else
-            echo -e "Serial number detected as: $UDEV" | log
+            echo -e "Serial number detected as: ${cyan}$UDEV${white}" | log
             check_sn "$UDEV"
             echo
         fi
         #Failed state. Nothing detected
         if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
             echo
-            echo -e "\033[0;31mNo printer was detected during the detection period.\033[0m Check your USB cable (power only?) and try again."
+            echo "${red}No printer was detected during the detection period.${white}"
+            echo "Check your USB cable (power only?) and try again."
             echo
             echo
             main_menu

@@ -60,7 +60,7 @@ replace_id() {
     #HAVE TO LOOK AT THIS AGAIN, something was broken in cut/paste
     echo "PLEASE NOTE, this will only work in replacing an existing serial number with another serial number"
     echo "or an existing USB port with another USB port. You cannot mix and match."
-    PS3='Select instance to change serial ID: '
+    PS3="${green}Select instance to change serial ID: ${white}"
     get_instances true
     select opt in "${INSTANCE_ARR[@]}"
     do
@@ -68,7 +68,7 @@ replace_id() {
             main_menu
         fi
         
-        echo "Selected $opt to replace serial ID" | log
+        echo "Selected $opt to replace serial ID"
         #Serial number or KERNELS? Not doing any error checking yet
         KERN=$(grep octo_$opt /etc/udev/rules.d/99-octoprint.rules | sed -n -e 's/KERNELS==\"\([[:graph:]]*[[:digit:]]\)\".*/\1/p')
         detect_printer
@@ -89,9 +89,6 @@ replace_id() {
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
-    if [ "$INSTANCE" == generic ]; then
-        INSTANCE="octoprint"
-    fi
     d=$(date '+%Y-%m-%d')
     sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
     echo "Tarred and gzipped backup created in /home/$user"
@@ -130,7 +127,7 @@ sync_users() {
     echo
     echo
     echo "This will sync all the users from one instance to all the other instances."
-    PS3='Select instance that contains current user list: '
+    PS3="${green}Select instance that contains current user list: ${white}"
     get_instances true
     select opt in "${INSTANCE_ARR[@]}"
     do
@@ -170,7 +167,7 @@ share_uploads() {
     echo "This will mean all gcode files be available for all your instances."
     echo "Use this option only if you understand the implications."
     echo "This can be adjusted later in the Folders settings of OctoPrint."
-    PS3='Select instance where uploads will be stored: '
+    PS3="${green}Select instance where uploads will be stored: ${white}"
     get_instances false
     INSTANCE_ARR+=("Custom" "Quit")
     select opt in "${INSTANCE_ARR[@]}"
@@ -270,13 +267,10 @@ restart_all() {
     get_settings
     get_instances false
     for instance in "${INSTANCE_ARR[@]}"; do
-        if [ "$instance" == template ]; then
-            continue
-        fi
         echo "Trying to restart instance $instance"
         systemctl restart $instance
     done
-    exit 0
+    main_menu
 }
 
 check_sn() {
@@ -288,7 +282,6 @@ check_sn() {
         fi
     fi
 }
-
 
 usb_testing() {
     echo

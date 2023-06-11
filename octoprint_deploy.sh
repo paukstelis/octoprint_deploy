@@ -33,7 +33,6 @@ source $SCRIPTDIR/util.sh
 source $SCRIPTDIR/menu.sh
 source $SCRIPTDIR/cameras.sh
 
-
 get_settings
 
 #command line arguments

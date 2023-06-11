@@ -17,7 +17,7 @@ detect_installs() {
     octopresent=$(find /home/$user/ -type f -executable -print | grep "bin/octoprint")
     if [ -n "$octopresent" ]; then
         echo "OctoPrint binary found at $octopresent"
-        PS3='Select option number: '
+        PS3="${green}Select option number: ${white}"
         options=("Use existing binary" "Install most recent OctoPrint" "More information")
         select opt in "${options[@]}"
         do
@@ -126,7 +126,7 @@ prepare () {
     echo
     echo
     
-    PS3='Installation type: '
+    PS3="${green}Installation type: ${white}"
     local options=("Ubuntu 20+, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
     select opt in "${options[@]}"
     do
@@ -276,7 +276,7 @@ haproxy_install() {
 }
 
 streamer_install() {
-    PS3='Which video streamer you would like to install?: '
+    PS3="${green}Which video streamer you would like to install?: ${white}"
     options=("mjpeg-streamer" "ustreamer (recommended)" "None")
     select opt in "${options[@]}"
     do
@@ -381,8 +381,8 @@ firstrun_install() {
             fi
             
         done
-        echo "Admin password: $OCTOPASS"
-        sudo -u $user $OCTOEXEC --basedir $BASE user add $OCTOADMIN --password $OCTOPASS --admin | log
+        echo "Admin password: ${cyan}$OCTOPASS${white}"
+        sudo -u $user $OCTOEXEC --basedir $BASE user add $OCTOADMIN --password $OCTOPASS --admin
     fi
     
     if [ -n "$OCTOADMIN" ]; then
