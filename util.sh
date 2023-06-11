@@ -181,7 +181,6 @@ share_uploads() {
             echo "Enter full path (should start /home/$user/):"
             read ULPATH
             if [ -d "$ULPATH" ]; then
-                #echo "This folder already exists. Are you sure you want to use it?"
                 if prompt_confirm "This folder already exists. Are you sure you want to use it?"; then
                     opt=$ULPATH
                 else
@@ -197,7 +196,6 @@ share_uploads() {
         else
             opt=/home/$user/.$opt/uploads
         fi
-        echo $opt
         echo
         #Remove Quit and Custom from array, is there a cleaner way?
         unset 'options[-1]'
@@ -207,21 +205,31 @@ share_uploads() {
         done
         break
     done
-    echo "Instances must be restarted for changes to take effect."
+    echo "${cyan}Instances must be restarted for changes to take effect.${white}"
     main_menu
 }
 
 instance_status() {
     echo
-    echo "*******************************************"
+    echo "${cyan}*******************************************${white}"
     get_instances false
-    echo "Instance - Status:"
+    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    #combine instances and cameras
+    INSTANCE_ARR+=(${cameras[@]})
+    echo "Service - Status:"
     echo "------------------"
     for instance in "${INSTANCE_ARR[@]}"; do
         status=$(systemctl status $instance | sed -n -e 's/Active: \([[:graph:]]*\) .*/\1/p')
+        if [ $status = "active" ]; then
+            status="${green}$status${white}"
+        elif [ $status = "failed" ]; then
+            status="${red}$status${white}"
+        fi
         echo "$instance - $status"
     done
-    echo "*******************************************"
+    echo "${cyan}*******************************************${white}"
+    echo "Only instances and cameras made with octoprint_deploy are shown"
+    echo
     main_menu
 }
 
@@ -256,10 +264,6 @@ remove_everything() {
         systemctl restart haproxy.service
         systemctl daemon-reload
         
-        #if using OctoPi, restart template
-        if [ "$TYPE" == octopi ]; then
-            systemctl restart octoprint.service
-        fi
     fi
 }
 
