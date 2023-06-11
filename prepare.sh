@@ -189,7 +189,7 @@ new_install() {
         echo "You have the option of disabling this now."
         if prompt_confirm "${green}Disable SELinux?${white}"; then
             sed -i s/^SELINUX=.*$/SELINUX=disabled/ /etc/selinux/config
-            echo "${magenta}You will need to reboot after creating an instance${white}"
+            echo "${magenta}You will need to reboot after system preparation.${white}"
         fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")

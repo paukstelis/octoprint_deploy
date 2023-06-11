@@ -6,7 +6,7 @@ detect_camera() {
     echo
     echo "Verify the camera is currently unplugged from USB....."
     if prompt_confirm "Is the camera you are trying to detect unplugged from USB?"; then
-        readarray -t c1 < <(ls -1 /dev/v4l/by-id/*index0)
+        readarray -t c1 < <(ls -1 /dev/v4l/by-id/*index0 2>/dev/null)
     fi
     dmesg -C
     echo "Plug your camera in via USB now (detection time-out in 1 min)"
