@@ -194,7 +194,8 @@ new_instance () {
         echo "WARNING!! You must setup the template profile and admin user before continuing" | log
         main_menu
     fi
-    
+
+    echo "You must complete the auto-detection to create an instance."
     if prompt_confirm "Begin auto-detect printer serial number for udev entry?"
     then
         detect_printer
