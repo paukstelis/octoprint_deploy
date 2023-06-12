@@ -103,11 +103,37 @@ dnf_packages() {
 }
 
 pacman_packages() {
-    pacman -S --noconfirm make cmake python python-virtualenv libyamlpython-pip libjpeg-turbo python-yaml python-setuptools libffi ffmpeg gcc libevent libbsd openssh haproxy v4l-utils
+    pacman -S --noconfirm \
+    make \
+    cmake \
+    python \
+    python-virtualenv \
+    libyamlpython-pip \
+    libjpeg-turbo \
+    python-yaml \
+    python-setuptools \
+    libffi \
+    ffmpeg \
+    gcc \
+    libevent \
+    libbsd \
+    openssh \
+    haproxy \
+    v4l-utils
 }
 
 zypper_packages() {
-    zypper -y install gcc python3-devel cmake libjpeg-turbo-devel libbsd-devel libevent-devel haproxy openssh openssh-server libffi-devel
+    zypper -y install \
+    gcc \
+    python3-devel \
+    cmake \
+    libjpeg-turbo-devel \
+    libbsd-devel \
+    libevent-devel \
+    haproxy \
+    openssh \
+    openssh-server \
+    libffi-devel
 }
 
 user_groups() {
@@ -125,7 +151,7 @@ prepare () {
     echo
     
     PS3="${green}Installation type: ${white}"
-    local options=("Ubuntu 20+, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "Quit")
+    local options=("Ubuntu 20+, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "OpenSuse" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -139,6 +165,10 @@ prepare () {
             ;;
             "ArchLinux")
                 INSTALL=4
+                break
+            ;;
+            "OpenSuse")
+                INSTALL=5
                 break
             ;;
             "Quit")
@@ -204,7 +234,11 @@ new_install() {
     if [ $INSTALL -eq 4 ]; then
         pacman_packages
     fi
-    
+
+    if [ $INSTALL -eq 5 ]; then
+        zypper_packages
+    fi
+
     echo "Enabling ssh server..."
     systemctl enable ssh.service
     echo "Installing OctoPrint virtual environment in /home/$user/OctoPrint"
