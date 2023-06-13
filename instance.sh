@@ -93,7 +93,8 @@ new_instance() {
         fi
     fi
     
-    if prompt_confirm "Begin auto-detect printer serial number for udev entry?"; then
+    echo "Printer auto-detection must be completed before an instance can be created."
+    if prompt_confirm "Begin printer auto-detection for udev entry?"; then
         detect_printer
     else
         echo "${magenta}Instance has not been created. Restart and do detection when you are ready.${white}"
@@ -128,7 +129,7 @@ new_instance() {
         echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
         
         if [ -n "$TEMPLATE" ]; then
-            echo "Copying template files...."
+            echo "${magenta}Copying template files....${white}"
             cp -rp $BFOLD/* $OCTOCONFIG/.$INSTANCE
         fi
         
@@ -249,7 +250,7 @@ printer_udev() {
             if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
                 echo
                 USB=$TEMPUSB
-                echo -e "Your printer will be setup at the following usb address: $USB"
+                echo "Your printer will be setup at the following usb address: ${cyan}$USB${white}"
                 echo
             else
                 main_menu

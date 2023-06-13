@@ -9,6 +9,27 @@ detect_installs() {
         echo "octoexec: /home/$user/oprint/bin/octoprint" >> /etc/octoprint_deploy
         echo "octopip: /home/$user/oprint/bin/pip" >> /etc/octoprint_deploy
         echo "haproxy: true" >> /etc/octoprint_deploy
+        INSTANCE=octoprint
+        #rename
+
+        #detect
+        echo "If you plan to have multiple printers on your Pi it is helpful to assign printer udev rules."
+        echo "This will make sure the correct printer is associated with each OctoPrint instance."
+        get_settings
+        if prompt_confirm "${green}Would you like to generate a udev rule now?{$white}"; then
+            echo "Unplug your printer from the USB connection now."
+            if prompt_confirm "${green}Ready to begin printer auto-detection?${white}"
+                detect_printer
+                printer_udev false
+                printer_udev true
+                udevadm control --reload-rules
+                udevadm trigger
+                sudo -u $user $OCTOEXEC config set serial.port /dev/octo_$INSTANCE
+                sudo -u $user $OCTOEXEC config append_value serial.additionalPorts "/dev/octo_$INSTANCE"
+                systemctl restart $INSTANCE
+            fi
+            
+        fi
         streamer_install
         main_menu
     fi
@@ -76,6 +97,16 @@ deb_packages() {
     -e ssh\
     -e libffi-dev\
     -e haproxy\
+    -e libavformat-dev\
+    -e libavutil-dev\
+    -e libavcodec-dev\
+    -e libcamera-dev\
+    -e liblivemedia-dev\
+    -e v4l-utils\
+    -e pkg-config\
+    -e xxd\
+    -e build-essential\
+    -e libssl-dev\
     | xargs apt-get install -y
     
     #pacakges to REMOVE go here
@@ -316,7 +347,7 @@ haproxy_install() {
 
 streamer_install() {
     PS3="${green}Which video streamer you would like to install?: ${white}"
-    options=("mjpeg-streamer" "ustreamer (recommended)" "None")
+    options=("ustreamer (recommended)" "mjpeg-streamer" "camera-streamer" "None")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -328,6 +359,10 @@ streamer_install() {
                 VID=2
                 break
             ;;
+            "camera-streamer")
+                VID=4
+                break
+            ;;
             "None")
                 VID=3
                 break
@@ -336,6 +371,12 @@ streamer_install() {
         esac
     done
     
+    #If we run this function directly, clean up streamer setting before installing
+    get_settings
+    if [ -n "$STREAMER" ]; then
+        sed -i "/$STREAMER/d" /etc/octoprint_deploy
+    fi
+
     if [ $VID -eq 1 ]; then
         
         #install mjpg-streamer, not doing any error checking or anything
@@ -375,6 +416,23 @@ streamer_install() {
         echo 'streamer: ustreamer' >> /etc/octoprint_deploy
     fi
     
+    if [ $VID -eq 4 ]; then
+        
+        #install camera-streamer
+        sudo -u $user git -C /home/$user clone https://github.com/ayufan-research/camera-streamer.git --recursive
+        sudo -u $user make -C /home/$user/camera-streamer > /dev/null
+        if [ -f "/home/$user/camera-streamer/camera-streamer" ]; then
+            echo "Streamer installed successfully"
+        else
+            echo "${red}WARNING! WARNING! WARNING!${white}"
+            echo "Streamer has not been installed correctly."
+            if prompt_confirm "Try installation again?"; then
+                streamer_install
+            fi
+        fi
+        echo 'streamer: camera-streamer' >> /etc/octoprint_deploy
+    fi
+
     if [ $VID -eq 3 ]; then
         echo 'streamer: none' >> /etc/octoprint_deploy
         echo "Good for you! Cameras are just annoying anyway."
