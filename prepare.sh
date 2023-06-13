@@ -5,7 +5,7 @@ detect_installs() {
     if [ -f "/etc/octopi_version" ]; then
         echo "OctoPi installation detected."
         echo "Adding standard OctoPi instance to instance list."
-        echo "instance:octoprint port:5000" >> /etc/octoprint_instances
+        echo "instance:octoprint port:5000 udev:false" >> /etc/octoprint_instances
         echo "octoexec: /home/$user/oprint/bin/octoprint" >> /etc/octoprint_deploy
         echo "octopip: /home/$user/oprint/bin/pip" >> /etc/octoprint_deploy
         echo "haproxy: true" >> /etc/octoprint_deploy

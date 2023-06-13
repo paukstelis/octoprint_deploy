@@ -126,7 +126,7 @@ new_instance() {
         printer_udev true
         
         #Append instance name to list for removal tool
-        echo instance:$INSTANCE port:$PORT >> /etc/octoprint_instances
+        echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
         
         if [ -n "$TEMPLATE" ]; then
             echo "${magenta}Copying template files....${white}"
