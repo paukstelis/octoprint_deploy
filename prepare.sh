@@ -139,7 +139,8 @@ pacman_packages() {
     cmake \
     python \
     python-virtualenv \
-    libyamlpython-pip \
+    libyaml \
+    python-pip \
     libjpeg-turbo \
     python-yaml \
     python-setuptools \
