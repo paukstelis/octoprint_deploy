@@ -302,6 +302,10 @@ new_install() {
     echo "octopip: /home/$user/OctoPrint/bin/pip" >> /etc/octoprint_deploy
 
     #Create first instance
+    echo
+    echo
+    echo
+    echo
     echo "${cyan}It is time to create your first OctoPrint instance!!!${white}"
     new_instance true
     echo
