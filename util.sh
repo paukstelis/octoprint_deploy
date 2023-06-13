@@ -238,7 +238,7 @@ remove_everything() {
     if prompt_confirm "Remove everything?"; then
         get_instances false
         unset 'instances[0]'
-        readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+        readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2>/dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
         for instance in "${INSTANCE_ARR[@]}"; do
             remove_instance $instance
         done
@@ -256,7 +256,6 @@ remove_everything() {
         rm /etc/udev/rules.d/99-octoprint.rules
         rm /etc/sudoers.d/octoprint_reboot
         rm /etc/sudoers.d/octoprint_systemctl
-        echo "Removing template"
         rm -rf /home/$user/.octoprint
         rm -rf /home/$user/OctoPrint
         rm -rf /home/$user/ustreamer
@@ -280,9 +279,9 @@ restart_all() {
 check_sn() {
     if [ -f "/etc/udev/rules.d/99-octoprint.rules" ]; then
         if grep -q $1 /etc/udev/rules.d/99-octoprint.rules; then
-            echo "An identical serial number has been detected in the udev rules. Please be warned, this will likely cause instability!" | log
+            echo "${red}An identical serial number has been detected in the udev rules. Please be warned, this will likely cause instability!${white}"
         else
-            echo "No duplicate serial number detected" | log
+            echo "${cyan}No duplicate serial number detected.${white}"
         fi
     fi
 }
@@ -290,9 +289,9 @@ check_sn() {
 usb_testing() {
     echo
     echo
-    echo "Testing printer USB" | log
+    echo "Testing printer USB"
     detect_printer
-    echo "Detected device at $TEMPUSB" | log
-    echo "Serial Number detected: $UDEV" | log
+    echo "Detected device at $TEMPUSB" 
+    echo "Serial Number detected: $UDEV"
     main_menu
 }

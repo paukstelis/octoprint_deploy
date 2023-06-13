@@ -74,7 +74,7 @@ new_instance() {
         fi
         
         PORT=$((PORT+1))
-        echo Selected port is: $PORT | log
+        echo Selected port is: $PORT
         #CHANGE
         OCTOUSER=$user
         OCTOPATH=$OCTOEXEC

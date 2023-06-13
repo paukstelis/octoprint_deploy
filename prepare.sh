@@ -160,13 +160,17 @@ zypper_packages() {
     gcc \
     python3-devel \
     cmake \
-    libjpeg-turbo-devel \
+    libjpeg-devel \
     libbsd-devel \
     libevent-devel \
     haproxy \
     openssh \
     openssh-server \
-    libffi-devel
+    libffi-devel \
+    v4l-utils \
+    xxd \
+    libopenssl-devel
+
 }
 
 user_groups() {
@@ -184,7 +188,7 @@ prepare () {
     echo
     
     PS3="${green}Installation type: ${white}"
-    local options=("Ubuntu 20+, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "OpenSuse" "Quit")
+    local options=("Ubuntu 20+, Mint, Debian, Raspberry Pi OS" "Fedora/CentOS" "ArchLinux" "openSUSE" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -200,7 +204,7 @@ prepare () {
                 INSTALL=4
                 break
             ;;
-            "OpenSuse")
+            "openSUSE")
                 INSTALL=5
                 break
             ;;
@@ -270,6 +274,7 @@ new_install() {
 
     if [ $INSTALL -eq 5 ]; then
         zypper_packages
+        systemctl enable sshd.service
     fi
 
     echo "Enabling ssh server..."
