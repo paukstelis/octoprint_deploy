@@ -39,6 +39,9 @@ new_instance() {
         fi
         
         #Choose if should use an instance as template here
+        echo
+        echo
+        echo
         echo "Using a template instance allows you to copy, plugin settings,"
         echo "and gcode files from one instance to your new instance."
         if prompt_confirm "Use an existing instance as a template?"; then

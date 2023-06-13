@@ -15,6 +15,7 @@ detect_installs() {
         #detect
         echo "If you plan to have multiple printers on your Pi it is helpful to assign printer udev rules."
         echo "This will make sure the correct printer is associated with each OctoPrint instance."
+        echo "This can also be done in the Utility menu at a later time."
         get_settings
         if prompt_confirm "${green}Would you like to generate a udev rule now?{$white}"; then
             echo "Unplug your printer from the USB connection now."
@@ -155,7 +156,7 @@ pacman_packages() {
 }
 
 zypper_packages() {
-    zypper -y install \
+    zypper in -y \
     gcc \
     python3-devel \
     cmake \
