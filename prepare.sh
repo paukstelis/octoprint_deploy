@@ -18,7 +18,7 @@ detect_installs() {
         get_settings
         if prompt_confirm "${green}Would you like to generate a udev rule now?{$white}"; then
             echo "Unplug your printer from the USB connection now."
-            if prompt_confirm "${green}Ready to begin printer auto-detection?${white}"
+            if prompt_confirm "${green}Ready to begin printer auto-detection?${white}"; then
                 detect_printer
                 printer_udev false
                 printer_udev true
