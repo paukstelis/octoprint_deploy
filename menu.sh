@@ -1,5 +1,5 @@
 #!/bin/bash
-#source $SCRIPTDIR/prepare.sh
+source $SCRIPTDIR/prepare.sh
 white=$(echo -en "\e[39m")
 green=$(echo -en "\e[92m")
 magenta=$(echo -en "\e[35m")
