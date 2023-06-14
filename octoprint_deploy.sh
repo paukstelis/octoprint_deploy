@@ -61,4 +61,7 @@ if [ "$1" == udev ]; then
     printer_udev false
     printer_udev true
 fi
+if [ "$1" == deb_packages ]; then
+    deb_packages
+fi
 main_menu
