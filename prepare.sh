@@ -9,10 +9,14 @@ detect_installs() {
         echo "octoexec: /home/$user/oprint/bin/octoprint" >> /etc/octoprint_deploy
         echo "octopip: /home/$user/oprint/bin/pip" >> /etc/octoprint_deploy
         echo "haproxy: true" >> /etc/octoprint_deploy
+        echo "octopi: true" >> /etc/octoprint_deploy
+        echo "Adding systemctl and reboot to sudo"
+        echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
+        echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
         INSTANCE=octoprint
         deb_packages
         #rename
-
+        
         #detect
         echo "If you plan to have multiple printers on your Pi it is helpful to assign printer udev rules."
         echo "This will make sure the correct printer is associated with each OctoPrint instance."
@@ -28,11 +32,13 @@ detect_installs() {
                 udevadm trigger
                 sudo -u $user $OCTOEXEC config set serial.port /dev/octo_$INSTANCE
                 sudo -u $user $OCTOEXEC config append_value serial.additionalPorts "/dev/octo_$INSTANCE"
+                #convert UDEV to true
                 systemctl restart $INSTANCE
             fi
             
         fi
-        streamer_install
+        #streamer_install
+        echo "streamer: camera-streamer" >> /etc/octoprint_deploy
         main_menu
     fi
     
@@ -175,7 +181,7 @@ zypper_packages() {
     v4l-utils \
     xxd \
     libopenssl-devel
-
+    
 }
 
 user_groups() {
@@ -276,12 +282,12 @@ new_install() {
     if [ $INSTALL -eq 4 ]; then
         pacman_packages
     fi
-
+    
     if [ $INSTALL -eq 5 ]; then
         zypper_packages
         systemctl enable sshd.service
     fi
-
+    
     echo "Enabling ssh server..."
     systemctl enable ssh.service
     echo "Installing OctoPrint virtual environment in /home/$user/OctoPrint"
@@ -311,7 +317,7 @@ new_install() {
     #These will retreived as settings
     echo "octoexec: /home/$user/OctoPrint/bin/octoprint" >> /etc/octoprint_deploy
     echo "octopip: /home/$user/OctoPrint/bin/pip" >> /etc/octoprint_deploy
-
+    
     #Create first instance
     echo
     echo
@@ -392,7 +398,7 @@ streamer_install() {
     if [ -n "$STREAMER" ]; then
         sed -i "/$STREAMER/d" /etc/octoprint_deploy
     fi
-
+    
     if [ $VID -eq 1 ]; then
         
         #install mjpg-streamer, not doing any error checking or anything
@@ -448,7 +454,7 @@ streamer_install() {
         fi
         echo 'streamer: camera-streamer' >> /etc/octoprint_deploy
     fi
-
+    
     if [ $VID -eq 3 ]; then
         echo 'streamer: none' >> /etc/octoprint_deploy
         echo "Good for you! Cameras are just annoying anyway."
@@ -507,16 +513,16 @@ firstrun_install() {
         echo
         echo
         if prompt_confirm "Complete first run wizards now?"; then
-            sudo -u $user $OCTOEXEC --basedir $BASE config set server.firstRun false --bool 
-            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.backup null 
-            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.corewizard 4 --int 
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.firstRun false --bool
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.backup null
+            sudo -u $user $OCTOEXEC --basedir $BASE config set server.seenWizards.corewizard 4 --int
             sudo -u $user $OCTOEXEC --basedir $BASE config set server.onlineCheck.enabled true --bool
             sudo -u $user $OCTOEXEC --basedir $BASE config set server.pluginBlacklist.enabled true --bool
             sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.enabled true --bool
             sudo -u $user $OCTOEXEC --basedir $BASE config set printerProfiles.default _default
         fi
     fi
-
+    
     echo "Restarting instance....."
     systemctl restart $INSTANCE
 }

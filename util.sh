@@ -227,7 +227,7 @@ add_udev() {
         printer_udev false
         printer_udev true
         #this needs more thought
-        sed -i s/^instance=$INSTANCE port:.* udev=\(false\)/REPLACETRUE/ /etc/octoprint_instances
+        sed -i s/^instance=$INSTANCE port:.* udev:\(false\)/REPLACETRUE/ /etc/octoprint_instances
         break
     done
     echo "${cyan}udev rule has been added${white}"
