@@ -48,7 +48,7 @@ global_config() {
             main_menu
         fi
     done
-
+    
 }
 
 octo_deploy_update() {
@@ -123,6 +123,14 @@ get_instances() {
     fi
 }
 
+get_cameras() {
+    addquit=$1
+    readarray -t CAMERA_ARR < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
+    if [ "$addquit" == true ]; then
+        CAMERA_ARR+=("Quit")
+    fi
+}
+
 sync_users() {
     echo
     echo
@@ -143,11 +151,7 @@ sync_users() {
                 if [ "$instance" == "$opt" ]; then
                     continue
                 fi
-                if [ "$instance" == generic ]; then
-                    sudo -u $user cp $userfile /home/$user/.octoprint/
-                else
-                    sudo -u $user cp $userfile /home/$user/.$instance/
-                fi
+                sudo -u $user cp $userfile /home/$user/.$instance/
             done
             
             if prompt_confirm "Restart all instances now for changes to take effect?"; then
@@ -209,6 +213,44 @@ share_uploads() {
     main_menu
 }
 
+add_udev() {
+    #get instances that don't have a udev rule
+    PS3="${green}Select instance to add udev rule: ${white}"
+    readarray -t noudev < <(fgrep "udev:false" /etc/octoprint_instances 2> /dev/null | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+    noudev+=("Quit")
+    select opt in "${noudev[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+        INSTANCE=$opt
+        printer_udev false
+        printer_udev true
+        #this needs more thought
+        sed -i s/^instance=$INSTANCE port:.* udev=\(false\)/REPLACETRUE/ /etc/octoprint_instances
+        break
+    done
+    echo "${cyan}udev rule has been added${white}"
+    main_menu
+}
+
+remove_udev() {
+    #parse /etc/udev/rules.d/99-octoprint.rules
+    PS3="${green}Select udev rule to remove: ${white}"
+    readarray -t udevs < <(cat /etc/udev/rules.d/99-octoprint.rules 2> /dev/null | sed -n -e 's/.*SYMLINK+="\([[:graph:]]*\)".*/\1/p')
+    udevs+=("Quit")
+    select opt in "${udevs[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+        sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
+        break
+    done
+    echo "${cyan}udev rule has been removed${white}"
+    main_menu
+}
+
 instance_status() {
     echo
     echo "${cyan}*******************************************${white}"
@@ -222,7 +264,7 @@ instance_status() {
         status=$(systemctl status $instance | sed -n -e 's/Active: \([[:graph:]]*\) .*/\1/p')
         if [ $status = "active" ]; then
             status="${green}$status${white}"
-        elif [ $status = "failed" ]; then
+            elif [ $status = "failed" ]; then
             status="${red}$status${white}"
         fi
         echo "$instance - $status"
@@ -261,7 +303,7 @@ remove_everything() {
         rm /etc/octoprint_streamer
         rm /etc/octoprint_deploy
         rm /etc/octoprint_instances
-        rm /etc/camera_ports
+        rm /etc/octoprint_cameras
         rm /etc/udev/rules.d/99-octoprint.rules
         rm /etc/sudoers.d/octoprint_reboot
         rm /etc/sudoers.d/octoprint_systemctl
@@ -300,7 +342,35 @@ usb_testing() {
     echo
     echo "Testing printer USB"
     detect_printer
-    echo "Detected device at $TEMPUSB" 
+    echo "Detected device at $TEMPUSB"
     echo "Serial Number detected: $UDEV"
     main_menu
+}
+
+diagnostic_output() {
+    echo "**************************************"
+    echo "$1"
+    echo "**************************************"
+    cat $1
+}
+
+diagnostics() {
+    echo "octoprint_deploy diagnostic information. Please copy/paste ALL output for support help"
+    diagnostic_output /etc/octoprint_deploy
+    diagnostic_output /etc/octoprint_instances
+    diagnostic_output /etc/octoprint_cameras 
+    diagnostic_output /etc/udev/rules.d/99-octoprint.rules
+    #get all instance status
+    get_instances false
+    for instance in "${INSTANCE_ARR[@]}"; do
+        systemctl status $instance -l --no-pager
+    done
+    #get all cam status
+    get_cameras false
+    for camera in "${CAMERA_ARR[@]}"; do
+        systemctl status $camera -l --no-pager
+    done
+    #get haproxy status
+    systemctl status haproxy
+
 }

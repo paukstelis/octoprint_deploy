@@ -223,7 +223,7 @@ prepare () {
         else
             old_install
         fi
-        touch /etc/camera_ports
+        
     fi
     main_menu
 }

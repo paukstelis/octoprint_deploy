@@ -99,10 +99,8 @@ remove_instance_menu() {
 
 remove_camera_menu() {
     get_settings
-    #must choose where to find which cameras have been installed
-    #probably safest to go with service files
     PS3="${green}Select camera number to remove: ${white}"
-    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    readarray -t cameras < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
     cameras+=("Quit")
     
     select camera in "${cameras[@]}"
@@ -155,6 +153,31 @@ utility_menu() {
                 ;;*) echo "invalid option $REPLY";;
         esac
     done
+}
+
+udev_menu() {
+    echo
+    echo
+    PS3="${green}Select an option: ${white}"
+    options=("Add udev rule" "Remove udev rule" "Quit")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Add udev rule")
+                add_udev
+                break
+            ;;
+            "Remove udev rule")
+                remove_udev
+                break
+            ;;
+            "Quit")
+                main_menu
+                break
+                ;;*) echo "invalid option $REPLY";;
+        esac
+    done
+
 }
 
 backup_menu() {

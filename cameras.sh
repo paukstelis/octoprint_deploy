@@ -33,6 +33,7 @@ remove_camera() {
     systemctl disable $1.service
     rm /etc/systemd/system/$1.service
     sed -i "/$1/d" /etc/udev/rules.d/99-octoprint.rules
+    sed -i "/$1/d" /etc/octoprint_cameras
     if [ "$HAPROXY" == true ]; then
         sed -i "/use_backend $1/d" /etc/haproxy/haproxy.cfg
         sed -i "/#$1 start/,/#$1 stop/d" /etc/haproxy/haproxy.cfg
@@ -74,8 +75,9 @@ write_camera() {
     fi
     
     mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
-    echo $CAMPORT >> /etc/camera_ports
-    
+    #echo $CAMPORT >> /etc/camera_ports
+    echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT" >> /etc/octoprint_cameras
+
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.snapshot "http://localhost:$CAMPORT?action=snapshot"
@@ -216,10 +218,10 @@ add_camera() {
     fi
     
     while true; do
-        echo "Camera Port (ENTER will increment last value in /etc/camera_ports):"
+        echo "Camera Port (ENTER will increment last value found in /etc/octoprint_cameras):"
         read CAMPORT
         if [ -z "$CAMPORT" ]; then
-            CAMPORT=$(tail -1 /etc/camera_ports)
+            CAMPORT=$(tail -1 /etc/octoprint_cameras | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
             
             if [ -z "$CAMPORT" ]; then
                 CAMPORT=8000
