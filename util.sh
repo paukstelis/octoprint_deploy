@@ -352,6 +352,7 @@ diagnostic_output() {
     echo "$1"
     echo "**************************************"
     cat $1
+
 }
 
 diagnostics() {
@@ -368,7 +369,7 @@ diagnostics() {
         echo "**************************************"
         systemctl status $instance -l --no-pager | log
         #get config info
-        diagnostic_output /home/$user/.$instance/config.yaml
+        diagnostic_output /home/$user/.$instance/config.yaml | log
     done
     #get all cam status
     get_cameras false
