@@ -10,6 +10,7 @@ detect_installs() {
         echo "octopip: /home/$user/oprint/bin/pip" >> /etc/octoprint_deploy
         echo "haproxy: true" >> /etc/octoprint_deploy
         INSTANCE=octoprint
+        deb_packages
         #rename
 
         #detect

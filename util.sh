@@ -368,8 +368,9 @@ diagnostics() {
     for instance in "${INSTANCE_ARR[@]}"; do
         echo "**************************************"
         systemctl status $instance -l --no-pager | log
-        #get config info
-        diagnostic_output /home/$user/.$instance/config.yaml | log
+        #get needed config info
+        sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get plugins.classicwebcam | log
+        sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get webcam | log
     done
     #get all cam status
     get_cameras false
@@ -380,5 +381,6 @@ diagnostics() {
     #get haproxy status
     echo "**************************************"
     systemctl status haproxy -l --no-pager | log
+    logfile='octoprint_deploy.log'
     main_menu
 }
