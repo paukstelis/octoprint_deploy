@@ -130,7 +130,11 @@ dnf_packages() {
     haproxy \
     openssh \
     openssh-server \
-    libffi-devel
+    libffi-devel \
+    libcamera-devel \
+    v4l-utils \
+    xxd \
+    openssl-devel
     
 }
 
