@@ -7,7 +7,7 @@ cyan=$(echo -en "\e[96m")
 yellow=$(echo -en "\e[93m") 
 
 main_menu() {
-    VERSION=0.2.4
+    VERSION=1.0.0
     #reset
     UDEV=''
     TEMPUSB=''

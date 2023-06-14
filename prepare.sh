@@ -363,7 +363,7 @@ haproxy_install() {
 
 streamer_install() {
     PS3="${green}Which video streamer you would like to install?: ${white}"
-    options=("ustreamer (recommended)" "mjpeg-streamer" "camera-streamer" "None")
+    options=("ustreamer (recommended)" "mjpeg-streamer" "camera-streamer" "None/Skip")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -379,7 +379,7 @@ streamer_install() {
                 VID=4
                 break
             ;;
-            "None")
+            "None/Skip")
                 VID=3
                 break
             ;;
