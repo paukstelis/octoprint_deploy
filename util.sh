@@ -355,22 +355,23 @@ diagnostic_output() {
 }
 
 diagnostics() {
+    logfile='octoprint_deploy_diagnostic.log'
     echo "octoprint_deploy diagnostic information. Please copy/paste ALL output for support help"
-    diagnostic_output /etc/octoprint_deploy
-    diagnostic_output /etc/octoprint_instances
-    diagnostic_output /etc/octoprint_cameras 
-    diagnostic_output /etc/udev/rules.d/99-octoprint.rules
+    diagnostic_output /etc/octoprint_deploy | log
+    diagnostic_output /etc/octoprint_instances | log
+    diagnostic_output /etc/octoprint_cameras | log
+    diagnostic_output /etc/udev/rules.d/99-octoprint.rules | log
     #get all instance status
     get_instances false
     for instance in "${INSTANCE_ARR[@]}"; do
-        systemctl status $instance -l --no-pager
+        systemctl status $instance -l --no-pager | log
     done
     #get all cam status
     get_cameras false
     for camera in "${CAMERA_ARR[@]}"; do
-        systemctl status $camera -l --no-pager
+        systemctl status $camera -l --no-pager |log
     done
     #get haproxy status
-    systemctl status haproxy
-
+    systemctl status haproxy -l --no-pager | log
+    main_menu
 }
