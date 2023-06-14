@@ -233,6 +233,15 @@ instance_status() {
     main_menu
 }
 
+change_streamer() {
+    echo
+    echo "${cyan}This allows you to change the default webcam streamer."
+    echo "Please note, it DOES NOT change the streamer for existing cameras."
+    echo "You will need to delete and reinstall those cameras for changes to take effect.${white}"
+    echo
+    streamer_install
+}
+
 remove_everything() {
     get_settings
     if prompt_confirm "Remove everything?"; then
