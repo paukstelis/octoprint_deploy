@@ -66,7 +66,7 @@ new_instance() {
     if prompt_confirm "Ready to begin instance creation?"; then
         #CHANGE
         if [ -f /etc/octoprint_instances ]; then
-            PORT=$(tail -1 /etc/octoprint_instances 2>/dev/null | sed -n -e 's/^.*\(port:\)\(.*\).*/\2/p')
+            PORT=$(tail -1 /etc/octoprint_instances 2>/dev/null | sed -n -e 's/^.*\(port:\)\(.*\) udev=.*s/\2/p')
         fi
 
         if [ -z "$PORT" ]; then
