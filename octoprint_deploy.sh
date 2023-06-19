@@ -1093,7 +1093,7 @@ remove_instance() {
     fi
     
     #Get all cameras associated with this instance
-    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*_$opt.service | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     for camera in "${cameras[@]}"; do
         remove_camera $camera
     done
