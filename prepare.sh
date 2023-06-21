@@ -14,6 +14,8 @@ detect_installs() {
         echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
         echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
         INSTANCE=octoprint
+        #just a place holder, if doing multiple instanecs, probably want camera_auto_detect=0?
+        #sed -i 's/^camera_auto_detect=0/camera_auto_detect=1/' /boot/config.txt
         deb_packages
         #rename
         
@@ -369,14 +371,10 @@ haproxy_install() {
 
 streamer_install() {
     PS3="${green}Which video streamer you would like to install?: ${white}"
-    options=("ustreamer (recommended)" "mjpeg-streamer" "camera-streamer" "None/Skip")
+    options=("ustreamer (recommended)" "camera-streamer" "None/Skip")
     select opt in "${options[@]}"
     do
         case $opt in
-            "mjpeg-streamer")
-                VID=1
-                break
-            ;;
             "ustreamer (recommended)")
                 VID=2
                 break
@@ -428,6 +426,8 @@ streamer_install() {
         sudo -u $user make -C /home/$user/ustreamer > /dev/null
         if [ -f "/home/$user/ustreamer/ustreamer" ]; then
             echo "Streamer installed successfully"
+            mkdir /etc/ustreamer.conf.d
+            #cp some template there
         else
             echo "${red}WARNING! WARNING! WARNING!${white}"
             echo "Streamer has not been installed correctly."
@@ -445,6 +445,12 @@ streamer_install() {
         sudo -u $user make -C /home/$user/camera-streamer > /dev/null
         if [ -f "/home/$user/camera-streamer/camera-streamer" ]; then
             echo "Streamer installed successfully"
+            #this will be non-OctoPi
+            if [ ! -d "/etc/camera-streamer.conf.d" ]; then
+                mkdir /etc/camera-streamer.conf.d
+                #cp some template
+            fi
+
         else
             echo "${red}WARNING! WARNING! WARNING!${white}"
             echo "Streamer has not been installed correctly."

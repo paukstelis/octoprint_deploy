@@ -44,9 +44,6 @@ remove_camera() {
 write_camera() {
     
     get_settings
-    if [ -z "$STREAMER" ]; then
-        STREAMER="mjpg-streamer"
-    fi
     
     if [ -n "$BYIDCAM" ] && [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
         CAMDEVICE=$BYIDCAM
@@ -54,29 +51,19 @@ write_camera() {
         CAMDEVICE=cam${INUM}_$INSTANCE
     fi
     
-    #mjpg-streamer
-    if [ "$STREAMER" == mjpg-streamer ]; then
-        cat $SCRIPTDIR/octocam_mjpg.service | \
-        sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/$CAMDEVICE/" \
-        -e "s/RESOLUTION/$RESOLUTION/" \
-        -e "s/FRAMERATE/$FRAMERATE/" \
-        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
-    fi
-    
     #ustreamer
     if [ "$STREAMER" == ustreamer ]; then
-        cat $SCRIPTDIR/octocam_ustream.service | \
-        sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/$CAMDEVICE/" \
-        -e "s/RESOLUTION/$RESOLUTION/" \
-        -e "s/FRAMERATE/$FRAMERATE/" \
-        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
+        write_ustreamer
     fi
     
-    mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
-    echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT" >> /etc/octoprint_cameras
+    #camera-streamer
+    if [ "$STREAMER" == ustreamer ]; then
+        write_camera-streamer
+    fi
 
+    #mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
+    echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT" >> /etc/octoprint_cameras
+    
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.snapshot "http://localhost:$CAMPORT?action=snapshot"
@@ -86,7 +73,7 @@ write_camera() {
         else
             sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.stream "/cam_$INSTANCE/?action=stream"
         fi
-
+        
         sudo -u $user $OCTOEXEC --basedir $BASE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
         
         if prompt_confirm "Instance must be restarted for settings to take effect. Restart now?"; then
@@ -138,7 +125,7 @@ add_camera() {
     CAMHAPROX=''
     get_settings
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
-    echo 'Adding camera' | log
+    echo 'Adding camera'
     if [ -z "$INSTANCE" ]; then
         PS3='Select instance number to add camera to: '
         get_instances true
@@ -274,4 +261,15 @@ add_camera() {
         udevadm trigger
         main_menu
     fi
+}
+
+write_ustreamer() {
+        cat > /etc/ustreamer.conf.d/cam${INUM}_$INSTANCE.conf <<EOF
+        #Configuration for $CAMDEVICE
+        PORT=$CAMPORT
+        DEVICE=/dev/$CAMDEVICE
+        FORMAT=MJPEG
+        RESOLUTION=$RESOLUTION
+        FRAMERATE=$FRAMERATE
+        EOF
 }
