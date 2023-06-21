@@ -33,6 +33,7 @@ detect_installs() {
                 sudo -u $user $OCTOEXEC config set serial.port /dev/octo_$INSTANCE
                 sudo -u $user $OCTOEXEC config append_value serial.additionalPorts "/dev/octo_$INSTANCE"
                 #convert UDEV to true
+                sed -i "s/udev:false/udev:true/" /etc/octoprint_instances
                 systemctl restart $INSTANCE
             fi
             
