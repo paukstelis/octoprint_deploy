@@ -239,7 +239,7 @@ add_udev() {
 remove_udev() {
     #parse /etc/udev/rules.d/99-octoprint.rules
     PS3="${green}Select udev rule to remove: ${white}"
-    readarray -t udevs < <(cat /etc/udev/rules.d/99-octoprint.rules 2> /dev/null | sed -n -e 's/.*SYMLINK+="\([[:graph:]]*\)".*/\1/p')
+    readarray -t udevs < <(fgrep "udev:true" /etc/octoprint_instances 2> /dev/null | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     udevs+=("Quit")
     select opt in "${udevs[@]}"
     do
