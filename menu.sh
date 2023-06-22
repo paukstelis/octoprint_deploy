@@ -143,7 +143,7 @@ utility_menu() {
                 global_config
                 break
             ;;
-            "Set Global Config")
+            "Udev Menu")
                 udev_menu
                 break
             ;;
