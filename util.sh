@@ -229,7 +229,7 @@ add_udev() {
         printer_udev true
         #this needs more thought
 
-        sed -i "s/^\(instance:$INSTANCE port:.* udev:\)\(false\)/\1true/" /etc/octoprint_instances
+        sed -i "s/^\(instance:$INSTANCE port:.* udev:\)false/\1true/" /etc/octoprint_instances
         break
     done
     echo "${cyan}udev rule has been added${white}"
@@ -247,7 +247,7 @@ remove_udev() {
             main_menu
         fi
         sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
-        sed -i "s/^\(instance:$INSTANCE port:.* udev:\)\(true\)/\1false/" /etc/octoprint_instances
+        sed -i "s/^\(instance:$INSTANCE port:.* udev:\)true/\1false/" /etc/octoprint_instances
         break
     done
     echo "${cyan}udev rule has been removed${white}"
