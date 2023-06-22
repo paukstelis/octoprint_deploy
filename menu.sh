@@ -167,7 +167,7 @@ udev_menu() {
     echo
     echo
     PS3="${green}Select an option: ${white}"
-    options=("Add printer udev rule" "Remove printer udev rule" "Quit")
+    options=("Add printer udev rule" "Remove printer udev rule" "Add camera udev rule" "Remove camera udev rule" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in

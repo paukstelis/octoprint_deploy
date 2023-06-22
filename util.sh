@@ -228,16 +228,16 @@ add_udev() {
         printer_udev false
         printer_udev true
         #this needs more thought
-
         sed -i "s/^\(instance:$INSTANCE port:.* udev:\)false/\1true/" /etc/octoprint_instances
         break
     done
+    udevadm control --reload-rules
+    udevadm trigger
     echo "${cyan}udev rule has been added${white}"
     main_menu
 }
 
 remove_udev() {
-    #parse /etc/udev/rules.d/99-octoprint.rules
     PS3="${green}Select udev rule to remove: ${white}"
     readarray -t udevs < <(fgrep "udev:true" /etc/octoprint_instances 2> /dev/null | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
     udevs+=("Quit")
@@ -247,10 +247,51 @@ remove_udev() {
             main_menu
         fi
         sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
-        sed -i "s/^\(instance:$opt port:.* udev:\)true.*/\1false/" /etc/octoprint_instances
+        sed -i "s/^\(instance:$opt port:.* udev:\)true/\1false/" /etc/octoprint_instances
         break
     done
     echo "${cyan}udev rule has been removed${white}"
+    udevadm control --reload-rules
+    udevadm trigger
+    main_menu
+}
+
+add_udev_camera() {
+    PS3="${green}Select camera to add udev rule: ${white}"
+    readarray -t noudev < <(fgrep "udev:false" /etc/octoprint_cameras 2> /dev/null | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
+    noudev+=("Quit")
+    select opt in "${noudev[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+        detect_camera
+        write_cam_udev
+        sed -i "s/^\(camera:$opt port:.* udev:\)false/\1true/" /etc/octoprint_instances
+        break
+    done
+    udevadm control --reload-rules
+    udevadm trigger
+    echo "${cyan}Camera udev rule has been added${white}"
+    main_menu
+}
+
+remove_udev_camera() {
+    PS3="${green}Select udev rule to remove: ${white}"
+    readarray -t udevs < <(fgrep "udev:true" /etc/octoprint_cameras 2> /dev/null | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
+    udevs+=("Quit")
+    select opt in "${udevs[@]}"
+    do
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+        sed -i "/$opt/d" /etc/udev/rules.d/99-octoprint.rules
+        sed -i "s/^\(camera:$opt port:.* udev:\)true/\1false/" /etc/octoprint_cameras
+        break
+    done
+    echo "${cyan}Camera udev rule has been removed${white}"
+    udevadm control --reload-rules
+    udevadm trigger
     main_menu
 }
 
@@ -362,7 +403,7 @@ diagnostic_output() {
 diagnostics() {
     get_settings
     logfile='octoprint_deploy_diagnostic.log'
-    echo "octoprint_deploy diagnostic information. Please copy/paste ALL output for support help"
+    echo "octoprint_deploy diagnostic information. Please provide ALL output for support help"
     diagnostic_output /etc/octoprint_deploy | log
     diagnostic_output /etc/octoprint_instances | log
     diagnostic_output /etc/octoprint_cameras | log
@@ -380,7 +421,7 @@ diagnostics() {
     get_cameras false
     for camera in "${CAMERA_ARR[@]}"; do
         echo "**************************************"
-        systemctl status $camera -l --no-pager |log
+        systemctl status $camera -l --no-pager | log
     done
     #get haproxy status
     echo "**************************************"

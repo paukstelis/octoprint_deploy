@@ -75,7 +75,7 @@ write_camera() {
     fi
     
     mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
-    echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT" >> /etc/octoprint_cameras
+    echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
 
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
@@ -94,16 +94,7 @@ write_camera() {
         fi
     fi
     
-    #Either Serial number or USB port
-    #Serial Number
-    if [ -n "$CAM" ]; then
-        echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-    fi
-    
-    #USB port camera
-    if [ -n "$USBCAM" ]; then
-        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\", SUBSYSTEMS==\"usb\", ATTR{index}==\"0\", DRIVERS==\"uvcvideo\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
-    fi
+    write_cam_udev
     
     if [ -n "$CAMHAPROXY" ]; then
         HAversion=$(haproxy -v | sed -n 's/^.*version \([0-9]\).*/\1/p')
@@ -129,6 +120,19 @@ write_camera() {
         echo "#cam${INUM}_$INSTANCE stop" >> /etc/haproxy/haproxy.cfg
         
         systemctl restart haproxy
+    fi
+}
+
+write_cam_udev() {
+    #Either Serial number or USB port
+    #Serial Number
+    if [ -n "$CAM" ]; then
+        echo SUBSYSTEM==\"video4linux\", ATTRS{serial}==\"$CAM\", ATTR{index}==\"0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+    fi
+    
+    #USB port camera
+    if [ -n "$USBCAM" ]; then
+        echo SUBSYSTEM==\"video4linux\",KERNELS==\"$USBCAM\", SUBSYSTEMS==\"usb\", ATTR{index}==\"0\", DRIVERS==\"uvcvideo\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
     fi
 }
 

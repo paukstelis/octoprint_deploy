@@ -335,8 +335,7 @@ new_install() {
 }
 
 haproxy_install() {
-    #Haproxy
-    #Must do a check to see if haproxy already running.....this is a point where things could get complicated
+
     echo
     echo
     echo 'You have the option of setting up haproxy.'
