@@ -119,7 +119,7 @@ utility_menu() {
     echo
     echo
     PS3="${green}Select an option: ${white}"
-    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Change Streamer" "Set Global Config" "Diagnostic Output" "Quit")
+    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Change Streamer" "Set Global Config" "Udev Menu" "Diagnostic Output" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -141,6 +141,10 @@ utility_menu() {
             ;;
             "Set Global Config")
                 global_config
+                break
+            ;;
+            "Set Global Config")
+                udev_menu
                 break
             ;;
             "Change Streamer")
@@ -167,12 +171,20 @@ udev_menu() {
     select opt in "${options[@]}"
     do
         case $opt in
-            "Add udev rule")
+            "Add printer udev rule")
                 add_udev
                 break
             ;;
-            "Remove udev rule")
+            "Remove printer udev rule")
                 remove_udev
+                break
+            ;;
+            "Add camera udev rule")
+                add_udev_camera
+                break
+            ;;
+            "Remove camera udev rule")
+                remove_udev_camera
                 break
             ;;
             "Quit")
