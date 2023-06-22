@@ -224,6 +224,7 @@ add_udev() {
             main_menu
         fi
         INSTANCE=$opt
+        detect_printer
         printer_udev false
         printer_udev true
         #this needs more thought
