@@ -265,6 +265,7 @@ add_udev_camera() {
         if [ "$opt" == Quit ]; then
             main_menu
         fi
+        INSTANCE=$opt
         detect_camera
         write_cam_udev
         sed -i "s/^\(camera:$opt port:.* udev:\)false/\1true/" /etc/octoprint_instances
