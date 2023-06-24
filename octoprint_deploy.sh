@@ -44,10 +44,6 @@ if [ "$1" == backup ]; then
     back_up_all
 fi
 
-if [ "$1" == replace ]; then
-    replace_id
-fi
-
 if [ "$1" == picam ]; then
     add_camera true
 fi
@@ -56,11 +52,6 @@ if [ "$1" == noserial ]; then
     NOSERIAL=1
 fi
 
-if [ "$1" == udev ]; then
-    detect_printer
-    printer_udev false
-    printer_udev true
-fi
 if [ "$1" == deb_packages ]; then
     deb_packages
 fi

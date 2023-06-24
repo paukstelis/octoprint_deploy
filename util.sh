@@ -47,6 +47,7 @@ global_config() {
         if [ "$opt" == Quit ]; then
             main_menu
         fi
+        echo "Sorry this doesn't do anything yet"
     done
     
 }
@@ -56,36 +57,6 @@ octo_deploy_update() {
     exit
 }
 
-replace_id() {
-    #HAVE TO LOOK AT THIS AGAIN, something was broken in cut/paste
-    echo "PLEASE NOTE, this will only work in replacing an existing serial number with another serial number"
-    echo "or an existing USB port with another USB port. You cannot mix and match."
-    PS3="${green}Select instance to change serial ID: ${white}"
-    get_instances true
-    select opt in "${INSTANCE_ARR[@]}"
-    do
-        if [ "$opt" == Quit ]; then
-            main_menu
-        fi
-        
-        echo "Selected $opt to replace serial ID"
-        #Serial number or KERNELS? Not doing any error checking yet
-        KERN=$(grep octo_$opt /etc/udev/rules.d/99-octoprint.rules | sed -n -e 's/KERNELS==\"\([[:graph:]]*[[:digit:]]\)\".*/\1/p')
-        detect_printer
-        # from stackoverflow.com/questions/3231804
-        if [ -z "$KERN" ]; then
-            sed -i -e "s/\(ATTRS{serial}==\)\"\([[:alnum:]]*\)\"\(.*\)\(\"octo_$opt\"\)/\1\"$UDEV\"\2\3/" /etc/udev/rules.d/99-octoprint.rules
-            echo "Serial number replaced with: $UDEV"
-        else
-            sed -i -e "s/\(KERNELS==\)\"$KERN\"\(.*\)\(\"octo_$opt\"\)/\1\"$USB\"\2\3/"  /etc/udev/rules.d/99-octoprint.rules
-            echo "USB port replaced with: $USB"
-        fi
-        udevadm control --reload-rules
-        udevadm trigger
-        exit 0
-    done
-}
-
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
@@ -93,7 +64,6 @@ back_up() {
     sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
     echo "Tarred and gzipped backup created in /home/$user"
 }
-
 
 restore() {
     INSTANCE=$1

@@ -252,7 +252,7 @@ new_install() {
     echo "Adding systemctl and reboot to sudo"
     echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
     echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
-    echo "This will install necessary packages, download and install OctoPrint and setup a template instance on this machine."
+    echo "This will install necessary packages, install OctoPrint and setup an instance."
     #install packages
     #All DEB based
     PYVERSION="python3"
