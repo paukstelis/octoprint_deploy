@@ -175,6 +175,8 @@ new_instance() {
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.errortracking.unique_id $(uuidgen)
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.tracking.unique_id $(uuidgen)
         sudo -u $user $OCTOEXEC --basedir $BASE config set serial.port /dev/octo_$INSTANCE
+        #clear additional ports
+        sudo -u $user $OCTOEXEC --basedir $BASE config remove serial.additionalPorts
         sudo -u $user $OCTOEXEC --basedir $BASE config append_value serial.additionalPorts "/dev/octo_$INSTANCE"
         sudo -u $user $OCTOEXEC --basedir $BASE config set feature.modelSizeDetection false --bool
         sudo -u $user $OCTOEXEC --basedir $BASE config set webcam.ffmpeg /usr/bin/ffmpeg

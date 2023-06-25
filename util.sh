@@ -382,7 +382,7 @@ diagnostics() {
     #get all instance status
     get_instances false
     for instance in "${INSTANCE_ARR[@]}"; do
-        echo "**************************************"
+        echo "**************************************" | log
         systemctl status $instance -l --no-pager | log
         #get needed config info
         sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get plugins.classicwebcam | log
@@ -391,11 +391,11 @@ diagnostics() {
     #get all cam status
     get_cameras false
     for camera in "${CAMERA_ARR[@]}"; do
-        echo "**************************************"
+        echo "**************************************" | log
         systemctl status $camera -l --no-pager | log
     done
     #get haproxy status
-    echo "**************************************"
+    echo "**************************************" | log
     systemctl status haproxy -l --no-pager | log
     logfile='octoprint_deploy.log'
     main_menu
