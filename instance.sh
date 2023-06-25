@@ -42,10 +42,10 @@ new_instance() {
         echo
         echo
         echo
-        echo "Using a template instance allows you to copy, plugin settings,"
+        echo "Using a template instance allows you to copy config settings"
         echo "and gcode files from one instance to your new instance."
         if prompt_confirm "Use an existing instance as a template?"; then
-            PS3='Select template instance: '
+            PS3='${cyan}Select template instance: ${white}'
             get_instances true
             select opt in "${INSTANCE_ARR[@]}"
             do
@@ -56,6 +56,21 @@ new_instance() {
                 TEMPLATE=$opt
                 echo "Using $opt as template."
                 break
+            done
+            PS3='Select what components of the template to copy: '
+            options=("Config Only" "Config and Gcode")
+            select opt in "${options[@]}"
+            do
+                case $opt in
+                    "Config Only")
+                        COPY=1
+                        break
+                    ;;
+                    "Config and Gcode")
+                        COPY=2
+                        break
+                        ;;*) echo "invalid option $REPLY";;
+                esac
             done
             
         else
@@ -68,7 +83,7 @@ new_instance() {
         if [ -f /etc/octoprint_instances ]; then
             PORT=$(tail -1 /etc/octoprint_instances 2>/dev/null | sed -n -e 's/^.*\(port:\)\(.*\) udev:.*/\2/p')
         fi
-
+        
         if [ -z "$PORT" ]; then
             PORT=4999
         fi
@@ -132,8 +147,22 @@ new_instance() {
         echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
         
         if [ -n "$TEMPLATE" ]; then
+        #There may be other combinations of things to include/exclude
+            if [ $COPY -eq 1 ]; then
+                rsync -r \
+                --exclude 'timelapse' \
+                --exclude 'uploads' \
+                --exclude 'logs' \
+                 $BFOLD/* $OCTOCONFIG/.$INSTANCE/
+            fi
+            if [ $COPY -eq 2 ]; then
+                rsync -r \
+                --exclude 'timelapse' \
+                --exclude 'logs' \
+                $BFOLD/* $OCTOCONFIG/.$INSTANCE/
+            fi
             echo "${magenta}Copying template files....${white}"
-            cp -rp $BFOLD/* $OCTOCONFIG/.$INSTANCE
+            #cp -rp $BFOLD/* $OCTOCONFIG/.$INSTANCE
         fi
         
         #uniquify instances
