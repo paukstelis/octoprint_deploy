@@ -45,7 +45,7 @@ new_instance() {
         echo "Using a template instance allows you to copy config settings"
         echo "and gcode files from one instance to your new instance."
         if prompt_confirm "Use an existing instance as a template?"; then
-            PS3='${cyan}Select template instance: ${white}'
+            PS3="${cyan}Select template instance: ${white}"
             get_instances true
             select opt in "${INSTANCE_ARR[@]}"
             do
@@ -57,7 +57,7 @@ new_instance() {
                 echo "Using $opt as template."
                 break
             done
-            PS3='Select what components of the template to copy: '
+            PS3="${cyan}Select what components of the template to copy: ${white}"
             options=("Config Only" "Config and Gcode")
             select opt in "${options[@]}"
             do
@@ -149,14 +149,14 @@ new_instance() {
         if [ -n "$TEMPLATE" ]; then
         #There may be other combinations of things to include/exclude
             if [ $COPY -eq 1 ]; then
-                rsync -r \
+                sudo -u $user rsync -r \
                 --exclude 'timelapse' \
                 --exclude 'uploads' \
                 --exclude 'logs' \
                  $BFOLD/* $OCTOCONFIG/.$INSTANCE/
             fi
             if [ $COPY -eq 2 ]; then
-                rsync -r \
+                sudo -u $user rsync -r \
                 --exclude 'timelapse' \
                 --exclude 'logs' \
                 $BFOLD/* $OCTOCONFIG/.$INSTANCE/

@@ -116,6 +116,7 @@ deb_packages() {
     -e xxd\
     -e build-essential\
     -e libssl-dev\
+    -e rsync\
     | xargs apt-get install -y
     
     #pacakges to REMOVE go here
@@ -142,7 +143,8 @@ dnf_packages() {
     libcamera-devel \
     v4l-utils \
     xxd \
-    openssl-devel
+    openssl-devel \
+    rsync
     
 }
 
@@ -164,7 +166,8 @@ pacman_packages() {
     libbsd \
     openssh \
     haproxy \
-    v4l-utils
+    v4l-utils \
+    rsync
 }
 
 zypper_packages() {
@@ -181,7 +184,8 @@ zypper_packages() {
     libffi-devel \
     v4l-utils \
     xxd \
-    libopenssl-devel
+    libopenssl-devel \
+    rsync
     
 }
 
