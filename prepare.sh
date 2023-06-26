@@ -246,12 +246,14 @@ prepare () {
 
 old_install() {
     echo "octoexec:$octopresent" >> /etc/octoprint_deploy
+    user_groups
     haproxy_install
     streamer_install
     #add existing instance(s) to /etc/octoprint_instances
 }
 
 new_install() {
+    user_groups
     OCTOEXEC=/home/$user/OctoPrint/bin/octoprint
     echo "Adding systemctl and reboot to sudo"
     echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl

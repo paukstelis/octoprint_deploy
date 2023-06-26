@@ -20,7 +20,7 @@ detect_camera() {
         fi
         sleep 1
     done
-    readarray -t c2 < <(ls -1 /dev/v4l/by-id/*index0)
+    readarray -t c2 < <(ls -1 /dev/v4l/by-id/*index0 2>/dev/null)
     #https://stackoverflow.com/questions/2312762
     #TODO: what if there is more than one element?
     BYIDCAM=(`echo ${c2[@]} ${c1[@]} | tr ' ' '\n' | sort | uniq -u `)
