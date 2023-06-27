@@ -279,7 +279,7 @@ printer_udev() {
         fi
     else
         #No serial number
-        if [ -z "$UDEV" ]; then
+        if [ -z "$UDEV" ] && [ -n "$TEMPUSB" ];; then
             echo "Printer Serial Number not detected"
             if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
                 echo
