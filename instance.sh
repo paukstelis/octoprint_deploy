@@ -301,6 +301,10 @@ printer_udev() {
             echo "Check your USB cable (power only?) and try again."
             echo
             echo
+            if [ $firstrun == "true" ]; then
+                echo "You can attempt adding a udev rule from the Utilities menu."
+                break
+            fi
             main_menu
         fi
     fi
