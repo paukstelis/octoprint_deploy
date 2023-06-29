@@ -304,13 +304,13 @@ remove_everything() {
     get_settings
     if prompt_confirm "Remove everything?"; then
         get_instances false
-        unset 'instances[0]'
-        readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2>/dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+        get_cameras false
+        
         for instance in "${INSTANCE_ARR[@]}"; do
             remove_instance $instance
         done
         
-        for camera in "${cameras[@]}"; do
+        for camera in "${CAMERA_ARR[@]}"; do
             remove_camera $camera
         done
         

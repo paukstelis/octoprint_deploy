@@ -2,6 +2,7 @@
 source $SCRIPTDIR/prepare.sh
 white=$(echo -en "\e[39m")
 green=$(echo -en "\e[92m")
+red=$(echo -en "\e[91m")
 magenta=$(echo -en "\e[35m")
 cyan=$(echo -en "\e[96m")
 yellow=$(echo -en "\e[93m") 
@@ -100,10 +101,9 @@ remove_instance_menu() {
 remove_camera_menu() {
     get_settings
     PS3="${green}Select camera number to remove: ${white}"
-    readarray -t cameras < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
-    cameras+=("Quit")
+    get_cameras true
     
-    select camera in "${cameras[@]}"
+    select camera in "${CAMERA_ARR[@]}"
     do
         if [ "$camera" == Quit ]; then
             main_menu
@@ -225,9 +225,8 @@ create_menu() {
     echo
     echo
     PS3="${green}Select instance number to backup: ${white}"
-    readarray -t options < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-    options+=("Quit")
-    select opt in "${options[@]}"
+    get_instances true
+    select opt in "${INSTANCE_ARR[@]}"
     do
         if [ "$opt" == Quit ]; then
             main_menu

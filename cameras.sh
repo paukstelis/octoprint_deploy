@@ -76,7 +76,7 @@ write_camera() {
     
     mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
-
+    
     #config.yaml modifications - only if INUM not set
     if [ -z "$INUM" ]; then
         sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.snapshot "http://localhost:$CAMPORT?action=snapshot"
@@ -86,7 +86,7 @@ write_camera() {
         else
             sudo -u $user $OCTOEXEC --basedir $BASE config set plugins.classicwebcam.stream "/cam_$INSTANCE/?action=stream"
         fi
-
+        
         sudo -u $user $OCTOEXEC --basedir $BASE config append_value --json system.actions "{\"action\": \"Reset video streamer\", \"command\": \"sudo systemctl restart cam_$INSTANCE\", \"name\": \"Restart webcam\"}"
         
         if prompt_confirm "Instance must be restarted for settings to take effect. Restart now?"; then
@@ -220,24 +220,11 @@ add_camera() {
         echo
     fi
     
-    while true; do
-        echo "Camera Port (ENTER will increment last value found in /etc/octoprint_cameras):"
-        read CAMPORT
-        if [ -z "$CAMPORT" ]; then
-            CAMPORT=$(tail -1 /etc/octoprint_cameras | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
-            
-            if [ -z "$CAMPORT" ]; then
-                CAMPORT=8000
-            fi
-            CAMPORT=$((CAMPORT+1))
-        fi
-        
-        if [ $CAMPORT -gt 7000 ]; then
-            break
-        else
-            echo "Camera Port must be greater than 7000"
-        fi
-    done
+    CAMPORT=$(tail -1 /etc/octoprint_cameras 2>/dev/null | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
+    if [ -z "$CAMPORT" ]; then
+        CAMPORT=8000
+    fi
+    CAMPORT=$((CAMPORT+1))
     
     echo "Settings can be modified after initial setup in /etc/systemd/system/cam${INUM}_$INSTANCE.service"
     echo
