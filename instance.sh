@@ -144,16 +144,20 @@ new_instance() {
         printer_udev true
         
         #Append instance name to list for removal tool
-        echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
+        if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
+            echo "instance:$INSTANCE port:$PORT udev:false" >> /etc/octoprint_instances
+        else
+            echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
+        fi
         
         if [ -n "$TEMPLATE" ]; then
-        #There may be other combinations of things to include/exclude
+            #There may be other combinations of things to include/exclude
             if [ $COPY -eq 1 ]; then
                 sudo -u $user rsync -r \
                 --exclude 'timelapse' \
                 --exclude 'uploads' \
                 --exclude 'logs' \
-                 $BFOLD/* $OCTOCONFIG/.$INSTANCE/
+                $BFOLD/* $OCTOCONFIG/.$INSTANCE/
             fi
             if [ $COPY -eq 2 ]; then
                 sudo -u $user rsync -r \
@@ -279,7 +283,7 @@ printer_udev() {
         fi
     else
         #No serial number
-        if [ -z "$UDEV" ]; then
+        if [ -z "$UDEV" ] && [ -n "$TEMPUSB" ]; then
             echo "Printer Serial Number not detected"
             if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
                 echo
@@ -301,7 +305,11 @@ printer_udev() {
             echo "Check your USB cable (power only?) and try again."
             echo
             echo
-            main_menu
+            if [ $firstrun == "true" ]; then
+                echo "You can attempt adding a udev rule later from the Utilities menu."
+            else
+                main_menu
+            fi
         fi
     fi
 }
