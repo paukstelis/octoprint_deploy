@@ -302,10 +302,10 @@ printer_udev() {
             echo
             echo
             if [ $firstrun == "true" ]; then
-                echo "You can attempt adding a udev rule from the Utilities menu."
-                break
+                echo "You can attempt adding a udev rule later from the Utilities menu."
+            else
+                main_menu
             fi
-            main_menu
         fi
     fi
 }
