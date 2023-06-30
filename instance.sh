@@ -144,7 +144,11 @@ new_instance() {
         printer_udev true
         
         #Append instance name to list for removal tool
-        echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
+        if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
+            echo "instance:$INSTANCE port:$PORT udev:false" >> /etc/octoprint_instances
+        else
+            echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
+        fi
         
         if [ -n "$TEMPLATE" ]; then
             #There may be other combinations of things to include/exclude
