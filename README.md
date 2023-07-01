@@ -3,7 +3,7 @@ Updated July 1, 2023.
 
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
-# octoprint_deploy 1.0.2 - ALL NEW
+# octoprint_deploy 1.0.3 - ALL NEW
 * These files provide a bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (ustreamer). No need for lots of file editing or complicated Docker compose scripts! A background video on how it generally works from my ERRF2022 talk can be found here: https://www.youtube.com/watch?v=q0iCNl8-kJI&t=15378s
 * octoprint_deploy and octoprint_install are being merged! Maintaining two separate scripts was close to twice the amount of work. By merging the scripts many new features have been included, while also providing greater simplicity in setup. For now, the merged script will be called octoprint_deploy and at some point the octoprint_install repository will point here. 
 * The biggest change is that there is no longer the notion of a single 'template' OctoPrint instance. Now, _any_ previously configured instance can be used as a template when a new instance is created. The choice is up to the user. 
