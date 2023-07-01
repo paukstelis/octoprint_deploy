@@ -379,6 +379,8 @@ diagnostics() {
     diagnostic_output /etc/octoprint_instances | log
     diagnostic_output /etc/octoprint_cameras | log
     diagnostic_output /etc/udev/rules.d/99-octoprint.rules | log
+    ls -la /dev/octo* | log
+    ls -la /dev/cam* | log
     #get all instance status
     get_instances false
     for instance in "${INSTANCE_ARR[@]}"; do

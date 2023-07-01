@@ -220,7 +220,9 @@ add_camera() {
         echo
     fi
     
-    CAMPORT=$(tail -1 /etc/octoprint_cameras 2>/dev/null | sed -n -e 's/^.*\(port:\)\(.*\)/\2/p')
+
+    CAMPORT=$(tail -1 /etc/octoprint_cameras 2>/dev/null | sed -n -e 's/^.*\(port:\) \(.*\)/\2/p')
+
     if [ -z "$CAMPORT" ]; then
         CAMPORT=8000
     fi
