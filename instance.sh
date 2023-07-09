@@ -79,7 +79,19 @@ new_instance() {
     fi
     
     if prompt_confirm "Ready to begin instance creation?"; then
-        #CHANGE
+        OCTOUSER=$user
+        OCTOPATH=$OCTOEXEC
+        OCTOCONFIG="/home/$user"
+        
+        echo "Your new OctoPrint instance will be installed at ${cyan}/home/$user/.$INSTANCE${white}"
+        echo
+        echo
+    else
+        main_menu
+    fi
+    
+    if prompt_confirm "Use default port?"; then
+        
         if [ -f /etc/octoprint_instances ]; then
             PORT=$(tail -1 /etc/octoprint_instances 2>/dev/null | sed -n -e 's/^.*\(port:\)\(.*\) udev:.*/\2/p')
         fi
@@ -90,16 +102,17 @@ new_instance() {
         
         PORT=$((PORT+1))
         echo Selected port is: $PORT
-        #CHANGE
-        OCTOUSER=$user
-        OCTOPATH=$OCTOEXEC
-        OCTOCONFIG="/home/$user"
-        
-        echo "Your new OctoPrint instance will be installed at ${cyan}/home/$user/.$INSTANCE${white}"
-        echo
-        echo
     else
-        main_menu
+        #designate port
+        echo "Port on which this instance will run:"
+        read PORT
+        if [ -z "$PORT" ]; then
+            PORT=$(tail -1 /etc/octoprint_instances | sed -n -e 's/^.*\(port:\)\(.*\ udev:.*/\2/p')
+            if [ -z "$PORT" ]; then
+                PORT=5000
+            fi
+            echo "Selected port is: ${cyan}$PORT${white}" 
+        fi
     fi
     
     if [ -n "$TEMPLATE" ]; then

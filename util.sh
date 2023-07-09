@@ -101,6 +101,12 @@ get_cameras() {
     fi
 }
 
+get_ports() {
+    readarray -t PORT_ARR < <(cat /etc/octoprint_instances | sed -n -e 's/^port:\([[:graph:]]*\) .*/\1/p')
+    readarray -t camera_ports < <(cat /etc/octoprint_cameras | sed -n -e 's/^port:\([[:graph:]]*\) .*/\1/p')
+    PORT_ARR+=(${camera_ports[@]})
+}
+
 sync_users() {
     echo
     echo
@@ -183,7 +189,7 @@ share_uploads() {
     main_menu
 }
 
-add_udev() {
+add_udev() {(${cameras[@]})
     #get instances that don't have a udev rule
     PS3="${green}Select instance to add udev rule: ${white}"
     readarray -t noudev < <(fgrep "udev:false" /etc/octoprint_instances 2> /dev/null | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
