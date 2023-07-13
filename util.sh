@@ -315,18 +315,19 @@ remove_everything() {
         done
         
         echo "Removing system stuff"
-        rm /etc/systemd/system/octoprint.service
-        rm /etc/octoprint_streamer
-        rm /etc/octoprint_deploy
-        rm /etc/octoprint_instances
-        rm /etc/octoprint_cameras
-        rm /etc/udev/rules.d/99-octoprint.rules
-        rm /etc/sudoers.d/octoprint_reboot
-        rm /etc/sudoers.d/octoprint_systemctl
-        rm -rf /home/$user/.octoprint
-        rm -rf /home/$user/OctoPrint
-        rm -rf /home/$user/ustreamer
-        rm -rf /home/$user/mjpg-streamer
+        rm /etc/systemd/system/octoprint.service 2>/dev/null
+        rm /etc/octoprint_streamer 2>/dev/null
+        rm /etc/octoprint_deploy 2>/dev/null
+        rm /etc/octoprint_instances 2>/dev/null
+        rm /etc/octoprint_cameras 2>/dev/null
+        rm /etc/udev/rules.d/99-octoprint.rules 2>/dev/null
+        rm /etc/sudoers.d/octoprint_reboot 2>/dev/null
+        rm /etc/sudoers.d/octoprint_systemctl 2>/dev/null
+        rm -rf /home/$user/.octoprint 2>/dev/null
+        rm -rf /home/$user/OctoPrint 2>/dev/null
+        rm -rf /home/$user/ustreamer 2>/dev/null
+        rm -rf /home/$user/mjpg-streamer 2>/dev/null
+        rm -rf /home/$user/camera-streamer 2>/dev/null
         systemctl restart haproxy.service
         systemctl daemon-reload
         

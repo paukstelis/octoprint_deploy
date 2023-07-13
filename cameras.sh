@@ -29,9 +29,9 @@ detect_camera() {
 }
 
 remove_camera() {
-    systemctl stop $1.service
+    systemctl stop $1.service 
     systemctl disable $1.service
-    rm /etc/systemd/system/$1.service
+    rm /etc/systemd/system/$1.service 2>/dev/null
     sed -i "/$1/d" /etc/udev/rules.d/99-octoprint.rules
     sed -i "/$1/d" /etc/octoprint_cameras
     if [ "$HAPROXY" == true ]; then
