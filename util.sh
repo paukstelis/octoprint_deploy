@@ -388,7 +388,8 @@ diagnostics() {
         echo "**************************************" | log
         systemctl status $instance -l --no-pager | log
         #get needed config info
-        sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get plugins.classicwebcam | log
+        sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get plugins.classicwebcam.stream | log
+        sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get plugins.classicwebcam.snapshot | log
         sudo -u $user $OCTOEXEC --basedir=/home/$user/.$INSTANCE config get webcam | log
     done
     #get all cam status
