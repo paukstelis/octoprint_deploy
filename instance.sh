@@ -320,7 +320,7 @@ remove_instance() {
     if [ -f /etc/systemd/system/$opt.service ]; then
         systemctl stop $opt.service
         systemctl disable $opt.service
-        rm /etc/systemd/system/$opt.service
+        rm /etc/systemd/system/$opt.service 2>/dev/null
     fi
     
     #Get all cameras associated with this instance.

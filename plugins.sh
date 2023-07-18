@@ -2,7 +2,7 @@
 
 install_plugin() {
     echo "Installing $plugin...."
-    $OCTOPIP install "$plugin_path"
+    sudo -u $user $OCTOPIP install "$plugin_path"
 }
 
 plugin_menu() {
