@@ -51,8 +51,8 @@ fi
 if [ "$1" == noserial ]; then
     NOSERIAL=1
 fi
-
-if [ "$1" == deb_packages ]; then
-    deb_packages
+#let's make it possibly to inject any function directly
+if [ "$1" == f ]; then
+    $2
 fi
 main_menu

@@ -1,13 +1,13 @@
 
 
-Updated July 18, 2023.  
+Updated July 20, 2023.  
 
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
 # octoprint_deploy 1.0.4 - ALL NEW
 
 * These files provide a bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (ustreamer). No need for lots of file editing or complicated Docker compose scripts! A background video on how it generally works from my ERRF2022 talk can be found here: https://www.youtube.com/watch?v=q0iCNl8-kJI&t=15378s
-* octoprint_deploy and octoprint_install are being merged! Maintaining two separate scripts was close to twice the amount of work. By merging the scripts many new features have been included, while also providing greater simplicity in setup. For now, the merged script will be called octoprint_deploy and at some point the octoprint_install repository will point here. 
+* octoprint_deploy and octoprint_install are being merged! Maintaining two separate scripts was close to twice the amount of work. By merging the scripts many new features have been included, while also providing greater simplicity in setup. 
 * The biggest change is that there is no longer the notion of a single 'template' OctoPrint instance. Now, _any_ previously configured instance can be used as a template when a new instance is created. The choice is up to the user. 
 * Unfortunately, octoprint_deploy > 1.0.0 is not directly compatible with older versions, as so much has changed. If you want to use the new version of octoprint_deploy with an older setup, create backups (either with OctoPrint UI or with octoprint_deploy), then use the `remove` commandline argument before updating octoprint_deploy. Re-make your instances using the same instance names, then recover your backups.
 # How to use
@@ -46,9 +46,10 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * Add as many instances as you have printers, following the instructions.
   * To add more printers at a later date, or to add cameras to an instance later, simply run the script again (`sudo octoprint_deploy/octoprint_deploy.sh`) and choose the appropriate option.
 * Utility menu - use the utility menu in the script to:
+  * Add or remove instances or cameras
   * Check the status of all instances
   * Do printer USB port testing
-  * Sync OctoPrint users from one instances to all other instances
+  * Sync OctoPrint users from one instance to all other instances
   * Share the uploads directory between all instances (all instances have access to the same gcode files)
   * Modify which camera streaming software is used (WIP)
   * Modify a setting for all instances using the OctoPrint CLI interface (WIP)
@@ -58,7 +59,9 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * Want to get rid of everything? `sudo octoprint_deploy/octoprint_deploy.sh remove`
   * Backup and restore files for an instance from the menu, or backup all instances with `sudo octoprint_deploy/octoprint_deploy backup`
   * Restart all instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
+  * You can inject any function at start using the command line with the first argument `f` and the second argument the function name. 
 # Recent Changes
+  * Command-line function injection. Will be useful in some cases.
   * Allow first instance creation without udev rule
   * Fixed dialout permissions.
   * Lots of changes, now octoprint_deploy 1.0.0
@@ -68,8 +71,3 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
 # TODO
   * Integration with OctoPi new camera stack. This may or may not happen.
   * Detection of existing instances/binaries that can be used instead of a full install (preserves plugins)
-
-
-
-
-
