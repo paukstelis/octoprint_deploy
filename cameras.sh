@@ -187,7 +187,7 @@ add_camera() {
             unset CAM
         fi
         #Failed state. Nothing detected
-        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -z "$BYIDCAM"]; then
+        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -z "$BYIDCAM" ]; then
             echo
             echo "${red}No camera was detected during the detection period.${white}"
             echo "Try again or try a different camera."
@@ -195,7 +195,7 @@ add_camera() {
             return
         fi
         #only BYIDCAM
-        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -n "$BYIDCAM"]; then
+        if [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ] && [ -n "$BYIDCAM" ]; then
             echo "Camera was only detected as ${cyan}/dev/v4l/by-id${white} entry."
             echo "This will be used as the camera device identifier"
         fi
