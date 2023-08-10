@@ -37,6 +37,7 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * Choose `Prepare System` from the menu. Select your distribution type. All deb-based system use the same selection. This will install necessary packages, install OctoPrint, and prompt you to create the first instance.
       * You will be asked if you want to use haproxy. This will make your instances available on port 80 e.g. http://hostname.local/instancename/
       * You will be asked which streamer you would like to install (ustreamer, mjpg-streamer or camera-streamer). Please note, not all distributions will be compatible with camera-streamer. __camera-streamer support will be added at a later date__
+      * You will be asked to plug in a printer via USB for udev rule creation. __If you cannot plug in the printer and are only creating a single instance you can simply allow the detection to time-out__. The first instance will still be created. You can generate a udev rule later through the utility menu. Additional instances will require the printers to be plugged in (as will USB cameras).
       * You will be prompted if you want to setup the admin user and do the first run wizard via the commandline.
       * You will be prompted if you want to install recommended plugins. 
   * Continue with octoprint_deploy script, choose `Add Instance` and follow the instructions.
