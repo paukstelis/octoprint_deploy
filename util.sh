@@ -25,6 +25,10 @@ has-space () {
     [[ "$1" != "${1%[[:space:]]*}" ]] && return 0 || return 1
 }
 
+has-special () {
+     [[ "$1" != "${1%[[:alphanum:]]*}" ]] && return 0 || return 1
+}
+
 get_settings() {
     #Get octoprint_deploy settings, all of which are written on system prepare
     if [ -f /etc/octoprint_deploy ]; then
