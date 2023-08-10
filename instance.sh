@@ -18,17 +18,17 @@ new_instance() {
     SCRIPTDIR=$(dirname $(readlink -f $0))
     
     while true; do
-        echo "${green}Enter the name for new printer/instance (no spaces):${white}"
+        echo "${green}Enter the name for new printer/instance (no spaces or special characters):${white}"
         read INSTANCE
         if [ -z "$INSTANCE" ]; then
             echo "Please provide an instance name"
             continue
         fi
         
-        if ! has-space "$INSTANCE"; then
+        if ! has-space "$INSTANCE" && ! has-special "$INSTANCE"; then
             break
         else
-            echo "Instance names must not have spaces"
+            echo "Instance names must not have spaces or special characters."
         fi
     done
     
