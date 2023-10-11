@@ -205,7 +205,9 @@ add_camera() {
             echo -e "Camera will be setup with physical USB address of ${cyan}$TEMPUSBCAM.${white}"
             echo "The camera will have to stay plugged into this location."
             USBCAM=$TEMPUSBCAM
-        else
+        fi
+        #serial number
+        if [ -n "$CAM" ]; then
             echo -e "Camera detected with serial number: ${cyan}$CAM ${white}"
             check_sn "$CAM"
         fi
