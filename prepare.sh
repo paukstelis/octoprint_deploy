@@ -47,29 +47,8 @@ detect_installs() {
     octopresent=$(find /home/$user/ -type f -executable -print | grep "bin/octoprint")
     if [ -n "$octopresent" ]; then
         echo "OctoPrint binary found at $octopresent"
-        PS3="${green}Select option number: ${white}"
-        options=("Use existing binary" "Install most recent OctoPrint" "More information")
-        select opt in "${options[@]}"
-        do
-            case $opt in
-                "Use existing binary")
-                    OCTOEXEC=$octopresent
-                    break
-                ;;
-                "Install most recent OctoPrint")
-                    OCTOEXEC=thing
-                    break
-                ;;
-                "More information")
-                    exit 1
-                ;;
-                *) echo "invalid option $REPLY";;
-            esac
-        done
-    else
-        echo "No OctoPrint binary found in the current user's home directory. Doing complete install."
-        FULLINSTALL=1
     fi
+    FULLINSTALL=1
     echo "Looking for existing OctoPrint systemd files....."
     #get any service files that have bin/octoprint
     readarray -t syspresent < <(fgrep -l bin/octoprint /etc/systemd/system/*.service)
