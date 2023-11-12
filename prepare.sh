@@ -195,7 +195,7 @@ user_groups() {
     usermod -a -G dialout,video $user
     
     if [ $INSTALL -eq 4 ]; then
-        usermod -a -G uucp $user
+        usermod -a -G uucp,video $user
     fi
 }
 
