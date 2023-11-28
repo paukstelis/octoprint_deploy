@@ -45,7 +45,7 @@ write_camera() {
     
     get_settings
     if [ -z "$STREAMER" ]; then
-        STREAMER="mjpg-streamer"
+        STREAMER="ustreamer"
     fi
     
     if [ -n "$BYIDCAM" ] && [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
@@ -141,6 +141,15 @@ add_camera() {
     INUM=''
     CAMHAPROX=''
     get_settings
+    
+    if [ "$STREAMER" == camera-streamer ]; then
+        echo "You are using OctoPi with camera-streamer."
+        echo "This is not compatible with octoprint_deploy."
+        echo "Use the camera-streamer scripts to install your cameras,"
+        echo "or change the streamer type in the Utilties menu."
+        main_menu
+    fi
+
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
