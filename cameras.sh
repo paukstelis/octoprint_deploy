@@ -74,7 +74,8 @@ write_camera() {
         -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
     fi
     
-    mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
+    cp $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
+    mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service $SCRIPTDIR/cam${INUM}_$INSTANCE.attempt
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
     
     #config.yaml modifications - only if INUM not set
