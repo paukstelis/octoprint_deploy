@@ -149,7 +149,7 @@ dnf_packages() {
 }
 
 pacman_packages() {
-    pacman -S --noconfirm \
+    pacman -S --noconfirm --needed \
     make \
     cmake \
     python \
