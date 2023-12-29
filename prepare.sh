@@ -401,9 +401,7 @@ streamer_install() {
     
     #If we run this function directly, clean up streamer setting before installing
     get_settings
-    if [ -n "$STREAMER" ]; then
-        sed -i "/$STREAMER/d" /etc/octoprint_deploy
-    fi
+    sed -i "/streamer/d" /etc/octoprint_deploy
     
     if [ $VID -eq 1 ]; then
         
