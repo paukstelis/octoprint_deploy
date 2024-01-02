@@ -68,14 +68,15 @@ write_camera() {
     #ustreamer
     if [ "$STREAMER" == ustreamer ]; then
         cat $SCRIPTDIR/octocam_ustream.service | \
-        sed -e "s/OCTOUSER/$OCTOUSER/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
+        sed -e "s/OCTOUSER/$OCTOUSER/" \
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
     fi
     
-    sudo -u $user cat > $SCRIPTDIR/cam${INUM}_$INSTANCE.env <<EOF
-        DEVICE=$CAMDEVICE
-        RES=$RESOLUTION
-        FRAMERATE=$FRAMERATE
-        PORT=$CAMPORT
+sudo -u $user cat > $SCRIPTDIR/cam${INUM}_$INSTANCE.env <<EOF
+DEVICE=$CAMDEVICE
+RES=$RESOLUTION
+FRAMERATE=$FRAMERATE
+PORT=$CAMPORT
 EOF
 
     cp $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
