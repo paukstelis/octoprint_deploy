@@ -4,8 +4,9 @@ After=network.online.target
 Wants=network.online.target
 
 [Service]
+EnvironmentFile=/home/OCTOUSER/octoprint_deploy/OCTOCAM.env
 User=OCTOUSER
-ExecStart=/home/OCTOUSER/ustreamer/ustreamer -d /dev/OCTOCAM -s 0.0.0.0 -m MJPEG -r RESOLUTION -f FRAMERATE -p CAMPORT --device-timeout 8 --device-error-delay 8
+ExecStart=/home/OCTOUSER/ustreamer/ustreamer -d ${DEVICE} -s 0.0.0.0 -m MJPEG -r ${RES} -f ${FRAMERATE} -p ${PORT} --device-timeout 8 --device-error-delay 8
 
 [Install]
 WantedBy=multi-user.target
