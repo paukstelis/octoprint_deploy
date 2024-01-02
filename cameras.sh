@@ -32,7 +32,7 @@ remove_camera() {
     systemctl stop $1.service 
     systemctl disable $1.service
     rm /etc/systemd/system/$1.service 2>/dev/null
-    rm $SCRIPTDIR/$1.env
+    rm $SCRIPTDIR/$1.env 2>/dev/null
     sed -i "/$1/d" /etc/udev/rules.d/99-octoprint.rules
     sed -i "/$1/d" /etc/octoprint_cameras
     if [ "$HAPROXY" == true ]; then
@@ -71,12 +71,12 @@ write_camera() {
         sed -e "s/OCTOUSER/$OCTOUSER/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
     fi
     
-    sudo -u $user cat > $SCRIPTDIR/cam${INUM}_$INSTANCE.env <<EOL
-    DEVICE=$CAMDEVICE
-    RES=$RESOLUTION
-    FRAMERATE=$FRAMERATE
-    PORT=$CAMPORT
-    EOL
+    sudo -u $user cat > $SCRIPTDIR/cam${INUM}_$INSTANCE.env <<EOF
+        DEVICE=$CAMDEVICE
+        RES=$RESOLUTION
+        FRAMERATE=$FRAMERATE
+        PORT=$CAMPORT
+EOF
 
     cp $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
     mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service $SCRIPTDIR/cam${INUM}_$INSTANCE.attempt
