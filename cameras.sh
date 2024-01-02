@@ -54,7 +54,7 @@ write_camera() {
     else
         CAMDEVICE=cam${INUM}_$INSTANCE
     fi
-    
+    OUTFILE=$SCRIPTDIR/cam${INUM}_$INSTANCE
     #mjpg-streamer
     if [ "$STREAMER" == mjpg-streamer ]; then
         cat $SCRIPTDIR/octocam_mjpg.service | \
@@ -69,18 +69,16 @@ write_camera() {
     if [ "$STREAMER" == ustreamer ]; then
         cat $SCRIPTDIR/octocam_ustream.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $OUTFILE.service
     fi
     
-sudo -u $user cat > $SCRIPTDIR/cam${INUM}_$INSTANCE.env <<EOF
-DEVICE=$CAMDEVICE
-RES=$RESOLUTION
-FRAMERATE=$FRAMERATE
-PORT=$CAMPORT
-EOF
+    sudo -u $user echo "DEVICE=$CAMDEVICE" >> $OUTFILE.env
+    sudo -u $user echo "RES=$RESOLUTION" >> $OUTFILE.env
+    sudo -u $user echo "FRAMERATE=$FRAMERATE" >> $OUTFILE.env
+    sudo -u $user echo "PORT=$CAMPORT" >> $OUTFILE.env
 
-    cp $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
-    mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service $SCRIPTDIR/cam${INUM}_$INSTANCE.attempt
+    cp $OUTFILE.service /etc/systemd/system/
+    mv $OUTFILE.service $OUTFILE.attempt
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
     
     #config.yaml modifications - only if INUM not set
