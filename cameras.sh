@@ -78,7 +78,7 @@ write_camera() {
     sudo -u $user echo "PORT=$CAMPORT" >> $OUTFILE.env
 
     cp $OUTFILE.service /etc/systemd/system/
-    mv $OUTFILE.service $OUTFILE.attempt
+    #mv $OUTFILE.service $OUTFILE.attempt
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
     
     #config.yaml modifications - only if INUM not set
