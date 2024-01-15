@@ -317,7 +317,6 @@ printer_udev() {
                 echo
                 echo
                 main_menu
-            fi
             else  
                 echo "You can add a udev rule later from the Utilities menu."
             fi
