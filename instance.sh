@@ -104,7 +104,14 @@ new_instance() {
         echo
         echo
     else
-        main_menu
+        if [ "$firstrun" == "true" ]; then
+            echo "${red}You will need to restart your installation.${white}"
+            echo "${red}Answer Y and re-run octoprint_deploy${white}"
+            remove_everything
+            exit
+        else
+            main_menu
+        fi
     fi
     
     if [ -n "$TEMPLATE" ]; then
