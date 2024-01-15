@@ -1,6 +1,11 @@
 #!/bin/bash
 
 new_instance() {
+    #reset detection info
+    UDEV=''
+    TEMPUSB=''
+    USB=''
+
     #It is possible to not create an instance after preparing,so check if this is the first
     if [ -f /etc/octoprint_instances ]; then
         firstrun=false
@@ -99,7 +104,14 @@ new_instance() {
         echo
         echo
     else
-        main_menu
+        if [ "$firstrun" == "true" ]; then
+            echo "${red}You will need to restart your installation.${white}"
+            echo "${red}Answer Y and re-run octoprint_deploy${white}"
+            remove_everything
+            exit
+        else
+            main_menu
+        fi
     fi
     
     if [ -n "$TEMPLATE" ]; then
@@ -115,13 +127,18 @@ new_instance() {
     if prompt_confirm "Begin printer auto-detection for udev entry?"; then
         detect_printer
     else
-        echo "${magenta}Instance has not been created. Restart and do detection when you are ready.${white}"
-        main_menu
+        if [ "$firstrun" == "true" ]; then
+            echo "${magenta}First instance setup in progress, continuing${white}"
+        
+        else
+            echo "${magenta}Instance has not been created. Restart and do detection when you are ready.${white}"
+            main_menu
+        fi
     fi
     
     #Detection phase
     printer_udev false
-    
+
     #USB cameras
     if [ "$firstrun" != "true" ]; then
         if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"; then
@@ -141,10 +158,12 @@ new_instance() {
         -e "s/NEWPORT/$PORT/" > /etc/systemd/system/$INSTANCE.service
         
         #write phase
-        printer_udev true
+        if [ -n "$UDEV" ] || [ -n "$USB" ]; then
+            printer_udev true
+        fi
         
         #Append instance name to list for removal tool
-        if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
+        if [ -z "$UDEV" ] && [ -z "$USB" ]; then
             echo "instance:$INSTANCE port:$PORT udev:false" >> /etc/octoprint_instances
         else
             echo "instance:$INSTANCE port:$PORT udev:true" >> /etc/octoprint_instances
@@ -284,15 +303,13 @@ printer_udev() {
     else
         #No serial number
         if [ -z "$UDEV" ] && [ -n "$TEMPUSB" ]; then
-            echo "Printer Serial Number not detected"
-            if prompt_confirm "Do you want to use the physical USB port to assign the udev entry? If you use this any USB hubs and printers detected this way must stay plugged into the same USB positions on your machine as they are right now"; then
-                echo
-                USB=$TEMPUSB
-                echo "Your printer will be setup at the following usb address: ${cyan}$USB${white}"
-                echo
-            else
-                main_menu
-            fi
+            echo "Printer Serial Number not detected."
+            echo "The physical USB port will be used."
+            echo "USB hubs and printers detected this way must stay plugged into the same USB positions on your machine."
+            echo
+            USB=$TEMPUSB
+            echo "Your printer will be setup at the following usb address: ${cyan}$USB${white}"
+            echo
         else
             echo -e "Serial number detected as: ${cyan}$UDEV${white}"
             check_sn "$UDEV"
@@ -300,15 +317,15 @@ printer_udev() {
         fi
         #Failed state. Nothing detected
         if [ -z "$UDEV" ] && [ -z "$TEMPUSB" ]; then
-            echo
-            echo "${red}No printer was detected during the detection period.${white}"
-            echo "Check your USB cable (power only?) and try again."
-            echo
-            echo
-            if [ "$firstrun" == "true" ]; then
-                echo "You can attempt adding a udev rule later from the Utilities menu."
-            else
+            if [ "$firstrun" == "false" ]; then
+                echo
+                echo "${red}No printer was detected during the detection period.${white}"
+                echo "Check your USB cable (power only?) and try again."
+                echo
+                echo
                 main_menu
+            else  
+                echo "You can add a udev rule later from the Utilities menu."
             fi
         fi
     fi

@@ -47,6 +47,9 @@ detect_installs() {
     octopresent=$(find /home/$user/ -type f -executable -print | grep "bin/octoprint")
     if [ -n "$octopresent" ]; then
         echo "OctoPrint binary found at $octopresent"
+        echo "Did you try and setup OctoPrint in another way?"
+        echo "${red}This may cause issues!${white}"
+        : '
         PS3="${green}Select option number: ${white}"
         options=("Use existing binary" "Install most recent OctoPrint" "More information")
         select opt in "${options[@]}"
@@ -66,10 +69,12 @@ detect_installs() {
                 *) echo "invalid option $REPLY";;
             esac
         done
+        '
     else
         echo "No OctoPrint binary found in the current user's home directory. Doing complete install."
         FULLINSTALL=1
     fi
+    FULLINSTALL=1
     echo "Looking for existing OctoPrint systemd files....."
     #get any service files that have bin/octoprint
     readarray -t syspresent < <(fgrep -l bin/octoprint /etc/systemd/system/*.service)
@@ -404,7 +409,7 @@ streamer_install() {
     sed -i "/streamer/d" /etc/octoprint_deploy
     
     if [ $VID -eq 1 ]; then
-        
+        rm -rf /home/$user/mjpg_streamer 2>/dev/null
         #install mjpg-streamer, not doing any error checking or anything
         echo 'Installing mjpeg-streamer'
         sudo -u $user git -C /home/$user/ clone https://github.com/jacksonliam/mjpg-streamer.git mjpeg
@@ -426,7 +431,7 @@ streamer_install() {
     fi
     
     if [ $VID -eq 2 ]; then
-        
+        rm -rf /home/$user/ustreamer 2>/dev/null
         #install ustreamer
         sudo -u $user git -C /home/$user clone --depth=1 https://github.com/pikvm/ustreamer
         sudo -u $user make -C /home/$user/ustreamer > /dev/null
@@ -443,7 +448,7 @@ streamer_install() {
     fi
     
     if [ $VID -eq 4 ]; then
-        
+        rm -rf /home/$user/camera-streamer 2>/dev/null
         #install camera-streamer
         sudo -u $user git -C /home/$user clone https://github.com/ayufan-research/camera-streamer.git --recursive
         sudo -u $user make -C /home/$user/camera-streamer > /dev/null
