@@ -122,7 +122,7 @@ new_instance() {
     else
         if [ "$firstrun" == "true" ]; then
             echo "${magenta}First instance setup in progress, continuing${white}"
-        fi
+        
         else
             echo "${magenta}Instance has not been created. Restart and do detection when you are ready.${white}"
             main_menu
