@@ -172,10 +172,10 @@ share_uploads() {
         fi
         echo
         #Remove Quit and Custom from array, is there a cleaner way?
-        unset 'options[-1]'
-        unset 'options[-1]'
-        for instance in "${options[@]}"; do
-            $OCTOEXEC --basedir /home/$user/.$instance config set folder.uploads "$opt"
+        unset 'INSTANCE_ARR[-1]'
+        unset 'INSTANCE_ARR[-1]'
+        for instance in "${INSTANCE_ARR[@]}"; do
+            sudo -u $user $OCTOEXEC --basedir /home/$user/.$instance config set folder.uploads "$opt"
         done
         break
     done

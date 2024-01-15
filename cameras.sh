@@ -54,7 +54,7 @@ write_camera() {
     else
         CAMDEVICE=cam${INUM}_$INSTANCE
     fi
-    OUTFILE=$SCRIPTDIR/cam${INUM}_$INSTANCE
+    OUTFILE=cam${INUM}_$INSTANCE
     #mjpg-streamer
     if [ "$STREAMER" == mjpg-streamer ]; then
         cat $SCRIPTDIR/octocam_mjpg.service | \
@@ -69,16 +69,15 @@ write_camera() {
     if [ "$STREAMER" == ustreamer ]; then
         cat $SCRIPTDIR/octocam_ustream.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $OUTFILE.service
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
     fi
     
-    sudo -u $user echo "DEVICE=$CAMDEVICE" >> $OUTFILE.env
-    sudo -u $user echo "RES=$RESOLUTION" >> $OUTFILE.env
-    sudo -u $user echo "FRAMERATE=$FRAMERATE" >> $OUTFILE.env
-    sudo -u $user echo "PORT=$CAMPORT" >> $OUTFILE.env
+    sudo -u $user echo "DEVICE=$CAMDEVICE" >> /etc/$OUTFILE.env
+    sudo -u $user echo "RES=$RESOLUTION" >> /etc/$OUTFILE.env
+    sudo -u $user echo "FRAMERATE=$FRAMERATE" >> /etc/$OUTFILE.env
+    sudo -u $user echo "PORT=$CAMPORT" >> /etc/$OUTFILE.env
 
-    cp $OUTFILE.service /etc/systemd/system/
-    #mv $OUTFILE.service $OUTFILE.attempt
+    cp $SCRIPTDIR/$OUTFILE.service /etc/systemd/system/
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
     
     #config.yaml modifications - only if INUM not set
@@ -272,7 +271,7 @@ add_camera() {
         write_camera
         #Pi Cam setup, replace cam_INSTANCE with /dev/video0
         if [ -n "$PI" ]; then
-            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"camera0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"video0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
         
         systemctl start cam${INUM}_$INSTANCE.service
