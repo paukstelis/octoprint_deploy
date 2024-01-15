@@ -62,7 +62,7 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * Restart all instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * You can inject any function at start using the command line with the first argument `f` and the second argument the function name. 
 # Recent Changes
-  * Camera settings written to separate env file in octoprint_deploy directory. 
+  * Camera settings written to separate env file. This can be found and edited at `/etc/cam_instancename.env`. 
   * Command-line function injection. Will be useful in some cases.
   * Allow first instance creation without udev rule
   * Fixed dialout permissions.
