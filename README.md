@@ -1,6 +1,6 @@
 
 
-Updated July 20, 2023.  
+Updated January 15, 2024.  
 
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
@@ -63,6 +63,7 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * You can inject any function at start using the command line with the first argument `f` and the second argument the function name. 
 # Recent Changes
   * Camera settings written to separate env file. This can be found and edited at `/etc/cam_instancename.env`. 
+  * Fixes for shared uploads function.
   * Command-line function injection. Will be useful in some cases.
   * Allow first instance creation without udev rule
   * Fixed dialout permissions.

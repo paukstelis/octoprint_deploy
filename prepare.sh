@@ -154,7 +154,7 @@ dnf_packages() {
 }
 
 pacman_packages() {
-    pacman -S --noconfirm \
+    pacman -S --noconfirm --needed \
     make \
     cmake \
     python \
@@ -406,9 +406,7 @@ streamer_install() {
     
     #If we run this function directly, clean up streamer setting before installing
     get_settings
-    if [ -n "$STREAMER" ]; then
-        sed -i "/$STREAMER/d" /etc/octoprint_deploy
-    fi
+    sed -i "/streamer/d" /etc/octoprint_deploy
     
     if [ $VID -eq 1 ]; then
         rm -rf /home/$user/mjpg_streamer 2>/dev/null
