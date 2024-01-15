@@ -175,7 +175,7 @@ share_uploads() {
         unset 'INSTANCE_ARR[-1]'
         unset 'INSTANCE_ARR[-1]'
         for instance in "${INSTANCE_ARR[@]}"; do
-            $OCTOEXEC --basedir /home/$user/.$instance config set folder.uploads "$opt"
+            sudo -u $user $OCTOEXEC --basedir /home/$user/.$instance config set folder.uploads "$opt"
         done
         break
     done
