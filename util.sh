@@ -62,7 +62,7 @@ back_up() {
     echo "Creating backup of $INSTANCE...."
     sudo -p $user $OCTOEXEC --basedir /home/$user/.$INSTANCE plugins backup:backup --exclude timelapse
     sudo -p $user mkdir /home/$user/instance_backup 2>/dev/null
-    mv /home/$user/.$INSTANCE/data/backup/*.zip /home/$user/isntance_backup
+    mv /home/$user/.$INSTANCE/data/backup/*.zip /home/$user/instance_backup/
     echo "Zipped instance backup created in /home/$user/instance_backup"
 }
 
