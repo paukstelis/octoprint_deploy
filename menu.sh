@@ -262,7 +262,7 @@ restore_menu() {
         fi
         
         echo "Selected $opt to restore"
-        restore $opt /home/$user/instance_backup/$zipfile
+        restore $opt $zipfile
         main_menu
     done
     done
