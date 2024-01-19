@@ -8,7 +8,8 @@ cyan=$(echo -en "\e[96m")
 yellow=$(echo -en "\e[93m") 
 
 main_menu() {
-    VERSION=1.0.6
+
+    VERSION=1.0.7
     #reset
     UDEV=''
     TEMPUSB=''
@@ -240,18 +241,30 @@ create_menu() {
 
 restore_menu() {
     echo
-    echo
-    PS3="${green}Select backup to restore: ${white}"
-    readarray -t options < <(ls /home/$user/*.tar.gz)
-    options+=("Quit")
-    select opt in "${options[@]}"
+    echo "${magenta}You must have already created an instance in order to restore it.${white}"
+    PS3="${green}Select instance to restore: ${white}"
+    get_instances true
+    select opt in "${INSTANCE_ARR[@]}"
     do
-        if [ "$opt" == Quit ] || [ "$opt" == generic ]; then
+        if [ "$opt" == Quit ]; then
+            main_menu
+        fi
+        
+        echo "Selected instance to restore: $opt"
+    
+    clear
+    PS3="${green}Select backup to restore: ${white}"
+    readarray -t options < <(ls /home/$user/instance_backup/$opt-backup-*.zip)
+    options+=("Quit")
+    select zipfile in "${options[@]}"
+    do
+        if [ "$zipfile" == Quit ]; then
             main_menu
         fi
         
         echo "Selected $opt to restore"
-        tar --same-owner -pxvf $opt
+        restore $opt $zipfile
         main_menu
+    done
     done
 }

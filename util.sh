@@ -60,9 +60,10 @@ octo_deploy_update() {
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
-    d=$(date '+%Y-%m-%d')
-    sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
-    echo "Tarred and gzipped backup created in /home/$user"
+    sudo -p $user $OCTOEXEC --basedir /home/$user/.$INSTANCE plugins backup:backup --exclude timelapse
+    sudo -p $user mkdir /home/$user/instance_backup 2>/dev/null
+    mv /home/$user/.$INSTANCE/data/backup/*.zip /home/$user/instance_backup/
+    echo "Zipped instance backup created in /home/$user/instance_backup"
 }
 
 restore() {
@@ -70,7 +71,7 @@ restore() {
     TAR=$2
     echo "Restoring backup of $INSTANCE...."
     systemctl stop $INSTANCE
-    sudo -p $user tar -xvf $TAR
+    sudo -p $user $OCTOEXEC --basedir /home/$user/.$INSTANCE plugins backup:restore $TAR
     systemctl start $INSTANCE
     
 }
@@ -78,7 +79,7 @@ restore() {
 back_up_all() {
     get_settings
     get_instances false
-    for instance in "${instances[@]}"; do
+    for instance in "${INSTANCE_ARR[@]}"; do
         echo $instance
         back_up $instance
     done
@@ -87,17 +88,21 @@ back_up_all() {
 
 get_instances() {
     addquit=$1
-    readarray -t INSTANCE_ARR < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-    if [ "$addquit" == true ]; then
-        INSTANCE_ARR+=("Quit")
+    if [ -f /etc/octoprint_instances ]; then
+        readarray -t INSTANCE_ARR < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+        if [ "$addquit" == true ]; then
+            INSTANCE_ARR+=("Quit")
+        fi
     fi
 }
 
 get_cameras() {
     addquit=$1
-    readarray -t CAMERA_ARR < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
-    if [ "$addquit" == true ]; then
+    if [ -f /etc/octoprint_cameras ]; then
+        readarray -t CAMERA_ARR < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
+        if [ "$addquit" == true ]; then
         CAMERA_ARR+=("Quit")
+        fi
     fi
 }
 
@@ -271,9 +276,11 @@ instance_status() {
     echo
     echo "${cyan}*******************************************${white}"
     get_instances false
-    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2> /dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    get_cameras false
+    #change this to reading /etc/octoprint_cameras
+    #readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2> /dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     #combine instances and cameras
-    INSTANCE_ARR+=(${cameras[@]})
+    INSTANCE_ARR+=(${CAMERA_ARR[@]})
     echo "Service - Status:"
     echo "------------------"
     for instance in "${INSTANCE_ARR[@]}"; do

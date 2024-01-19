@@ -141,7 +141,7 @@ new_instance() {
 
     #USB cameras
     if [ "$firstrun" != "true" ]; then
-        if prompt_confirm "Would you like to auto detect an associated USB camera (experimental)?"; then
+        if prompt_confirm "Would you like to auto detect an associated USB camera?"; then
             add_camera
         fi
     fi
