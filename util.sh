@@ -272,9 +272,11 @@ instance_status() {
     echo
     echo "${cyan}*******************************************${white}"
     get_instances false
-    readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2> /dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
+    get_cameras
+    #change this to reading /etc/octoprint_cameras
+    #readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2> /dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     #combine instances and cameras
-    INSTANCE_ARR+=(${cameras[@]})
+    INSTANCE_ARR+=(${CAMERA_ARR[@]})
     echo "Service - Status:"
     echo "------------------"
     for instance in "${INSTANCE_ARR[@]}"; do

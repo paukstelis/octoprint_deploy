@@ -22,7 +22,7 @@ detect_installs() {
         echo "This will make sure the correct printer is associated with each OctoPrint instance."
         echo "This can also be done in the Utility menu at a later time."
         get_settings
-        if prompt_confirm "${green}Would you like to generate a udev rule now?{$white}"; then
+        if prompt_confirm "${green}Would you like to generate a udev rule now?${white}"; then
             echo "Unplug your printer from the USB connection now."
             if prompt_confirm "${green}Ready to begin printer auto-detection?${white}"; then
                 detect_printer
