@@ -88,17 +88,21 @@ back_up_all() {
 
 get_instances() {
     addquit=$1
-    readarray -t INSTANCE_ARR < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
-    if [ "$addquit" == true ]; then
-        INSTANCE_ARR+=("Quit")
+    if [ -f /etc/octoprint_instances ]; then
+        readarray -t INSTANCE_ARR < <(cat /etc/octoprint_instances | sed -n -e 's/^instance:\([[:graph:]]*\) .*/\1/p')
+        if [ "$addquit" == true ]; then
+            INSTANCE_ARR+=("Quit")
+        fi
     fi
 }
 
 get_cameras() {
     addquit=$1
-    readarray -t CAMERA_ARR < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
-    if [ "$addquit" == true ]; then
+    if [ -f /etc/octoprint_cameras ]; then
+        readarray -t CAMERA_ARR < <(cat /etc/octoprint_cameras | sed -n -e 's/^camera:\([[:graph:]]*\) .*/\1/p')
+        if [ "$addquit" == true ]; then
         CAMERA_ARR+=("Quit")
+        fi
     fi
 }
 
@@ -272,7 +276,7 @@ instance_status() {
     echo
     echo "${cyan}*******************************************${white}"
     get_instances false
-    get_cameras
+    get_cameras false
     #change this to reading /etc/octoprint_cameras
     #readarray -t cameras < <(ls -1 /etc/systemd/system/cam*.service 2> /dev/null | sed -n -e 's/^.*\/\(.*\).service/\1/p')
     #combine instances and cameras
