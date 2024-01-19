@@ -4,6 +4,7 @@ Updated January 19, 2024.
 
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
+
 # octoprint_deploy 1.0.7
 
 * These files provide a bash script for quickly deploying multiple octoprint instances on a single computer. For Linux systems (Ubuntu, Fedora, etc.) it will also install OctoPrint and a video streamer (ustreamer). No need for lots of file editing or complicated Docker compose scripts! A background video on how it generally works from my ERRF2022 talk can be found here: https://www.youtube.com/watch?v=q0iCNl8-kJI&t=15378s
@@ -62,8 +63,10 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * Restart all instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * You can inject any function at start using the command line with the first argument `f` and the second argument the function name. 
 # Recent Changes
+
   * Improve Instance Status function.
   * Remove octoprint_deploy backup technique and move entirely to native OctoPrint backups. Backups made in this way are moved to /home/$USER/instance_backup to make them easier to sort.
+  * Camera settings written to separate env file. This can be found and edited at `/etc/cam_instancename.env`. 
   * Fixes for shared uploads function.
   * Command-line function injection. Will be useful in some cases.
   * Allow first instance creation without udev rule

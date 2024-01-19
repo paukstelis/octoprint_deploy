@@ -32,6 +32,7 @@ remove_camera() {
     systemctl stop $1.service 
     systemctl disable $1.service
     rm /etc/systemd/system/$1.service 2>/dev/null
+    rm /etc/$1.env 2>/dev/null
     sed -i "/$1/d" /etc/udev/rules.d/99-octoprint.rules
     sed -i "/$1/d" /etc/octoprint_cameras
     if [ "$HAPROXY" == true ]; then
@@ -53,7 +54,7 @@ write_camera() {
     else
         CAMDEVICE=cam${INUM}_$INSTANCE
     fi
-    
+    OUTFILE=cam${INUM}_$INSTANCE
     #mjpg-streamer
     if [ "$STREAMER" == mjpg-streamer ]; then
         cat $SCRIPTDIR/octocam_mjpg.service | \
@@ -68,14 +69,15 @@ write_camera() {
     if [ "$STREAMER" == ustreamer ]; then
         cat $SCRIPTDIR/octocam_ustream.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/$CAMDEVICE/" \
-        -e "s/RESOLUTION/$RESOLUTION/" \
-        -e "s/FRAMERATE/$FRAMERATE/" \
-        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
     fi
     
-    cp $SCRIPTDIR/cam${INUM}_$INSTANCE.service /etc/systemd/system/
-    mv $SCRIPTDIR/cam${INUM}_$INSTANCE.service $SCRIPTDIR/cam${INUM}_$INSTANCE.attempt
+    sudo -u $user echo "DEVICE=$CAMDEVICE" >> /etc/$OUTFILE.env
+    sudo -u $user echo "RES=$RESOLUTION" >> /etc/$OUTFILE.env
+    sudo -u $user echo "FRAMERATE=$FRAMERATE" >> /etc/$OUTFILE.env
+    sudo -u $user echo "PORT=$CAMPORT" >> /etc/$OUTFILE.env
+
+    cp $SCRIPTDIR/$OUTFILE.service /etc/systemd/system/
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
     
     #config.yaml modifications - only if INUM not set
@@ -269,7 +271,7 @@ add_camera() {
         write_camera
         #Pi Cam setup, replace cam_INSTANCE with /dev/video0
         if [ -n "$PI" ]; then
-            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"camera0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"video0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
         
         systemctl start cam${INUM}_$INSTANCE.service

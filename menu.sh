@@ -8,6 +8,7 @@ cyan=$(echo -en "\e[96m")
 yellow=$(echo -en "\e[93m") 
 
 main_menu() {
+
     VERSION=1.0.7
     #reset
     UDEV=''
