@@ -251,7 +251,7 @@ restore_menu() {
         
         echo "Selected instance to restore: $opt"
     
-    
+    clear
     PS3="${green}Select backup to restore: ${white}"
     readarray -t options < <(ls /home/$user/instance_backup/$opt-backup-*.zip)
     options+=("Quit")
