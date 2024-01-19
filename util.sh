@@ -60,9 +60,10 @@ octo_deploy_update() {
 back_up() {
     INSTANCE=$1
     echo "Creating backup of $INSTANCE...."
-    d=$(date '+%Y-%m-%d')
-    sudo -p $user tar -czf ${INSTANCE}_${d}_backup.tar.gz -C /home/$user/ .${INSTANCE}
-    echo "Tarred and gzipped backup created in /home/$user"
+    sudo -p $user $OCTOEXEC --basedir /home/$user/.$INSTANCE plugins backup:backup --exclude timelapse
+    sudo -p $user mkdir /home/$user/instance_backup 2>/dev/null
+    mv /home/$user/.$INSTANCE/data/backup/*.zip /home/$user/isntance_backup
+    echo "Zipped instance backup created in /home/$user/instance_backup"
 }
 
 restore() {
@@ -70,7 +71,7 @@ restore() {
     TAR=$2
     echo "Restoring backup of $INSTANCE...."
     systemctl stop $INSTANCE
-    sudo -p $user tar -xvf $TAR
+    sudo -p $user $OCTOEXEC --basedir /home/$user/.$INSTANCE plugins backup:restore $TAR
     systemctl start $INSTANCE
     
 }
@@ -78,7 +79,7 @@ restore() {
 back_up_all() {
     get_settings
     get_instances false
-    for instance in "${instances[@]}"; do
+    for instance in "${INSTANCE_ARR[@]}"; do
         echo $instance
         back_up $instance
     done

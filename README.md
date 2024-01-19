@@ -62,6 +62,7 @@ Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
   * Restart all instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * You can inject any function at start using the command line with the first argument `f` and the second argument the function name. 
 # Recent Changes
+  * Remove octoprint_deploy backups and move entirely to native OctoPrint backups
   * Fixes for shared uploads function.
   * Command-line function injection. Will be useful in some cases.
   * Allow first instance creation without udev rule
