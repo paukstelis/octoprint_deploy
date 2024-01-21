@@ -14,6 +14,7 @@ detect_installs() {
         echo "$user ALL=NOPASSWD: /usr/bin/systemctl" > /etc/sudoers.d/octoprint_systemctl
         echo "$user ALL=NOPASSWD: /usr/sbin/reboot" > /etc/sudoers.d/octoprint_reboot
         INSTANCE=octoprint
+        apt-get update
         deb_packages
         #rename
         
