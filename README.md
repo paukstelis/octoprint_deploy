@@ -3,7 +3,7 @@
 Updated January 19, 2024.  
 
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
-Need help with octoprint_deploy? Ask on Discord: https://discord.gg/6vgSjgvR6u
+Need help with octoprint_deploy? Visit support-octoprint-deploy on the OctoPrint Discord: https://discord.com/invite/yA7stPp
 
 # octoprint_deploy 1.0.7
 
