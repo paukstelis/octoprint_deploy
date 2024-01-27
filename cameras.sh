@@ -153,6 +153,12 @@ add_camera() {
         main_menu
     fi
 
+    if [ "$STREAMER" == none ]; then
+        echo "No camera streamer service has been installed."
+        echo "Use the utilities menu to add one."
+        main_menu
+    fi
+
     if [ $SUDO_USER ]; then user=$SUDO_USER; fi
     echo 'Adding camera' | log
     if [ -z "$INSTANCE" ]; then
