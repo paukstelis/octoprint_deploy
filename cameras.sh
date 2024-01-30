@@ -52,7 +52,7 @@ write_camera() {
     if [ -n "$BYIDCAM" ] && [ -z "$CAM" ] && [ -z "$TEMPUSBCAM" ]; then
         CAMDEVICE=$BYIDCAM
     else
-        CAMDEVICE=cam${INUM}_$INSTANCE
+        CAMDEVICE=/dev/cam${INUM}_$INSTANCE
     fi
     OUTFILE=cam${INUM}_$INSTANCE
     #mjpg-streamer

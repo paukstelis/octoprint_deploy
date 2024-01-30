@@ -6,7 +6,7 @@ Wants=network.online.target
 [Service]
 EnvironmentFile=/etc/OCTOCAM.env
 User=OCTOUSER
-ExecStart=/home/OCTOUSER/ustreamer/ustreamer -d /dev/${DEVICE} -s 0.0.0.0 -m MJPEG -r ${RES} -f ${FRAMERATE} -p ${PORT} --device-timeout 8 --device-error-delay 8
+ExecStart=/home/OCTOUSER/ustreamer/ustreamer -d ${DEVICE} -s 0.0.0.0 -m MJPEG -r ${RES} -f ${FRAMERATE} -p ${PORT} --device-timeout 8 --device-error-delay 8
 
 [Install]
 WantedBy=multi-user.target
