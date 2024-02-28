@@ -436,7 +436,7 @@ streamer_install() {
         #install ustreamer
         sudo -u $user git -C /home/$user clone --depth=1 https://github.com/pikvm/ustreamer
         sudo -u $user make -C /home/$user/ustreamer > /dev/null
-        if [ -f "/home/$user/ustreamer/ustreamer" ]; then
+        if [ -f "/home/$user/ustreamer/ustreamer" ] || [ -f "/home/$user/ustreamer/ustreamer.bin" ]; then
             echo "Streamer installed successfully"
         else
             echo "${red}WARNING! WARNING! WARNING!${white}"
@@ -444,6 +444,9 @@ streamer_install() {
             if prompt_confirm "Try installation again?"; then
                 streamer_install
             fi
+        fi
+        if [ -f "/home/$user/ustreamer/ustreamer.bin" ]; then
+            sudo -u $user ln -s /home/$user/ustreamer/ustreamer.bin /home/$user/ustreamer/ustreamer
         fi
         echo 'streamer: ustreamer' >> /etc/octoprint_deploy
     fi

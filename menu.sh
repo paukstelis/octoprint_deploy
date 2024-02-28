@@ -9,7 +9,7 @@ yellow=$(echo -en "\e[93m")
 
 main_menu() {
 
-    VERSION=1.0.7
+    VERSION=1.0.9
     #reset
     UDEV=''
     TEMPUSB=''
