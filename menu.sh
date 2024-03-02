@@ -26,7 +26,7 @@ main_menu() {
     echo
     PS3="${green}Select operation: ${white}"
     if [ -f "/etc/octoprint_deploy" ]; then
-        options=("Add instance" "Delete instance" "Add USB Camera" "Add Pi Cam" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
+        options=("Add instance" "Delete instance" "Add USB Camera" "Add PiCam" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
         options=("Prepare system" "Update" "Quit")
     fi
@@ -50,7 +50,7 @@ main_menu() {
                 add_camera
                 break
             ;;
-            "Add Pi Camera")
+            "Add PiCam")
                 add_camera true
                 break
             ;;
