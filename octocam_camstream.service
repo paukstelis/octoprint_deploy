@@ -6,23 +6,20 @@ After=network.target
 User=OCTOUSER
 EnvironmentFile=/etc/OCTOCAM.env
 ExecStart=/home/OCTOUSER/camera-streamer/camera-streamer \
-  -camera-path=${DEVICE} \
-  -camera-format=JPEG \
-  -camera-width=${WIDTH} -camera-height=${HEIGHT} \
-  -camera-fps=${FRAMERATE} \
-  -camera-nbufs=3 \
+  --camera-path=${DEVICE} \
+  --camera-format=JPEG \
+  --camera-width=${WIDTH} -camera-height=${HEIGHT} \
+  --camera-fps=${FRAMERATE} \
+  --camera-nbufs=3 \
   --http-listen=0.0.0.0 \
   --http-port=${PORT} \
-  -camera-video.disabled
+  --camera-video.disabled
 
-SupplementaryGroups=video i2c
 Restart=always
 RestartSec=10
 Nice=10
 IOSchedulingClass=idle
 IOSchedulingPriority=7
-CPUWeight=20
-AllowedCPUs=1-2
 MemoryMax=250M
 
 [Install]

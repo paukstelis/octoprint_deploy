@@ -22,14 +22,11 @@ ExecStart=/bin/sh -c "exec /usr/bin/camera-streamer \
   ${OPTIONS}"
 
 
-SupplementaryGroups=video i2c
 Restart=always
 RestartSec=10
 Nice=10
 IOSchedulingClass=idle
 IOSchedulingPriority=7
-CPUWeight=20
-AllowedCPUs=1-2
 MemoryMax=250M
 
 [Install]
