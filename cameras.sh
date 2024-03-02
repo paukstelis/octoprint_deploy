@@ -72,10 +72,28 @@ write_camera() {
         -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
     fi
     
+    #camera-streamer
+    if [ "$STREAMER" == camera-streamer ]; then
+        if [ "$PICAM" == true ]; then
+            cat $SCRIPTDIR/picam_camstream.service | \
+            sed -e "s/OCTOUSER/$OCTOUSER/" \
+            -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
+        else
+            cat $SCRIPTDIR/octocam_camstream.service | \
+            sed -e "s/OCTOUSER/$OCTOUSER/" \
+            -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
+    fi
+
+    #convert RES into WIDTH and HEIGHT for camera-streamer
+    CAMWIDTH=$(sed -r 's/^([0-9]+)x[0-9]+/\1/' <<<"$RES")
+    CAMHEIGHT=$(sed -r 's/^[0-9]+x([0-9]+)/\1/' <<<"$RES")
+
     sudo -u $user echo "DEVICE=$CAMDEVICE" >> /etc/$OUTFILE.env
     sudo -u $user echo "RES=$RESOLUTION" >> /etc/$OUTFILE.env
     sudo -u $user echo "FRAMERATE=$FRAMERATE" >> /etc/$OUTFILE.env
     sudo -u $user echo "PORT=$CAMPORT" >> /etc/$OUTFILE.env
+    sudo -u $user echo "WIDTH=$CAMWIDTH" >> /etc/$OUTFILE.env
+    sudo -u $user echo "HEIGHT=$CAMHEIGHT" >> /etc/$OUTFILE.env
 
     cp $SCRIPTDIR/$OUTFILE.service /etc/systemd/system/
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
