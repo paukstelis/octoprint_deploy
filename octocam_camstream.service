@@ -1,0 +1,26 @@
+[Unit]
+Description=camera-streamer web camera for USB camera on Generic platform
+After=network.target
+
+[Service]
+User=OCTOUSER
+EnvironmentFile=/etc/OCTOCAM.env
+ExecStart=/home/OCTOUSER/camera-streamer/camera-streamer \
+  --camera-path=${DEVICE} \
+  --camera-format=JPEG \
+  --camera-width=${WIDTH} -camera-height=${HEIGHT} \
+  --camera-fps=${FRAMERATE} \
+  --camera-nbufs=3 \
+  --http-listen=0.0.0.0 \
+  --http-port=${PORT} \
+  --camera-video.disabled
+
+Restart=always
+RestartSec=10
+Nice=10
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+MemoryMax=250M
+
+[Install]
+WantedBy=multi-user.target

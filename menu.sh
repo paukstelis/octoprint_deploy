@@ -9,7 +9,7 @@ yellow=$(echo -en "\e[93m")
 
 main_menu() {
 
-    VERSION=1.0.9
+    VERSION=1.0.10
     #reset
     UDEV=''
     TEMPUSB=''
@@ -26,7 +26,7 @@ main_menu() {
     echo
     PS3="${green}Select operation: ${white}"
     if [ -f "/etc/octoprint_deploy" ]; then
-        options=("Add instance" "Delete instance" "Add Camera" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
+        options=("Add instance" "Delete instance" "Add USB Camera" "Add PiCam" "Delete Camera" "Utilities" "Backup Menu" "Update" "Quit")
     else
         options=("Prepare system" "Update" "Quit")
     fi
@@ -46,8 +46,12 @@ main_menu() {
                 remove_instance_menu
                 break
             ;;
-            "Add Camera")
+            "Add USB Camera")
                 add_camera
+                break
+            ;;
+            "Add PiCam")
+                add_camera true
                 break
             ;;
             "Delete Camera")

@@ -1,0 +1,33 @@
+[Unit]
+Description=camera-streamer libcamera
+After=network.target
+StartLimitIntervalSec=120
+StartLimitBurst=10
+
+[Service]
+User=OCTOUSER
+EnvironmentFile=/etc/OCTOCAM.env
+ExecCondition=/bin/sh -c "/usr/bin/libcamera-hello --list-cameras | grep -o '/base/soc/[^)]*'"
+ExecCondition=/bin/sh -c "! ss -ltn src :$PORT | grep -q LISTEN"
+ExecStart=/bin/sh -c "exec /usr/bin/camera-streamer \
+  --http-port=${PORT} \
+  --camera-type=libcamera \
+  --camera-path=$(/usr/bin/libcamera-hello --list-cameras | grep -o '/base/soc/[^)]*' | head -n1) \
+  --camera-format=MJPG \
+  --camera-width=${WIDTH} --camera-height=${HEIGHT} \
+  --camera-video.height=${VIDEO_HEIGHT} \
+  --camera-snapshot.height=${SNAPSHOT_HEIGHT} \
+  --camera-fps=${FRAMERATE} \
+  --camera-nbufs=${NBUFS:-2} \
+  ${OPTIONS}"
+
+
+Restart=always
+RestartSec=10
+Nice=10
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+MemoryMax=250M
+
+[Install]
+WantedBy=multi-user.target

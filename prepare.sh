@@ -284,7 +284,7 @@ new_install() {
         fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
-        if [ $PYV -eq 11 ]; then
+        if [ $PYV -gt 10 ]; then
             dnf -y install python3.10-devel
             PYVERSION='python3.10'
         fi
@@ -381,7 +381,7 @@ haproxy_install() {
 
 streamer_install() {
     PS3="${green}Which video streamer you would like to install?: ${white}"
-    options=("ustreamer (recommended)" "None/Skip")
+    options=("ustreamer (recommended)" "camera-streamer" "None/Skip")
     select opt in "${options[@]}"
     do
         case $opt in

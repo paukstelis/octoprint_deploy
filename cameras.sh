@@ -72,10 +72,29 @@ write_camera() {
         -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
     fi
     
+    #camera-streamer
+    if [ "$STREAMER" == camera-streamer ]; then
+        if [ "$PICAM" == true ]; then
+            cat $SCRIPTDIR/picam_camstream.service | \
+            sed -e "s/OCTOUSER/$OCTOUSER/" \
+            -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
+        else
+            cat $SCRIPTDIR/octocam_camstream.service | \
+            sed -e "s/OCTOUSER/$OCTOUSER/" \
+            -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
+        fi
+    fi
+
+    #convert RES into WIDTH and HEIGHT for camera-streamer
+    CAMWIDTH=$(sed -r 's/^([0-9]+)x[0-9]+/\1/' <<<"$RESOLUTION")
+    CAMHEIGHT=$(sed -r 's/^[0-9]+x([0-9]+)/\1/' <<<"$RESOLUTION")
+
     sudo -u $user echo "DEVICE=$CAMDEVICE" >> /etc/$OUTFILE.env
     sudo -u $user echo "RES=$RESOLUTION" >> /etc/$OUTFILE.env
     sudo -u $user echo "FRAMERATE=$FRAMERATE" >> /etc/$OUTFILE.env
     sudo -u $user echo "PORT=$CAMPORT" >> /etc/$OUTFILE.env
+    sudo -u $user echo "WIDTH=$CAMWIDTH" >> /etc/$OUTFILE.env
+    sudo -u $user echo "HEIGHT=$CAMHEIGHT" >> /etc/$OUTFILE.env
 
     cp $SCRIPTDIR/$OUTFILE.service /etc/systemd/system/
     echo "camera:cam${INUM}_$INSTANCE port:$CAMPORT udev:true" >> /etc/octoprint_cameras
@@ -145,14 +164,6 @@ add_camera() {
     CAMHAPROX=''
     get_settings
     
-    if [ "$STREAMER" == camera-streamer ]; then
-        echo "You are using OctoPi with camera-streamer."
-        echo "This is not compatible with octoprint_deploy."
-        echo "Use the camera-streamer scripts to install your cameras,"
-        echo "or change the streamer type in the Utilties menu."
-        main_menu
-    fi
-
     if [ "$STREAMER" == none ]; then
         echo "No camera streamer service has been installed."
         echo "Use the utilities menu to add one."
