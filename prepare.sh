@@ -284,7 +284,7 @@ new_install() {
         fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
-        if [ $PYV -eq 11 ]; then
+        if [ $PYV -gt 10 ]; then
             dnf -y install python3.10-devel
             PYVERSION='python3.10'
         fi
