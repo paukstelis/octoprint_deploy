@@ -244,7 +244,7 @@ add_camera() {
     else
         echo
         echo
-        echo "Setting up a Pi camera service for /dev/video0"
+        echo "Setting up a Pi camera service."
         echo "Please note that mixing this setup with USB cameras may lead to issues."
         echo "Don't expect extensive support for trying to fix these issues."
         echo
@@ -287,7 +287,7 @@ add_camera() {
     if [ -n "$camopt" ]; then
         write_camera
         #Pi Cam setup, replace cam_INSTANCE with /dev/video0
-        if [ -n "$PI" ]; then
+        if [ -n "$PI" ] && [ "$STREAMER" == ustreamer ]; then
             echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"video0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
         fi
         
