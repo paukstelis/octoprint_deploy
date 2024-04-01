@@ -74,7 +74,7 @@ write_camera() {
     
     #camera-streamer
     if [ "$STREAMER" == camera-streamer ]; then
-        if [ "$PICAM" == true ]; then
+        if [ "$PI" == true ]; then
             cat $SCRIPTDIR/picam_camstream.service | \
             sed -e "s/OCTOUSER/$OCTOUSER/" \
             -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service

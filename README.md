@@ -1,6 +1,6 @@
 
 
-Updated March 11, 2024.  
+Updated April 1, 2024.  
 
 Want to support this work? Buy Me a Coffee. https://www.buymeacoffee.com/ppaukstelis.
 Need help with octoprint_deploy? Visit support-octoprint-deploy on the OctoPrint Discord: https://discord.com/invite/yA7stPp
@@ -63,6 +63,7 @@ Need help with octoprint_deploy? Visit support-octoprint-deploy on the OctoPrint
   * Restart all instances from the command line: `sudo octoprint_deploy/octoprint_deploy.sh restart_all`
   * You can inject any function at start using the command line with the first argument `f` and the second argument the function name. 
 # Recent Changes
+  * Fixes for adding PiCam with camera-streamer (still not complete)
   * Add camera-streamer as an option. This is also coupled with adding PiCam from the menu. __THIS IS EXPERIMENTAL and NEEDS TESTING__
   * Fix an issue with Fedora python versioning.
   * Fix change for ustreamer executable being renamed ustreamer.bin
