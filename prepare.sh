@@ -123,6 +123,7 @@ deb_packages() {
     -e build-essential\
     -e libssl-dev\
     -e rsync\
+    -e wget\
     | xargs apt-get install -y
     
     #pacakges to REMOVE go here
@@ -149,6 +150,7 @@ dnf_packages() {
     libcamera-devel \
     v4l-utils \
     xxd \
+    wget \
     openssl-devel \
     rsync
     
@@ -172,6 +174,7 @@ pacman_packages() {
     libbsd \
     openssh \
     haproxy \
+    wget \
     v4l-utils \
     rsync
 }
@@ -190,6 +193,7 @@ zypper_packages() {
     libffi-devel \
     v4l-utils \
     xxd \
+    wget \
     libopenssl-devel \
     rsync
     
@@ -381,7 +385,7 @@ haproxy_install() {
 
 streamer_install() {
     PS3="${green}Which video streamer you would like to install?: ${white}"
-    options=("ustreamer (recommended)" "camera-streamer" "None/Skip")
+    options=("go2rtc" "ustreamer" "camera-streamer" "None/Skip")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -389,12 +393,16 @@ streamer_install() {
                 VID=1
                 break
             ;;
-            "ustreamer (recommended)")
+            "ustreamer")
                 VID=2
                 break
             ;;
             "camera-streamer")
                 VID=4
+                break
+            ;;
+            "camera-streamer")
+                VID=5
                 break
             ;;
             "None/Skip")
@@ -468,6 +476,25 @@ streamer_install() {
         echo 'streamer: camera-streamer' >> /etc/octoprint_deploy
     fi
     
+    if [ $VID -eq 5 ]; then
+        rm -rf /home/$user/go2rtc 2>/dev/null
+        #install go2rtc
+        sudo -u $user mkdir /home/$user/go2rtc
+        #get arch
+        ARCH=$(arch)
+        ARCH=${ARCH:0:3}
+        if [ $ARCH == arm ]; then
+           sudo -u $user wget -O go2rtc_bin https://github.com/AlexxIT/go2rtc/releases/tag/v1.8.5/go2rtc_linux_arm 
+        fi
+        if [ $ARCH == x86 ]; then
+           sudo -u $user wget -O go2rtc_bin https://github.com/AlexxIT/go2rtc/releases/tag/v1.8.5/go2rtc_linux_amd64 
+        fi
+        sudo -u $user chmod +x go2rtc_bin
+        sudo -u $user mv go2rtc_bin /home/$user/go2rtc
+
+        echo 'streamer: go2rtc' >> /etc/octoprint_deploy
+    fi
+
     if [ $VID -eq 3 ]; then
         echo 'streamer: none' >> /etc/octoprint_deploy
         echo "Good for you! Cameras are just annoying anyway."
