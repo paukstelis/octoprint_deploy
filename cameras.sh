@@ -59,10 +59,7 @@ write_camera() {
     if [ "$STREAMER" == mjpg-streamer ]; then
         cat $SCRIPTDIR/octocam_mjpg.service | \
         sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/$CAMDEVICE/" \
-        -e "s/RESOLUTION/$RESOLUTION/" \
-        -e "s/FRAMERATE/$FRAMERATE/" \
-        -e "s/CAMPORT/$CAMPORT/" > $SCRIPTDIR/cam${INUM}_$INSTANCE.service
+        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
     fi
     
     #ustreamer
