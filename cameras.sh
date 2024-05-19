@@ -67,9 +67,16 @@ write_camera() {
     
     #ustreamer
     if [ "$STREAMER" == ustreamer ]; then
-        cat $SCRIPTDIR/octocam_ustream.service | \
-        sed -e "s/OCTOUSER/$OCTOUSER/" \
-        -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
+        if [ "$PI" == true ]; then
+            cat $SCRIPTDIR/octocam_ustream.service | \
+            sed -e "s/OCTOUSER/$OCTOUSER/" \
+            -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" \
+            -e "s|ExecStart=|ExecStart=/usr/bin/libcamerify |" > $SCRIPTDIR/$OUTFILE.service
+        else
+            cat $SCRIPTDIR/octocam_ustream.service | \
+            sed -e "s/OCTOUSER/$OCTOUSER/" \
+            -e "s/OCTOCAM/cam${INUM}_$INSTANCE/" > $SCRIPTDIR/$OUTFILE.service
+        fi
     fi
     
     #camera-streamer
@@ -288,7 +295,7 @@ add_camera() {
         write_camera
         #Pi Cam setup, replace cam_INSTANCE with /dev/video0
         if [ -n "$PI" ] && [ "$STREAMER" == ustreamer ]; then
-            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"video0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rules
+            echo SUBSYSTEM==\"video4linux\", ATTRS{name}==\"video0\", SYMLINK+=\"cam${INUM}_$INSTANCE\" >> /etc/udev/rules.d/99-octoprint.rule
         fi
         
         systemctl start cam${INUM}_$INSTANCE.service

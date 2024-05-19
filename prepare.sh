@@ -116,6 +116,8 @@ deb_packages() {
     -e libavutil-dev\
     -e libavcodec-dev\
     -e libcamera-dev\
+    -e libcamera-tools\
+    -e libcamera-v4l2\
     -e liblivemedia-dev\
     -e v4l-utils\
     -e pkg-config\
