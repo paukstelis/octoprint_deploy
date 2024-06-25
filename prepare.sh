@@ -94,6 +94,7 @@ deb_packages() {
     -e python3.9-venv \
     -e python3.10-venv \
     -e python3.11-venv \
+    -e python3.11-dev \
     -e virtualenv \
     -e python3-dev \
     -e build-essential \
