@@ -320,6 +320,9 @@ new_install() {
     sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
     #install oprint
     sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
+
+    #limits fix, remove when OctoPrint 1.11.0 is released
+    sudo -u $user /home/$user/OctoPrint/bin/pip install limits==4.7.2
     
     #Check to verify that OctoPrint binary is installed
     if [ -f "/home/$user/OctoPrint/bin/octoprint" ]; then
