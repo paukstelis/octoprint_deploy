@@ -1,8 +1,7 @@
-plugin:CancelObject path:https://github.com/paukstelis/OctoPrint-Cancelobject/archive/master.zip
-plugin:Bed Visualizer path:https://github.com/jneilliii/OctoPrint-BedLevelVisualizer/archive/master.zip
-plugin:Firmware Updater path:https://github.com/OctoPrint/OctoPrint-FirmwareUpdater/archive/master.zip
 plugin:Terminal Commands Extended: path:https://github.com/jneilliii/OctoPrint-TerminalCommandsExtended/archive/master.zip
-plugin:Active Filters Extended path:https://github.com/jneilliii/OctoPrint-ActiveFiltersExtended/archive/master.zip
-plugin:PrintTimeGenius path:https://github.com/eyal0/OctoPrint-PrintTimeGenius/archive/master.zip
-plugin:UI Customizer path:https://github.com/LazeMSS/OctoPrint-UICustomizer/archive/main.zip
-plugin:PowerFailure path:https://github.com/pablogventura/OctoPrint-PowerFailure/archive/master.zip 
+plugin:LatheEngraver path:https://github.com/paukstelis/OctoPrint-LatheEngraver/archive/refs/heads/main.zip
+plugin:Gcode Ripper path:https://github.com/paukstelis/OctoPrint-Gcode_ripper/archive/refs/heads/main.zip
+plugin:LatheEngraver Profiler path:https://github.com/paukstelis/LE-Profiler/archive/refs/heads/main.zip
+plugin:SimpleThreads path:https://github.com/paukstelis/OctoPrint-Simplethreads/archive/refs/heads/main.zip
+plugin:LatheEngraver Scanning path:https://github.com/paukstelis/LE_Scanning/archive/refs/heads/main.zip
+plugin:Multi-line Terminal path:https://github.com/jneilliii/OctoPrint-MultiLineTerminal/archive/master.zip
