@@ -5,3 +5,5 @@ plugin:LatheEngraver Profiler path:https://github.com/paukstelis/LE-Profiler/arc
 plugin:SimpleThreads path:https://github.com/paukstelis/OctoPrint-Simplethreads/archive/refs/heads/main.zip
 plugin:LatheEngraver Scanning path:https://github.com/paukstelis/LE_Scanning/archive/refs/heads/main.zip
 plugin:Multi-line Terminal path:https://github.com/jneilliii/OctoPrint-MultiLineTerminal/archive/master.zip
+plugin:RoseEngine path:https://github.com/paukstelis/LE-RoseEngine/archive/refs/heads/main.zip
+plugin:Multiple Upload path:https://github.com/eyal0/OctoPrint-MultipleUpload/archive/master.zip
