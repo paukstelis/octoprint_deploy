@@ -29,6 +29,7 @@ plugin_menu() {
                 fi
             done
             break
+            sudo systemctl restart $INSTANCE
         fi
         #install single plugin
         #get plugin path
