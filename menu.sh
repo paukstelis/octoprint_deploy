@@ -124,7 +124,7 @@ utility_menu() {
     echo
     echo
     PS3="${green}Select an option: ${white}"
-    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Change Streamer" "Set Global Config" "Udev Menu" "Restart instances" "Diagnostic Output" "Quit")
+    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Change Streamer" "Set Global Config" "Udev Menu" "Restart Instances" "Diagnostic Output" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -156,7 +156,7 @@ utility_menu() {
                 change_streamer
                 break
             ;;
-            "Restart instances")
+            "Restart Instances")
                 restart_menu
                 break
             ;;
