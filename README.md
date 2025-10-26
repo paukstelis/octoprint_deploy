@@ -15,4 +15,5 @@ Need help with octoprint_deploy? Visit support-octoprint-deploy on the OctoPrint
 * Make sure git is installed with your package manager, e.g. `sudo apt install git`
 * Clone the latheengraver branch: `git clone -b latheengraver https://github.com/paukstelis/octoprint_deploy`
 * Begin installation: `sudo octoprint_deploy/octoprint_deploy.sh`
+* Follow the instructions
 * When the installer asks if you want to install plugins, select Y and then use the Install All option
