@@ -124,7 +124,7 @@ utility_menu() {
     echo
     echo
     PS3="${green}Select an option: ${white}"
-    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Change Streamer" "Set Global Config" "Udev Menu" "Diagnostic Output" "Quit")
+    options=("Instance Status" "USB Port Testing" "Sync Users" "Share Uploads" "Change Streamer" "Set Global Config" "Udev Menu" "Restart Instances" "Diagnostic Output" "Quit")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -154,6 +154,10 @@ utility_menu() {
             ;;
             "Change Streamer")
                 change_streamer
+                break
+            ;;
+            "Restart Instances")
+                restart_menu
                 break
             ;;
             "Diagnostic Output")
@@ -224,6 +228,14 @@ backup_menu() {
                 ;;*) echo "invalid option $REPLY";;
         esac
     done
+}
+
+restart_menu() {
+    echo
+    echo
+    if prompt_confirm "Do you want to restart all instances? This will interrupt any print jobs."; then
+            restart_all
+    fi
 }
 
 create_menu() {
