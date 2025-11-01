@@ -292,10 +292,6 @@ new_install() {
         fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
-        if [ $PYV -gt 11 ]; then
-            dnf -y install python3.11-devel
-            PYVERSION='python3.11'
-        fi
         dnf_packages
     fi
     
@@ -315,7 +311,7 @@ new_install() {
     #make venv
     sudo -u $user $PYVERSION -m venv /home/$user/OctoPrint
     #update pip
-    sudo -u $user /home/$user/OctoPrint/bin/pip install --upgrade pip
+    sudo -u $user /home/$user/OctoPrint/bin/pip install --force-reinstall pip==25.2
     #pre-install wheel
     sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
     #install oprint
