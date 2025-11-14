@@ -315,7 +315,7 @@ new_install() {
     #make venv
     sudo -u $user $PYVERSION -m venv /home/$user/OctoPrint
     #update pip
-    sudo -u $user /home/$user/OctoPrint/bin/pip install --upgrade pip
+    sudo -u $user /home/$user/OctoPrint/bin/pip install --force-reinstall pip==25.2
     #pre-install wheel
     sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
     #install oprint
