@@ -272,11 +272,13 @@ new_install() {
     #install packages
     #All DEB based
     PYVERSION="python3"
+    OPVERSION="OctoPrint"
     if [ $INSTALL -eq 2 ]; then
         apt-get update > /dev/null
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
         if [ $PYV -gt 13 ]; then
-            PYVERSION='python3.13'
+            #PYVERSION='python3.13'
+            OPVERSION="OctoPrint>=2.0.0rc1"
         fi
         deb_packages
     fi
@@ -292,6 +294,10 @@ new_install() {
         fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
+        if [ $PYV -gt 13 ]; then
+            #PYVERSION='python3.13'
+            OPVERSION="OctoPrint>=2.0.0rc1"
+        fi
         dnf_packages
     fi
     
@@ -315,7 +321,7 @@ new_install() {
     #pre-install wheel
     sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
     #install oprint
-    sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
+    sudo -u $user /home/$user/OctoPrint/bin/pip install $OPVERSION
 
     #limits fix, remove when OctoPrint 1.11.0 is released
     #sudo -u $user /home/$user/OctoPrint/bin/pip install limits==4.7.2
