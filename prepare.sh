@@ -91,10 +91,10 @@ deb_packages() {
     -e v4l-utils \
     -e python-is-python3 \
     -e python3-venv \
-    -e python3.9-venv \
-    -e python3.10-venv \
-    -e python3.11-venv \
-    -e python3.11-dev \
+    -e python3.12-venv \
+    -e python3.12-venv \
+    -e python3.13-venv \
+    -e python3.13-dev \
     -e virtualenv \
     -e python3-dev \
     -e build-essential \
@@ -275,9 +275,9 @@ new_install() {
     if [ $INSTALL -eq 2 ]; then
         apt-get update > /dev/null
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
-        #if [ $PYV -gt 11 ]; then
-        #    PYVERSION='python3.11'
-        #fi
+        if [ $PYV -gt 13 ]; then
+            PYVERSION='python3.13'
+        fi
         deb_packages
     fi
     
@@ -292,9 +292,9 @@ new_install() {
         fi
         systemctl enable sshd.service
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
-        if [ $PYV -gt 11 ]; then
-            dnf -y install python3.11-devel
-            PYVERSION='python3.11'
+        if [ $PYV -gt 13 ]; then
+            dnf -y install python3.13-devel
+            PYVERSION='python3.13'
         fi
         dnf_packages
     fi
