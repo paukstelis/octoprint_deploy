@@ -275,9 +275,6 @@ new_install() {
     if [ $INSTALL -eq 2 ]; then
         apt-get update > /dev/null
         PYV=$(python3 -c"import sys; print(sys.version_info.minor)")
-        if [ $PYV -gt 13 ]; then
-            PYVERSION='python3.13'
-        fi
         deb_packages
     fi
     
