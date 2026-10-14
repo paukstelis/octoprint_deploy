@@ -316,7 +316,7 @@ new_install() {
     #pre-install wheel
     sudo -u $user /home/$user/OctoPrint/bin/pip install wheel
     #install oprint
-    sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint
+    sudo -u $user /home/$user/OctoPrint/bin/pip install OctoPrint>=2.0.0rc6
     
     #Check to verify that OctoPrint binary is installed
     if [ -f "/home/$user/OctoPrint/bin/octoprint" ]; then
